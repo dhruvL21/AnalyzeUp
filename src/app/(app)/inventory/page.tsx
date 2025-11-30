@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import React, { useState } from "react";
 import { PlusCircle, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,95 +27,276 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { products } from "@/lib/data";
+import { products as initialProducts, Product } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function InventoryPage() {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const { toast } = useToast();
+
   const getImageForProduct = (productId: string) => {
     return PlaceHolderImages.find((p) => p.id === productId)?.imageUrl;
   };
 
+  const handleDelete = (productId: string) => {
+    setProducts(products.filter((p) => p.id !== productId));
+    toast({
+      title: "Product Deleted",
+      description: "The product has been successfully removed.",
+    });
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newProduct: Product = {
+      id: editingProduct
+        ? editingProduct.id
+        : `PROD${(Math.random() * 1000).toFixed(0).padStart(3, "0")}`,
+      name: formData.get("name") as string,
+      stock: Number(formData.get("stock")),
+      supplier: formData.get("supplier") as string,
+      category: formData.get("category") as string,
+      averageDailySales:
+        editingProduct?.averageDailySales ??
+        Math.floor(Math.random() * 10) + 1,
+      leadTimeDays:
+        editingProduct?.leadTimeDays ?? Math.floor(Math.random() * 10) + 5,
+    };
+
+    if (editingProduct) {
+      setProducts(
+        products.map((p) => (p.id === newProduct.id ? newProduct : p))
+      );
+      toast({
+        title: "Product Updated",
+        description: `${newProduct.name} has been updated.`,
+      });
+    } else {
+      setProducts([newProduct, ...products]);
+      toast({
+        title: "Product Added",
+        description: `${newProduct.name} has been added to your inventory.`,
+      });
+    }
+
+    setEditingProduct(null);
+    setDialogOpen(false);
+  };
+
+  const openEditDialog = (product: Product) => {
+    setEditingProduct(product);
+    setDialogOpen(true);
+  };
+
+  const openAddDialog = () => {
+    setEditingProduct(null);
+    setDialogOpen(true);
+  };
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">Inventory</h1>
-        <div className="ml-auto flex items-center gap-2">
-          <Button size="sm" className="h-8 gap-1">
-            <PlusCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Add Product
-            </span>
-          </Button>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center">
+          <h1 className="text-lg font-semibold md:text-2xl">Inventory</h1>
+          <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" className="h-8 gap-1" onClick={openAddDialog}>
+              <PlusCircle className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                Add Product
+              </span>
+            </Button>
+          </div>
         </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Products</CardTitle>
-          <CardDescription>
-            Manage your products and view their inventory levels.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                  <span className="sr-only">Image</span>
-                </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead className="hidden md:table-cell">Category</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="hidden sm:table-cell">
-                    <Image
-                      alt="Product image"
-                      className="aspect-square rounded-md object-cover"
-                      height="64"
-                      src={getImageForProduct(product.id) || "https://picsum.photos/seed/placeholder/64/64"}
-                      width="64"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>
-                     <Badge variant={product.stock > 20 ? "secondary" : "destructive"}>{product.stock > 20 ? 'In Stock' : 'Low Stock'}</Badge> ({product.stock})
-                  </TableCell>
-                  <TableCell>{product.supplier}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {product.category}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          aria-haspopup="true"
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>Products</CardTitle>
+            <CardDescription>
+              Manage your products and view their inventory levels.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="hidden w-[100px] sm:table-cell">
+                    <span className="sr-only">Image</span>
+                  </TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Supplier</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Category
+                  </TableHead>
+                  <TableHead>
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+              </TableHeader>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="hidden sm:table-cell">
+                      <Image
+                        alt="Product image"
+                        className="aspect-square rounded-md object-cover"
+                        height="64"
+                        src={
+                          getImageForProduct(product.id) ||
+                          "https://picsum.photos/seed/placeholder/64/64"
+                        }
+                        width="64"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={product.stock > 20 ? "outline" : "destructive"}
+                      >
+                        {product.stock > 20 ? "In Stock" : "Low Stock"}
+                      </Badge>{" "}
+                      ({product.stock})
+                    </TableCell>
+                    <TableCell>{product.supplier}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {product.category}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => openEditDialog(product)}>
+                            Edit
+                          </DropdownMenuItem>
+                           <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete</DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the product.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(product.id)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            {editingProduct ? "Edit Product" : "Add Product"}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleFormSubmit} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <Input
+              id="name"
+              name="name"
+              defaultValue={editingProduct?.name}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="stock" className="text-right">
+              Stock
+            </Label>
+            <Input
+              id="stock"
+              name="stock"
+              type="number"
+              defaultValue={editingProduct?.stock}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="supplier" className="text-right">
+              Supplier
+            </Label>
+            <Input
+              id="supplier"
+              name="supplier"
+              defaultValue={editingProduct?.supplier}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="category" className="text-right">
+              Category
+            </Label>
+            <Input
+              id="category"
+              name="category"
+              defaultValue={editingProduct?.category}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button type="button" variant="secondary">Cancel</Button>
+            </DialogClose>
+            <Button type="submit">Save changes</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

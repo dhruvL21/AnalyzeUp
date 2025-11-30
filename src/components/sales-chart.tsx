@@ -15,27 +15,30 @@ export function SalesChart() {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={salesData}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
         <XAxis
           dataKey="name"
-          stroke="#888888"
+          stroke="hsl(var(--muted-foreground))"
           fontSize={12}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
-          stroke="#888888"
+          stroke="hsl(var(--muted-foreground))"
           fontSize={12}
           tickLine={false}
           axisLine={false}
           tickFormatter={(value) => `$${value}`}
         />
         <Tooltip
-          cursor={{ fill: "hsl(var(--muted))" }}
+          cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
           contentStyle={{
             backgroundColor: "hsl(var(--background))",
             border: "1px solid hsl(var(--border))",
+            color: "hsl(var(--foreground))"
           }}
+           itemStyle={{ color: 'hsl(var(--foreground))' }}
+           labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
         />
         <Bar
           dataKey="sales"

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -15,9 +17,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 export default function SettingsPage() {
+    const { toast } = useToast();
+
+    const handleUpdateProfile = () => {
+        toast({
+            title: "Profile Updated",
+            description: "Your profile information has been saved.",
+        });
+    }
+
+    const handleSaveChanges = () => {
+        toast({
+            title: "Workspace Settings Saved",
+            description: "Your workspace settings have been updated.",
+        });
+    }
+
+    const handleDeleteWorkspace = () => {
+        toast({
+            variant: "destructive",
+            title: "Workspace Deleted",
+            description: "The workspace has been permanently deleted.",
+        });
+    }
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-lg font-semibold md:text-2xl">Settings</h1>
@@ -39,7 +77,7 @@ export default function SettingsPage() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" defaultValue="owner@example.com" />
             </div>
-            <Button>Update Profile</Button>
+            <Button onClick={handleUpdateProfile}>Update Profile</Button>
           </CardContent>
         </Card>
 
@@ -57,7 +95,7 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="timezone">Timezone</Label>
-              <Select>
+              <Select defaultValue="gmt-5">
                 <SelectTrigger id="timezone">
                   <SelectValue placeholder="Select timezone" />
                 </SelectTrigger>
@@ -77,7 +115,7 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button>Save Changes</Button>
+            <Button onClick={handleSaveChanges}>Save Changes</Button>
           </CardContent>
         </Card>
         
@@ -93,7 +131,24 @@ export default function SettingsPage() {
                 <h4 className="font-semibold text-destructive">Delete Workspace</h4>
                 <p className="text-sm text-muted-foreground mt-1">Permanently delete this workspace, including all its data.</p>
             </div>
-            <Button variant="destructive">Delete this workspace</Button>
+             <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive">Delete this workspace</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your
+                      workspace and remove your data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteWorkspace}>Continue</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
           </CardContent>
         </Card>
       </div>
