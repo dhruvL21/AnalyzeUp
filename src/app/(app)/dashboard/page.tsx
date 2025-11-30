@@ -15,23 +15,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import {
   DollarSign,
   PackageX,
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { products, salesData, transactions } from "@/lib/data";
+import { products, transactions } from "@/lib/data";
 import { LowStockAlertItem } from "@/components/low-stock-alert-item";
+import { SalesChart } from "@/components/sales-chart";
 
 export default function DashboardPage() {
   const lowStockProducts = products.filter((p) => p.stock < 20);
@@ -103,37 +95,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `$${value}`}
-                />
-                <Tooltip
-                  cursor={{ fill: "hsl(var(--muted))" }}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
-                  }}
-                />
-                <Bar
-                  dataKey="sales"
-                  fill="hsl(var(--primary))"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <SalesChart />
           </CardContent>
         </Card>
         <Card>
