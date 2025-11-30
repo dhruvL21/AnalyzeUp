@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -5,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DollarSign, ShoppingCart, Package } from "lucide-react";
+import { DollarSign, ShoppingCart, Package, Download } from "lucide-react";
 import { SalesChart } from "@/components/sales-chart";
 import {
   Table,
@@ -16,6 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { products } from "@/lib/data";
+import { Button } from "@/components/ui/button";
+import Papa from "papaparse";
 
 export default function ReportsPage() {
   const topSellingProducts = [...products]
@@ -25,9 +29,30 @@ export default function ReportsPage() {
   const totalRevenue = products.reduce((acc, p) => acc + (p.averageDailySales * 30 * p.price), 0);
   const totalProductsInStock = products.reduce((acc, p) => acc + p.stock, 0);
 
+  const handleDownloadCsv = () => {
+    const csv = Papa.unparse(products);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "inventory_report.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
+        <div className="ml-auto">
+          <Button size="sm" onClick={handleDownloadCsv}>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
