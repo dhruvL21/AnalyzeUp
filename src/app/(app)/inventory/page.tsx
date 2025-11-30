@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, "use state";
+import React, { useState } from "react";
 import { PlusCircle, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
