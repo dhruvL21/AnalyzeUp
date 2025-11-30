@@ -37,13 +37,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
@@ -293,11 +286,11 @@ export default function OrdersPage() {
               </div>
               <div>
                 <Label>Status</Label>
-                <p>
+                <div>
                   <Badge variant={getStatusVariant(viewingOrder.status)}>
                     {viewingOrder.status}
                   </Badge>
-                </p>
+                </div>
               </div>
               <div>
                 <Label>Total</Label>
