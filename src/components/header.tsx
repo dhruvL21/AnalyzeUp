@@ -9,6 +9,7 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
   return (
@@ -19,6 +20,7 @@ export function Header() {
       <div className="w-full flex-1">
         {/* Can add a search bar here later */}
       </div>
+      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import React, "use state";
 import { PlusCircle, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { products as initialProducts, Product } from "@/lib/data";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import {
   Dialog,
   DialogContent,
@@ -52,16 +51,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { toast } = useToast();
-
-  const getImageForProduct = (productId: string) => {
-    return PlaceHolderImages.find((p) => p.id === productId)?.imageUrl;
-  };
 
   const handleDelete = (productId: string) => {
     setProducts(products.filter((p) => p.id !== productId));
@@ -74,30 +70,35 @@ export default function InventoryPage() {
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const newProduct: Product = {
-      id: editingProduct
-        ? editingProduct.id
-        : `PROD${(Math.random() * 1000).toFixed(0).padStart(3, "0")}`,
+    const newProductData = {
       name: formData.get("name") as string,
       stock: Number(formData.get("stock")),
-      supplier: formData.get("supplier") as string,
+      price: Number(formData.get("price")),
       category: formData.get("category") as string,
-      averageDailySales:
-        editingProduct?.averageDailySales ??
-        Math.floor(Math.random() * 10) + 1,
-      leadTimeDays:
-        editingProduct?.leadTimeDays ?? Math.floor(Math.random() * 10) + 5,
+      supplier: formData.get("supplier") as string,
+      description: formData.get("description") as string,
     };
 
     if (editingProduct) {
+      const updatedProduct: Product = {
+        ...editingProduct,
+        ...newProductData,
+      };
       setProducts(
-        products.map((p) => (p.id === newProduct.id ? newProduct : p))
+        products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
       );
       toast({
         title: "Product Updated",
-        description: `${newProduct.name} has been updated.`,
+        description: `${updatedProduct.name} has been updated.`,
       });
     } else {
+      const newProduct: Product = {
+        id: `PROD${(Math.random() * 1000).toFixed(0).padStart(3, "0")}`,
+        imageUrl: `https://picsum.photos/seed/${Math.random()}/400/400`,
+        averageDailySales: Math.floor(Math.random() * 10) + 1,
+        leadTimeDays: Math.floor(Math.random() * 10) + 5,
+        ...newProductData,
+      };
       setProducts([newProduct, ...products]);
       toast({
         title: "Product Added",
@@ -148,10 +149,10 @@ export default function InventoryPage() {
                     <span className="sr-only">Image</span>
                   </TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Supplier</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Price</TableHead>
                   <TableHead className="hidden md:table-cell">
-                    Category
+                    Stock
                   </TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
@@ -163,28 +164,24 @@ export default function InventoryPage() {
                   <TableRow key={product.id}>
                     <TableCell className="hidden sm:table-cell">
                       <Image
-                        alt="Product image"
+                        alt={product.name}
                         className="aspect-square rounded-md object-cover"
                         height="64"
-                        src={
-                          getImageForProduct(product.id) ||
-                          "https://picsum.photos/seed/placeholder/64/64"
-                        }
+                        src={product.imageUrl}
                         width="64"
                       />
                     </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={product.stock > 20 ? "outline" : "destructive"}
+                       <Badge
+                        variant={product.stock > 20 ? "outline" : product.stock > 0 ? "secondary" : "destructive"}
                       >
-                        {product.stock > 20 ? "In Stock" : "Low Stock"}
-                      </Badge>{" "}
-                      ({product.stock})
+                        {product.stock > 20 ? "In Stock" : product.stock > 0 ? "Low Stock" : "Out of Stock"}
+                      </Badge>
                     </TableCell>
-                    <TableCell>{product.supplier}</TableCell>
+                    <TableCell>${product.price.toFixed(2)}</TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {product.category}
+                      {product.stock}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -233,7 +230,7 @@ export default function InventoryPage() {
         </Card>
       </div>
 
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>
             {editingProduct ? "Edit Product" : "Add Product"}
@@ -253,45 +250,71 @@ export default function InventoryPage() {
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="stock" className="text-right">
-              Stock
+            <Label htmlFor="description" className="text-right">
+              Description
             </Label>
-            <Input
-              id="stock"
-              name="stock"
-              type="number"
-              defaultValue={editingProduct?.stock}
+            <Textarea
+              id="description"
+              name="description"
+              defaultValue={editingProduct?.description}
               className="col-span-3"
               required
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="supplier" className="text-right">
-              Supplier
-            </Label>
-            <Input
-              id="supplier"
-              name="supplier"
-              defaultValue={editingProduct?.supplier}
-              className="col-span-3"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="price" className="text-right">
+                Price
+              </Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                step="0.01"
+                defaultValue={editingProduct?.price}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="stock" className="text-right">
+                Stock
+              </Label>
+              <Input
+                id="stock"
+                name="stock"
+                type="number"
+                defaultValue={editingProduct?.stock}
+                required
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="category" className="text-right">
-              Category
-            </Label>
-            <Input
-              id="category"
-              name="category"
-              defaultValue={editingProduct?.category}
-              className="col-span-3"
-              required
-            />
-          </div>
+           <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 items-center gap-4">
+                <Label htmlFor="category" className="text-right">
+                  Category
+                </Label>
+                <Input
+                  id="category"
+                  name="category"
+                  defaultValue={editingProduct?.category}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 items-center gap-4">
+                <Label htmlFor="supplier" className="text-right">
+                  Supplier
+                </Label>
+                <Input
+                  id="supplier"
+                  name="supplier"
+                  defaultValue={editingProduct?.supplier}
+                  required
+                />
+              </div>
+            </div>
           <DialogFooter>
             <DialogClose asChild>
-                <Button type="button" variant="secondary">Cancel</Button>
+                <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="submit">Save changes</Button>
           </DialogFooter>

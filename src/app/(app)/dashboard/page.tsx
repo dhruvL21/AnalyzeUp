@@ -28,6 +28,11 @@ import { SalesChart } from "@/components/sales-chart";
 export default function DashboardPage() {
   const lowStockProducts = products.filter((p) => p.stock < 20);
 
+  const totalInventoryValue = products.reduce(
+    (acc, product) => acc + product.stock * product.price,
+    0
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -39,9 +44,9 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">${totalInventoryValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
+              Total value of all products in stock
             </p>
           </CardContent>
         </Card>
@@ -78,7 +83,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold">Classic T-Shirt</div>
+            <div className="text-xl font-bold">Organic Bananas</div>
             <p className="text-xs text-muted-foreground">
               +250 sold this month
             </p>

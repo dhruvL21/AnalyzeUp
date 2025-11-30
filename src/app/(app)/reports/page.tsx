@@ -19,8 +19,11 @@ import { products } from "@/lib/data";
 
 export default function ReportsPage() {
   const topSellingProducts = [...products]
-    .sort((a, b) => b.averageDailySales - a.averageDailySales)
+    .sort((a, b) => b.averageDailySales * b.price - a.averageDailySales * a.price)
     .slice(0, 5);
+    
+  const totalRevenue = products.reduce((acc, p) => acc + (p.averageDailySales * 30 * p.price), 0);
+  const totalProductsInStock = products.reduce((acc, p) => acc + p.stock, 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,9 +35,9 @@ export default function ReportsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
+              Based on the last 30 days
             </p>
           </CardContent>
         </Card>
@@ -59,9 +62,9 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {products.reduce((acc, p) => acc + p.stock, 0)}
+              {totalProductsInStock.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">Across all variants</p>
+            <p className="text-xs text-muted-foreground">Across all products</p>
           </CardContent>
         </Card>
       </div>
@@ -82,7 +85,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle>Top Selling Products</CardTitle>
             <CardDescription>
-              Your best-performing products this month.
+              Your best-performing products by revenue this month.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -90,7 +93,7 @@ export default function ReportsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
-                  <TableHead className="text-right">Avg. Daily Sales</TableHead>
+                  <TableHead className="text-right">Monthly Revenue</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -98,7 +101,7 @@ export default function ReportsPage() {
                   <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell className="text-right">
-                      {product.averageDailySales}
+                      ${(product.averageDailySales * 30 * product.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     </TableCell>
                   </TableRow>
                 ))}

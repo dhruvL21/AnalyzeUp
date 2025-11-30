@@ -26,22 +26,22 @@ import { useToast } from "@/hooks/use-toast";
 type Supplier = {
   name: string;
   contact: string;
-  products: string[];
+  productCount: number;
 };
 
 const getSuppliersFromProducts = (products: any[]): Supplier[] => {
-  const supplierMap = new Map<string, string[]>();
+  const supplierMap = new Map<string, number>();
   products.forEach((p) => {
     if (!supplierMap.has(p.supplier)) {
-      supplierMap.set(p.supplier, []);
+      supplierMap.set(p.supplier, 0);
     }
-    supplierMap.get(p.supplier)!.push(p.name);
+    supplierMap.set(p.supplier, supplierMap.get(p.supplier)! + 1);
   });
 
-  return Array.from(supplierMap.entries()).map(([name, products]) => ({
+  return Array.from(supplierMap.entries()).map(([name, productCount]) => ({
     name,
-    contact: `${name.toLowerCase().replace(/\s/g, ".")}@example.com`,
-    products,
+    contact: `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`,
+    productCount,
   }));
 };
 
@@ -58,7 +58,7 @@ export default function SuppliersPage() {
     const newSupplier: Supplier = {
       name: formData.get("name") as string,
       contact: formData.get("contact") as string,
-      products: [],
+      productCount: 0,
     };
 
     if (suppliers.find((s) => s.name === newSupplier.name)) {
@@ -104,18 +104,9 @@ export default function SuppliersPage() {
                 <CardDescription>{supplier.contact}</CardDescription>
               </CardHeader>
               <CardContent>
-                <h4 className="text-sm font-medium mb-2">Products Supplied</h4>
-                {supplier.products.length > 0 ? (
-                  <ul className="list-disc list-inside text-sm text-muted-foreground">
-                    {supplier.products.map((product) => (
-                      <li key={product}>{product}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No products supplied yet.
-                  </p>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  Supplies <span className="font-semibold">{supplier.productCount}</span> product(s).
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -148,7 +139,7 @@ export default function SuppliersPage() {
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="secondary">Cancel</Button>
+                <Button type="button" variant="outline">Cancel</Button>
               </DialogClose>
               <Button type="submit">Add Supplier</Button>
             </DialogFooter>
