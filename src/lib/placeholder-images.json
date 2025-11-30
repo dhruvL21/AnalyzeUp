@@ -1,3 +1,34 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "PROD001",
+      "description": "A classic t-shirt",
+      "imageUrl": "https://images.unsplash.com/photo-1693443687750-611ad77f3aba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx0c2hpcnQlMjBhcHBhcmVsfGVufDB8fHx8MTc2NDUwNDUxMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tshirt apparel"
+    },
+    {
+      "id": "PROD002",
+      "description": "Wireless headphones",
+      "imageUrl": "https://images.unsplash.com/photo-1583373351761-fa9e3a19c99d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxoZWFkcGhvbmVzJTIwZWxlY3Ryb25pY3N8ZW58MHx8fHwxNzY0NTA0NTEzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "headphones electronics"
+    },
+    {
+      "id": "PROD003",
+      "description": "A bag of coffee beans",
+      "imageUrl": "https://images.unsplash.com/photo-1587734195503-904fca47e0e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjb2ZmZWUlMjBiZWFuc3xlbnwwfHx8fDE3NjQzOTUxNDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "coffee beans"
+    },
+    {
+      "id": "PROD004",
+      "description": "A leather wallet",
+      "imageUrl": "https://images.unsplash.com/photo-1612023395494-1c4050b68647?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsZWF0aGVyJTIwd2FsbGV0fGVufDB8fHx8MTc2NDQxNjc4OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leather wallet"
+    },
+    {
+      "id": "PROD005",
+      "description": "A modern smartwatch",
+      "imageUrl": "https://images.unsplash.com/photo-1668760180303-fcfe2b899e20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzbWFydHdhdGNoJTIwdGVjaG5vbG9neXxlbnwwfHx8fDE3NjQ1MDQ1MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smartwatch technology"
+    }
+  ]
 }
