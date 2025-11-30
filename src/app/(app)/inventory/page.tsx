@@ -136,6 +136,10 @@ export default function InventoryPage() {
             ...p,
             id: p.id || `PROD${(Math.random() * 1000).toFixed(0).padStart(3, "0")}`,
             imageUrl: p.imageUrl || `https://picsum.photos/seed/${Math.random()}/400/400`,
+            stock: typeof p.stock === 'number' ? p.stock : 0,
+            price: typeof p.price === 'number' ? p.price : 0,
+            averageDailySales: typeof p.averageDailySales === 'number' ? p.averageDailySales : 0,
+            leadTimeDays: typeof p.leadTimeDays === 'number' ? p.leadTimeDays : 0,
           }));
 
           // Simple logic to add new products and update existing ones
@@ -264,7 +268,7 @@ export default function InventoryPage() {
                         {product.stock > 20 ? "In Stock" : product.stock > 0 ? "Low Stock" : "Out of Stock"}
                       </Badge>
                     </TableCell>
-                    <TableCell>${product.price.toFixed(2)}</TableCell>
+                    <TableCell>${typeof product.price === 'number' ? product.price.toFixed(2) : 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell">
                       {product.stock}
                     </TableCell>
