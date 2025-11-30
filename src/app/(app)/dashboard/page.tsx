@@ -89,7 +89,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Sales vs. Inventory</CardTitle>
+            <CardTitle>Sales Performance</CardTitle>
             <CardDescription>
               A look at your sales performance over the past 6 months.
             </CardDescription>
