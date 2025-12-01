@@ -1,3 +1,6 @@
+
+"use client";
+
 import {
   Card,
   CardContent,
@@ -21,17 +24,27 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { products, transactions } from "@/lib/data";
+import { products as initialProducts, transactions as initialTransactions, Product } from "@/lib/data";
 import { LowStockAlertItem } from "@/components/low-stock-alert-item";
 import { SalesChart } from "@/components/sales-chart";
+import { useState, useEffect } from "react";
 
 export default function DashboardPage() {
+  // Although we are using state, we are not modifying it on this page.
+  // This is to prepare for a future where this data is fetched from a shared context or API.
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [transactions, setTransactions] = useState(initialTransactions);
+
   const lowStockProducts = products.filter((p) => p.stock < 20);
 
   const totalInventoryValue = products.reduce(
     (acc, product) => acc + product.stock * product.price,
     0
   );
+
+  // We take only the 5 most recent transactions for the dashboard
+  const recentTransactions = transactions.slice(0, 5);
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -136,7 +149,7 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.map((transaction) => (
+              {recentTransactions.map((transaction) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">
                     {transaction.productName}
