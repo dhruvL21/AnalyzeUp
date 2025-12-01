@@ -100,7 +100,7 @@ export default function InventoryPage() {
   const { data: fetchedCategories } = useCollection<Category>(categoriesRef);
 
   const categories = useMemo(() => {
-    if (!fetchedCategories || fetchedCategories.length === 0) {
+    if (!fetchedCategories) {
       return defaultCategories;
     }
     // Simple de-duplication based on name
@@ -150,13 +150,13 @@ export default function InventoryPage() {
             return;
         }
         const newCategoryRef = doc(categoriesCollection);
-        addDocumentNonBlocking(newCategoryRef, {
+        await setDocumentNonBlocking(newCategoryRef, {
             id: newCategoryRef.id,
             name: newCategoryName,
             tenantId: tenantId,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
-        });
+        }, {});
         categoryId = newCategoryRef.id;
     }
 
@@ -167,7 +167,7 @@ export default function InventoryPage() {
             return;
         }
         const newSupplierRef = doc(suppliersCollection);
-        addDocumentNonBlocking(newSupplierRef, {
+        await setDocumentNonBlocking(newSupplierRef, {
             id: newSupplierRef.id,
             name: newSupplierName,
             contactName: newSupplierName,
@@ -177,7 +177,7 @@ export default function InventoryPage() {
             tenantId: tenantId,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
-        });
+        }, {});
         supplierId = newSupplierRef.id;
     }
     
@@ -188,7 +188,7 @@ export default function InventoryPage() {
       const categoryDoc = defaultCategories.find(dc => dc.id === categoryId);
       if (categoryDoc) {
         const newCategoryRef = doc(categoriesCollection, categoryDoc.id);
-        setDocumentNonBlocking(newCategoryRef, { 
+        await setDocumentNonBlocking(newCategoryRef, { 
             id: newCategoryRef.id,
             name: categoryDoc.name,
             tenantId: tenantId,
@@ -614,5 +614,7 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
+
+    
 
     
