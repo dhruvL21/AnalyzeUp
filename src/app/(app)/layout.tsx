@@ -22,7 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           variant="sidebar"
         >
           <SidebarHeader>
-            <div className="flex h-12 items-center justify-center text-xl font-semibold text-sidebar-foreground">
+            <div className="flex h-12 items-center justify-start px-3 text-xl font-semibold text-sidebar-foreground">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -31,14 +31,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="mr-2 h-6 w-6 text-primary"
+                className="h-6 w-6 text-primary"
               >
                 <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
                 <path d="m3.3 7 8.7 5 8.7-5" />
                 <path d="M12 22V12" />
               </svg>
-              <span className="group-data-[collapsible=icon]:hidden text-sidebar-foreground">
-                Upstart
+              <span className="ml-2 group-data-[collapsible=icon]:hidden text-sidebar-foreground">
+                AnalyzeUp
               </span>
             </div>
           </SidebarHeader>
