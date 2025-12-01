@@ -69,6 +69,13 @@ import {
 } from '@/firebase/non-blocking-updates';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 
+const defaultCategories = [
+  { id: 'tops', name: 'Tops' },
+  { id: 'bottoms', name: 'Bottoms' },
+  { id: 'essentials', name: 'Essentials' },
+  { id: 'accessories', name: 'Accessories' },
+];
+
 export default function InventoryPage() {
   const { firestore, user } = useFirebase();
   const tenantId = user?.uid;
@@ -89,7 +96,17 @@ export default function InventoryPage() {
     () => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/categories`) : null),
     [firestore, tenantId]
   );
-  const { data: categories } = useCollection<Category>(categoriesRef);
+  const { data: fetchedCategories } = useCollection<Category>(categoriesRef);
+
+  const categories = useMemo(() => {
+    if (!fetchedCategories || fetchedCategories.length === 0) {
+      return defaultCategories;
+    }
+    // Simple de-duplication based on name
+    const categoryNames = new Set(fetchedCategories.map(c => c.name.toLowerCase()));
+    const uniqueDefaults = defaultCategories.filter(dc => !categoryNames.has(dc.name.toLowerCase()));
+    return [...fetchedCategories, ...uniqueDefaults];
+  }, [fetchedCategories]);
 
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -108,16 +125,41 @@ export default function InventoryPage() {
     });
   };
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!tenantId || !firestore) return;
 
     const formData = new FormData(e.currentTarget);
+    const categoryId = formData.get('category') as string;
+    
+    let finalCategoryId = categoryId;
+    
+    const isDefaultCategory = defaultCategories.some(dc => dc.id === categoryId);
+    const categoryExistsInFirestore = fetchedCategories?.some(fc => fc.id === categoryId);
+
+    if (isDefaultCategory && !categoryExistsInFirestore) {
+      // It's a default category that isn't in Firestore yet. Let's add it.
+      const categoryDoc = defaultCategories.find(dc => dc.id === categoryId);
+      if (categoryDoc) {
+        const newCategoryRef = doc(collection(firestore, `tenants/${tenantId}/categories`), categoryDoc.id);
+        // We will "set" the document but we won't wait for it.
+        // The product will be created with the correct ID regardless.
+        setDocumentNonBlocking(newCategoryRef, { 
+            name: categoryDoc.name,
+            tenantId: tenantId,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        }, {});
+        finalCategoryId = newCategoryRef.id;
+      }
+    }
+
+
     const productData = {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: formData.get('category') as string,
+      categoryId: finalCategoryId,
       supplierId: formData.get('supplier') as string,
       imageUrl: formData.get('imageUrl') as string,
       description: description,
@@ -481,3 +523,6 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
+
+
+    
