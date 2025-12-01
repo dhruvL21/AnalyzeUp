@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, FormEvent, useEffect } from 'react';
-import { FirebaseError } from 'firebase/app';
+import ClientOnly from '@/components/ClientOnly';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -71,32 +71,34 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleLogin} className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <Button type="submit" className="w-full">
-            Sign in
-          </Button>
-        </form>
+        <ClientOnly>
+          <form onSubmit={handleLogin} className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Sign in
+            </Button>
+          </form>
+        </ClientOnly>
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{' '}
           <Link href="/register" className="underline">
