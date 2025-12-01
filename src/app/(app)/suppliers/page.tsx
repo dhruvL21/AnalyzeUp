@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Supplier, Product } from '@/lib/types';
-import { useCollection, useFirebase } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp } from 'firebase/firestore';
 
@@ -31,10 +31,10 @@ export default function SuppliersPage() {
   const { firestore, user } = useFirebase();
   const tenantId = user?.uid;
 
-  const productsRef = useMemo(() => tenantId && collection(firestore, `tenants/${tenantId}/products`), [firestore, tenantId]);
+  const productsRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/products`) : null), [firestore, tenantId]);
   const { data: products } = useCollection<Product>(productsRef);
   
-  const suppliersRef = useMemo(() => tenantId && collection(firestore, `tenants/${tenantId}/suppliers`), [firestore, tenantId]);
+  const suppliersRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/suppliers`) : null), [firestore, tenantId]);
   const { data: suppliers } = useCollection<Supplier>(suppliersRef);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,7 +52,7 @@ export default function SuppliersPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(!tenantId) return;
+    if(!tenantId || !firestore) return;
 
     const formData = new FormData(e.currentTarget);
     const newSupplierData = {
@@ -161,5 +161,3 @@ export default function SuppliersPage() {
     </>
   );
 }
-
-    

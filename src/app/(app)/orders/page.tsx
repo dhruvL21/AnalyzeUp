@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,7 +40,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { PurchaseOrder } from '@/lib/types';
-import { useCollection, useFirebase } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 
@@ -50,7 +50,7 @@ export default function OrdersPage() {
   const { firestore, user } = useFirebase();
   const tenantId = user?.uid;
 
-  const ordersRef = useMemo(() => tenantId && collection(firestore, `tenants/${tenantId}/purchaseOrders`), [firestore, tenantId]);
+  const ordersRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/purchaseOrders`) : null), [firestore, tenantId]);
   const { data: orders, isLoading } = useCollection<PurchaseOrder>(ordersRef);
   
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -58,7 +58,7 @@ export default function OrdersPage() {
   const { toast } = useToast();
 
   const handleMarkAsFulfilled = (orderId: string) => {
-    if(!tenantId) return;
+    if(!tenantId || !firestore) return;
     const docRef = doc(firestore, `tenants/${tenantId}/purchaseOrders`, orderId);
     setDocumentNonBlocking(docRef, { status: "Fulfilled" }, { merge: true });
     toast({
@@ -69,7 +69,7 @@ export default function OrdersPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(!tenantId) return;
+    if(!tenantId || !firestore) return;
     const formData = new FormData(e.currentTarget);
     const newOrder = {
       supplierId: formData.get('customer') as string, // This should be supplierId
@@ -300,5 +300,3 @@ export default function OrdersPage() {
     </>
   );
 }
-
-    

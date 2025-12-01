@@ -1,4 +1,3 @@
-
 import { FieldValue } from 'firebase/firestore';
 
 export interface User {
@@ -86,9 +85,7 @@ export interface PurchaseOrder {
   expectedDeliveryDate: string;
   status: string;
   productId: string;
-a  quantity: number;
+  quantity: number;
   createdAt: FieldValue | Date;
   updatedAt: FieldValue | Date;
 }
-
-    

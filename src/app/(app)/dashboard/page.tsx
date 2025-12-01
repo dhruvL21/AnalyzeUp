@@ -27,10 +27,10 @@ import {
 } from 'lucide-react';
 import { LowStockAlertItem } from '@/components/low-stock-alert-item';
 import { SalesChart } from '@/components/sales-chart';
-import { useMemo } from 'react';
-import { useCollection, useFirebase } from '@/firebase';
+import { useMemoFirebase, useCollection, useFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import type { Product, Transaction } from '@/lib/types';
+import type { Product } from '@/lib/types';
+import { Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function DashboardLoading() {
@@ -153,15 +153,15 @@ function DashboardLoading() {
 export default function DashboardPage() {
   const { firestore, user } = useFirebase();
 
-  const productsRef = useMemo(
-    () => user && collection(firestore, `tenants/${user.uid}/products`),
+  const productsRef = useMemoFirebase(
+    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/products`) : null),
     [firestore, user]
   );
   const { data: products, isLoading: isLoadingProducts } =
     useCollection<Product>(productsRef);
 
-  const transactionsRef = useMemo(
-    () => user && collection(firestore, `tenants/${user.uid}/inventoryTransactions`),
+  const transactionsRef = useMemoFirebase(
+    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/inventoryTransactions`) : null),
     [firestore, user]
   );
   const { data: transactions, isLoading: isLoadingTransactions } =
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                   </TableCell>
                   <TableCell>{transaction.quantity}</TableCell>
                   <TableCell className="text-right">
-                    {new Date(transaction.transactionDate).toLocaleDateString()}
+                    {transaction.transactionDate instanceof Date ? transaction.transactionDate.toLocaleDateString() : 'N/A'}
                   </TableCell>
                 </TableRow>
               ))}
@@ -361,5 +361,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

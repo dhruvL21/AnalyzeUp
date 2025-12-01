@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import type { Product, Supplier } from '@/lib/types';
+import type { Product, Supplier, Category } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -61,7 +61,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCollection, useFirebase } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import {
   addDocumentNonBlocking,
   deleteDocumentNonBlocking,
@@ -73,23 +73,23 @@ export default function InventoryPage() {
   const { firestore, user } = useFirebase();
   const tenantId = user?.uid;
 
-  const productsRef = useMemo(
-    () => tenantId && collection(firestore, `tenants/${tenantId}/products`),
+  const productsRef = useMemoFirebase(
+    () => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/products`) : null),
     [firestore, tenantId]
   );
   const { data: products } = useCollection<Product>(productsRef);
 
-  const suppliersRef = useMemo(
-    () => tenantId && collection(firestore, `tenants/${tenantId}/suppliers`),
+  const suppliersRef = useMemoFirebase(
+    () => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/suppliers`) : null),
     [firestore, tenantId]
   );
   const { data: suppliers } = useCollection<Supplier>(suppliersRef);
   
-  const categoriesRef = useMemo(
-    () => tenantId && collection(firestore, `tenants/${tenantId}/categories`),
+  const categoriesRef = useMemoFirebase(
+    () => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/categories`) : null),
     [firestore, tenantId]
   );
-  const { data: categories } = useCollection<Product>(categoriesRef);
+  const { data: categories } = useCollection<Category>(categoriesRef);
 
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -100,7 +100,7 @@ export default function InventoryPage() {
 
 
   const handleDelete = (productId: string) => {
-    if (!tenantId) return;
+    if (!tenantId || !firestore) return;
     deleteDocumentNonBlocking(doc(firestore, `tenants/${tenantId}/products`, productId));
     toast({
       title: 'Product Deleted',
@@ -110,7 +110,7 @@ export default function InventoryPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!tenantId) return;
+    if (!tenantId || !firestore) return;
 
     const formData = new FormData(e.currentTarget);
     const productData = {
@@ -122,7 +122,6 @@ export default function InventoryPage() {
       imageUrl: formData.get('imageUrl') as string,
       description: description,
       tenantId: tenantId,
-      updatedAt: serverTimestamp(),
     };
 
     if (editingProduct) {
@@ -139,6 +138,7 @@ export default function InventoryPage() {
         averageDailySales: Math.floor(Math.random() * 10) + 1,
         leadTimeDays: Math.floor(Math.random() * 10) + 5,
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
       toast({
         title: 'Product Added',
@@ -481,5 +481,3 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
-
-    

@@ -25,22 +25,21 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Papa from 'papaparse';
-import { useCollection, useFirebase } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Product, Transaction } from '@/lib/types';
-import { useMemo } from 'react';
 
 export default function ReportsPage() {
   const { firestore, user } = useFirebase();
 
-  const productsRef = useMemo(
-    () => user && collection(firestore, `tenants/${user.uid}/products`),
+  const productsRef = useMemoFirebase(
+    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/products`) : null),
     [firestore, user]
   );
   const { data: products } = useCollection<Product>(productsRef);
 
-  const transactionsRef = useMemo(
-    () => user && collection(firestore, `tenants/${user.uid}/inventoryTransactions`),
+  const transactionsRef = useMemoFirebase(
+    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/inventoryTransactions`) : null),
     [firestore, user]
   );
   const { data: transactions } = useCollection<Transaction>(transactionsRef);
@@ -217,5 +216,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-    
