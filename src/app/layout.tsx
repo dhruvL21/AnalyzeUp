@@ -4,11 +4,43 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { MountainIcon } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export const metadata: Metadata = {
   title: 'AnalyzeUp',
   description: 'A modern inventory management platform for growing businesses.',
 };
+
+function PublicHeader() {
+  return (
+    <header className="px-4 lg:px-6 h-14 flex items-center bg-background sticky top-0 z-50 border-b">
+      <Link href="#" className="flex items-center justify-center">
+        <MountainIcon className="h-6 w-6 text-primary" />
+        <span className="sr-only">AnalyzeUp</span>
+      </Link>
+      <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+        <Link
+          href="#features"
+          className="text-sm font-medium hover:underline underline-offset-4"
+        >
+          Features
+        </Link>
+        <Link
+          href="/login"
+        >
+          <Button variant="outline">Sign In</Button>
+        </Link>
+        <Link href="/register">
+          <Button>Sign Up</Button>
+        </Link>
+        <ThemeToggle />
+      </nav>
+    </header>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -45,5 +77,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
