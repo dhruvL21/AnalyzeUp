@@ -21,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           variant="sidebar"
         >
           <SidebarHeader>
-            <div className="flex h-12 items-center justify-center text-xl font-semibold text-primary">
+            <div className="flex h-12 items-center justify-center text-xl font-semibold text-sidebar-foreground">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
