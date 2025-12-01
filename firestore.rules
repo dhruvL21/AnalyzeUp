@@ -6,7 +6,8 @@
  * The security model is built around strict data isolation between tenants.
  * All data is scoped to a specific tenant, and a user's access is determined
  * by their membership in that tenant. This is primarily enforced by checking a
- * custom authentication claim (`tenantId`) on the user's token.
+ * custom authentication claim (`tenantId`) on the user's token, OR by
+ * verifying that the user's UID matches the tenant ID in the document path.
  *
  * Data Structure:
  * All application data is nested under the `/tenants/{tenantId}` collection.
@@ -16,12 +17,11 @@
  * located at `/tenants/{tenantId}/products/{productId}`.
  *
  * Key Security Decisions:
- * - Tenant Membership via Custom Claims: A user's tenant membership is
- *   established by a `tenantId` custom claim on their Firebase Auth token.
- *   This is a highly performant and secure method, avoiding the need for
- *   extra database reads in every rule. A backend process (e.g., a Cloud
- *   Function) is responsible for setting this claim when a user is created
- *   or added to a tenant.
+ * - Tenant Membership via Custom Claims or UID: A user's tenant membership is
+ *   established by a `tenantId` custom claim on their Firebase Auth token OR
+ *   by matching their `request.auth.uid` to the `{tenantId}` wildcard. The
+ *   custom claim is the preferred, scalable method for teams, while the UID
+ *   match serves as a fallback for the tenant's initial creator/owner.
  * - User Data Access: Users can only modify their own user document, located at
  *   `/tenants/{tenantId}/users/{userId}`. They can, however, list other
  *   users within the same tenant to facilitate collaboration.
@@ -59,10 +59,11 @@ service cloud.firestore {
     /**
      * CRITICAL: Returns true if the user belongs to the specified tenant.
      * This relies on a custom claim 'tenantId' being set on the user's
-     * authentication token by a trusted backend process.
+     * authentication token by a trusted backend process, OR if the user's
+     * UID directly matches the tenantId (for tenant owners/creators).
      */
     function isMemberOfTenant(tenantId) {
-      return isSignedIn() && request.auth.token.tenantId == tenantId;
+      return isSignedIn() && (request.auth.token.tenantId == tenantId || request.auth.uid == tenantId);
     }
 
     /**
