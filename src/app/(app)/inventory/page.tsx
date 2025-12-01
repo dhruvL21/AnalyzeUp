@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
-import { PlusCircle, MoreHorizontal, Upload, Download } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { products as initialProducts, Product, transactions as initialTransactions, Transaction } from "@/lib/data";
+import { Product, Transaction } from "@/lib/data";
 import {
   Dialog,
   DialogContent,
@@ -50,17 +50,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import Papa from "papaparse";
+import { useData } from "@/context/data-context";
 
 export default function InventoryPage() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const { products, setProducts, addTransactions } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [csvDialogOpen, setCsvDialogOpen] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const { toast } = useToast();
 
   const handleDelete = (productId: string) => {
@@ -142,20 +141,8 @@ export default function InventoryPage() {
             leadTimeDays: typeof p.leadTimeDays === 'number' ? p.leadTimeDays : 0,
           }));
 
-          // Simple logic to add new products and update existing ones
-          const updatedProducts = [...products];
-          newProducts.forEach(newProd => {
-            const existingIndex = updatedProducts.findIndex(p => p.id === newProd.id);
-            if (existingIndex !== -1) {
-              updatedProducts[existingIndex] = { ...updatedProducts[existingIndex], ...newProd };
-            } else {
-              updatedProducts.push(newProd);
-            }
-          });
+          setProducts(newProducts);
 
-          setProducts(updatedProducts);
-
-          // Generate mock sales data based on new products
           const newTransactions = newProducts.flatMap(p => {
               const numSales = Math.floor(Math.random() * 5);
               return Array.from({length: numSales}, (_, i) => ({
@@ -166,7 +153,7 @@ export default function InventoryPage() {
                   date: new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 30))).toISOString().split('T')[0]
               }));
           });
-          setTransactions([...initialTransactions, ...newTransactions]);
+          addTransactions(newTransactions);
 
           toast({
             title: "CSV Imported Successfully",

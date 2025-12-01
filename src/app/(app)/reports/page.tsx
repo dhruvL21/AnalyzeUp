@@ -17,11 +17,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
+import { useData } from "@/context/data-context";
 
 export default function ReportsPage() {
+  const { products } = useData();
+
   const topSellingProducts = [...products]
     .sort((a, b) => b.averageDailySales * b.price - a.averageDailySales * a.price)
     .slice(0, 5);

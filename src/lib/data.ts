@@ -11,6 +11,14 @@ export type Product = {
   imageUrl: string;
 };
 
+export type Transaction = {
+  id: string;
+  productName: string;
+  type: 'Sale' | 'Purchase';
+  quantity: number;
+  date: string;
+};
+
 export const products: Product[] = [
   {
     id: "PROD001",
@@ -143,7 +151,7 @@ export const salesData = [
   { name: "Jun", sales: 5500 },
 ];
 
-export const transactions = [
+export const transactions: Transaction[] = [
   {
     id: "TRN001",
     productName: "Organic Bananas",

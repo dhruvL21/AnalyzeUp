@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { products as initialProducts } from "@/lib/data";
+import { useData } from "@/context/data-context";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import type { Product } from "@/lib/data";
 
 type Supplier = {
   name: string;
@@ -29,13 +30,15 @@ type Supplier = {
   productCount: number;
 };
 
-const getSuppliersFromProducts = (products: any[]): Supplier[] => {
+const getSuppliersFromProducts = (products: Product[]): Supplier[] => {
   const supplierMap = new Map<string, number>();
   products.forEach((p) => {
-    if (!supplierMap.has(p.supplier)) {
-      supplierMap.set(p.supplier, 0);
+    if (p.supplier) {
+      if (!supplierMap.has(p.supplier)) {
+        supplierMap.set(p.supplier, 0);
+      }
+      supplierMap.set(p.supplier, supplierMap.get(p.supplier)! + 1);
     }
-    supplierMap.set(p.supplier, supplierMap.get(p.supplier)! + 1);
   });
 
   return Array.from(supplierMap.entries()).map(([name, productCount]) => ({
@@ -46,11 +49,15 @@ const getSuppliersFromProducts = (products: any[]): Supplier[] => {
 };
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(
-    getSuppliersFromProducts(initialProducts)
-  );
+  const { products } = useData();
+  const initialSuppliers = useMemo(() => getSuppliersFromProducts(products), [products]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  React.useEffect(() => {
+    setSuppliers(getSuppliersFromProducts(products));
+  }, [products]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -24,16 +24,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { products as initialProducts, transactions as initialTransactions, Product } from "@/lib/data";
 import { LowStockAlertItem } from "@/components/low-stock-alert-item";
 import { SalesChart } from "@/components/sales-chart";
-import { useState, useEffect } from "react";
+import { useData } from "@/context/data-context";
 
 export default function DashboardPage() {
-  // Although we are using state, we are not modifying it on this page.
-  // This is to prepare for a future where this data is fetched from a shared context or API.
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const { products, transactions } = useData();
 
   const lowStockProducts = products.filter((p) => p.stock < 20);
 
