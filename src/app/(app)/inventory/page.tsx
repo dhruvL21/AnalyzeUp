@@ -53,7 +53,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { generateDescriptionAction } from '@/lib/actions';
+import { generateDescription } from '@/ai/flows/generate-product-description';
 import {
   Select,
   SelectContent,
@@ -139,6 +139,7 @@ export default function InventoryPage() {
     
     let categoryId = selectedCategory;
     let supplierId = selectedSupplier;
+    const categoriesCollection = collection(firestore, `tenants/${tenantId}/categories`);
 
     // Handle new category creation
     if (categoryId === 'new') {
@@ -146,8 +147,9 @@ export default function InventoryPage() {
             toast({ variant: 'destructive', title: 'Category name is required.' });
             return;
         }
-        const newCategoryRef = doc(collection(firestore, `tenants/${tenantId}/categories`));
+        const newCategoryRef = doc(categoriesCollection);
         addDocumentNonBlocking(newCategoryRef, {
+            id: newCategoryRef.id,
             name: newCategoryName,
             tenantId: tenantId,
             createdAt: serverTimestamp(),
@@ -164,6 +166,7 @@ export default function InventoryPage() {
         }
         const newSupplierRef = doc(collection(firestore, `tenants/${tenantId}/suppliers`));
         addDocumentNonBlocking(newSupplierRef, {
+            id: newSupplierRef.id,
             name: newSupplierName,
             contactName: newSupplierName,
             email: 'N/A',
@@ -182,8 +185,9 @@ export default function InventoryPage() {
     if (isDefaultCategory && !categoryExistsInFirestore) {
       const categoryDoc = defaultCategories.find(dc => dc.id === categoryId);
       if (categoryDoc) {
-        const newCategoryRef = doc(collection(firestore, `tenants/${tenantId}/categories`), categoryDoc.id);
+        const newCategoryRef = doc(categoriesCollection, categoryDoc.id);
         setDocumentNonBlocking(newCategoryRef, { 
+            id: newCategoryRef.id,
             name: categoryDoc.name,
             tenantId: tenantId,
             createdAt: serverTimestamp(),
@@ -214,7 +218,9 @@ export default function InventoryPage() {
       });
     } else {
       const collectionRef = collection(firestore, `tenants/${tenantId}/products`);
-      addDocumentNonBlocking(collectionRef, {
+      const newProductRef = doc(collectionRef);
+      addDocumentNonBlocking(newProductRef, {
+        id: newProductRef.id,
         ...productData,
         averageDailySales: Math.floor(Math.random() * 10) + 1,
         leadTimeDays: Math.floor(Math.random() * 10) + 5,
@@ -273,18 +279,19 @@ export default function InventoryPage() {
     }
 
     setIsGenerating(true);
-    const result = await generateDescriptionAction({
-      productName,
-      category: categoryName,
-    });
-    if (result.error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: result.error,
-      });
-    } else if (result.data) {
-      setDescription(result.data.description);
+    try {
+        const result = await generateDescription({
+            productName,
+            category: categoryName,
+        });
+        setDescription(result.description);
+    } catch (error) {
+        console.error(error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to get AI description. Please try again.',
+        });
     }
     setIsGenerating(false);
   };
@@ -606,5 +613,3 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
-
-    
