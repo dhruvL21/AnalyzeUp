@@ -37,7 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <path d="m3.3 7 8.7 5 8.7-5" />
                 <path d="M12 22V12" />
               </svg>
-              <span className="group-data-[collapsible=icon]:hidden text-primary">
+              <span className="group-data-[collapsible=icon]:hidden text-sidebar-foreground">
                 Upstart
               </span>
             </div>
