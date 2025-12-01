@@ -22,7 +22,7 @@ export type LowStockAlertsInput = z.infer<typeof LowStockAlertsInputSchema>;
 
 const LowStockAlertsOutputSchema = z.object({
   isLowStock: z.boolean().describe('Whether the product is below the calculated low stock threshold.'),
-  alertMessage: z.string().describe('A message indicating the stock level status and reorder recommendation.'),
+  alertMessage: z.string().describe('A message indicating the stock level status and reorder recommendation, including an explanation that considers market trends and demand.'),
   reorderQuantity: z.number().optional().describe('Recommended reorder quantity based on lead time and sales.'),
 });
 export type LowStockAlertsOutput = z.infer<typeof LowStockAlertsOutputSchema>;
@@ -35,16 +35,21 @@ const lowStockAlertsPrompt = ai.definePrompt({
   name: 'lowStockAlertsPrompt',
   input: {schema: LowStockAlertsInputSchema},
   output: {schema: LowStockAlertsOutputSchema},
-  prompt: `You are a warehouse inventory management expert.  Based on the current stock level, average daily sales, and lead time for a product, determine if a low stock alert should be triggered and provide a reorder recommendation.  Calculate the low stock threshold as the (average daily sales * lead time days) + (average daily sales * 2), which will cover the lead time period and a buffer of 2 days.
+  prompt: `You are an expert inventory analyst and supply chain consultant. Your task is to provide intelligent reorder recommendations that go beyond simple calculations.
+
+Analyze the following product data, considering market demand, potential seasonality, and a safety stock buffer.
 
 Product ID: {{{productId}}}
 Current Stock: {{{currentStock}}}
 Average Daily Sales: {{{averageDailySales}}}
-Lead Time (Days): {{{leadTimeDays}}}
+Replenishment Lead Time (Days): {{{leadTimeDays}}}
 
-Consider a product low stock if current stock is less than the low stock threshold. The reorder quantity should bring the stock level up to approximately 1.5x the low stock threshold.
+1.  **Calculate the Reorder Point:** The reorder point should be the lead time demand (average daily sales * lead time) plus a safety stock. The safety stock should be at least a few days of sales, but you can suggest a larger buffer if you infer potential for increased demand.
+2.  **Assess Stock Status:** Determine if the current stock is below this reorder point.
+3.  **Provide an Alert Message:** If the stock is low, create a clear, actionable alert message. This message MUST explain the "why" behind your recommendation. For example, mention if you're accounting for a standard buffer, or if you're suggesting a higher quantity due to inferred market trends (e.g., "With summer approaching, demand for this item may increase").
+4.  **Recommend Reorder Quantity:** Calculate a reorder quantity that not only replenishes the stock but also accounts for future sales and the safety buffer. A good target is to have enough stock to last through the lead time plus an additional 2-4 weeks.
 
-Based on this, is the product low stock?  What alert message should be displayed? What is the reorder quantity? Respond using the schema provided.`,
+Based on this expert analysis, is the product low on stock? What is the recommended reorder quantity and what is the detailed alert message explaining your reasoning? Respond using the schema provided.`,
 });
 
 const lowStockAlertsFlow = ai.defineFlow(
