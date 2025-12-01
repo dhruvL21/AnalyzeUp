@@ -499,7 +499,6 @@ export default function InventoryPage() {
               defaultValue={editingProduct?.imageUrl}
               className="col-span-3"
               placeholder="https://your-image-url.com/image.png"
-              required
             />
           </div>
 
@@ -615,3 +614,5 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
+
+    
