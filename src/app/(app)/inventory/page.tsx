@@ -2,8 +2,8 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
-import { PlusCircle, MoreHorizontal } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -54,12 +54,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useData } from "@/context/data-context";
+import { generateDescriptionAction } from "@/lib/actions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 
 export default function InventoryPage() {
   const { products, setProducts } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [description, setDescription] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+
+  const categories = useMemo(() => [...new Set(products.map(p => p.category))], [products]);
+  const suppliers = useMemo(() => [...new Set(products.map(p => p.supplier))], [products]);
 
   const handleDelete = (productId: string) => {
     setProducts(products.filter((p) => p.id !== productId));
@@ -68,7 +82,7 @@ export default function InventoryPage() {
       description: "The product has been successfully removed.",
     });
   };
-  
+
   const generateUniqueId = () => {
     return `PROD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   };
@@ -82,14 +96,16 @@ export default function InventoryPage() {
       price: Number(formData.get("price")),
       category: formData.get("category") as string,
       supplier: formData.get("supplier") as string,
-      description: formData.get("description") as string,
       imageUrl: formData.get("imageUrl") as string,
     };
+
+    const productDescription = description;
 
     if (editingProduct) {
       const updatedProduct: Product = {
         ...editingProduct,
         ...newProductData,
+        description: productDescription,
       };
       setProducts(
         products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
@@ -104,6 +120,7 @@ export default function InventoryPage() {
         averageDailySales: Math.floor(Math.random() * 10) + 1,
         leadTimeDays: Math.floor(Math.random() * 10) + 5,
         ...newProductData,
+        description: productDescription,
       };
       setProducts([newProduct, ...products]);
       toast({
@@ -118,12 +135,45 @@ export default function InventoryPage() {
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
+    setDescription(product.description || '');
     setDialogOpen(true);
   };
 
   const openAddDialog = () => {
     setEditingProduct(null);
+    setDescription('');
     setDialogOpen(true);
+  };
+
+  const handleGenerateDescription = async () => {
+    const form = document.getElementById('product-form') as HTMLFormElement;
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const productName = formData.get('name') as string;
+    const category = formData.get('category') as string;
+    
+    if (!productName || !category) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please enter a product name and select a category first.",
+      });
+      return;
+    }
+    
+    setIsGenerating(true);
+    const result = await generateDescriptionAction({ productName, category });
+    if (result.error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: result.error,
+      });
+    } else if (result.data) {
+      setDescription(result.data.description);
+    }
+    setIsGenerating(false);
   };
 
   return (
@@ -246,7 +296,7 @@ export default function InventoryPage() {
               {editingProduct ? "Update the details of your product." : "Add a new product to your inventory."}
             </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleFormSubmit} className="grid gap-4 py-4">
+        <form id="product-form" onSubmit={handleFormSubmit} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name
@@ -259,18 +309,27 @@ export default function InventoryPage() {
               required
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">
+
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="description" className="text-right pt-2">
               Description
             </Label>
-            <Textarea
-              id="description"
-              name="description"
-              defaultValue={editingProduct?.description}
-              className="col-span-3"
-              required
-            />
+            <div className="col-span-3 space-y-2">
+              <Textarea
+                id="description"
+                name="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="col-span-3"
+                required
+              />
+               <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                  {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  Suggest Description
+                </Button>
+            </div>
           </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="imageUrl" className="text-right">
               Image URL
@@ -284,6 +343,7 @@ export default function InventoryPage() {
               required
             />
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="grid grid-cols-2 items-center gap-4">
               <Label htmlFor="price" className="text-right">
@@ -311,30 +371,36 @@ export default function InventoryPage() {
               />
             </div>
           </div>
+
            <div className="grid grid-cols-2 gap-4">
               <div className="grid grid-cols-2 items-center gap-4">
-                <Label htmlFor="category" className="text-right">
+                 <Label htmlFor="category" className="text-right">
                   Category
                 </Label>
-                <Input
-                  id="category"
-                  name="category"
-                  defaultValue={editingProduct?.category}
-                  required
-                />
+                 <Select name="category" defaultValue={editingProduct?.category} required>
+                  <SelectTrigger className="col-span-1">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 items-center gap-4">
                 <Label htmlFor="supplier" className="text-right">
                   Supplier
                 </Label>
-                <Input
-                  id="supplier"
-                  name="supplier"
-                  defaultValue={editingProduct?.supplier}
-                  required
-                />
+                 <Select name="supplier" defaultValue={editingProduct?.supplier} required>
+                  <SelectTrigger className="col-span-1">
+                    <SelectValue placeholder="Select a supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map(sup => <SelectItem key={sup} value={sup}>{sup}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+
           <DialogFooter>
             <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>
