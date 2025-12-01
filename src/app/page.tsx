@@ -1,11 +1,36 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { MountainIcon, BotIcon, ZapIcon, BarChartIcon } from 'lucide-react';
 import Image from 'next/image';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-[100dvh]">
+       <header className="px-4 lg:px-6 h-14 flex items-center bg-background sticky top-0 z-50 border-b">
+        <Link href="/" className="flex items-center justify-center">
+          <MountainIcon className="h-6 w-6 text-primary" />
+          <span className="ml-2 font-semibold">AnalyzeUp</span>
+        </Link>
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+          <Link
+            href="#features"
+            className="text-sm font-medium hover:underline underline-offset-4"
+          >
+            Features
+          </Link>
+          <Link
+            href="/login"
+          >
+            <Button variant="outline">Sign In</Button>
+          </Link>
+          <Link href="/register">
+            <Button>Sign Up</Button>
+          </Link>
+          <ThemeToggle />
+        </nav>
+      </header>
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-background">
           <div className="container px-4 md:px-6">
@@ -29,7 +54,7 @@ export default function LandingPage() {
                     Get Started
                   </Link>
                   <Link
-                    href="#"
+                    href="#features"
                     className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   >
                     Learn More
