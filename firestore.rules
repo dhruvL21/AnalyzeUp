@@ -1,0 +1,242 @@
+/**
+ * This Firestore Security Ruleset is designed for a multi-tenant inventory
+ * management application.
+ *
+ * Core Philosophy:
+ * The security model is built around strict data isolation between tenants.
+ * All data is scoped to a specific tenant, and a user's access is determined
+ * by their membership in that tenant. This is primarily enforced by checking a
+ * custom authentication claim (`tenantId`) on the user's token.
+ *
+ * Data Structure:
+ * All application data is nested under the `/tenants/{tenantId}` collection.
+ * This structure ensures that all queries and document paths inherently
+ * contain the necessary context for authorization checks, preventing data
+ * leaks between tenants. For example, products for a specific tenant are
+ * located at `/tenants/{tenantId}/products/{productId}`.
+ *
+ * Key Security Decisions:
+ * - Tenant Membership via Custom Claims: A user's tenant membership is
+ *   established by a `tenantId` custom claim on their Firebase Auth token.
+ *   This is a highly performant and secure method, avoiding the need for
+ *   extra database reads in every rule. A backend process (e.g., a Cloud
+ *   Function) is responsible for setting this claim when a user is created
+ *   or added to a tenant.
+ * - User Data Access: Users can only modify their own user document, located at
+ *   `/tenants/{tenantId}/users/{userId}`. They can, however, list other
+ *   users within the same tenant to facilitate collaboration.
+ * - Tenant Data Management: Any authenticated member of a tenant has full
+ *   Create, Read, Update, and Delete (CRUD) permissions on that tenant's
+ *   resources (like products, suppliers, etc.). More granular role-based
+ *   access control can be layered on top of this foundation later.
+ * - Prototyping Flexibility: These rules enforce authorization (who can access
+ *   what) but do not strictly validate data schemas. This allows for rapid
+ *   frontend development and iteration on data models without needing to
+ *   update security rules for every field change. Validation is limited to
+ *   fields critical for maintaining security and relational integrity, such
+ *   as the `tenantId`.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper Functions
+
+    /**
+     * Returns true if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Returns true if the authenticated user's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * CRITICAL: Returns true if the user belongs to the specified tenant.
+     * This relies on a custom claim 'tenantId' being set on the user's
+     * authentication token by a trusted backend process.
+     */
+    function isMemberOfTenant(tenantId) {
+      return isSignedIn() && request.auth.token.tenantId == tenantId;
+    }
+
+    /**
+     * Returns true if the document being written to already exists.
+     * Used to protect update and delete operations.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    /**
+     * Validates that a new document being created has its 'tenantId' field
+     * set correctly, matching the tenantId in the path.
+     */
+    function hasValidTenantIdOnCreate(tenantId) {
+      return request.resource.data.tenantId == tenantId;
+    }
+
+    /**
+     * Enforces that the 'tenantId' field cannot be changed after creation.
+     */
+    function isTenantIdImmutable() {
+      return request.resource.data.tenantId == resource.data.tenantId;
+    }
+
+    /**
+     * @description Rules for tenant documents. Tenant members can read their
+     *   own tenant's information, but cannot list all tenants or modify the
+     *   tenant document directly from the client.
+     * @path /tenants/{tenantId}
+     * @allow (get) A user with auth.token.tenantId = 'startup-a' can get
+     *   /tenants/startup-a.
+     * @deny (list) A user cannot list all documents in the /tenants collection.
+     * @deny (create, update, delete) A user cannot create or modify a tenant
+     *   document from the client. This is assumed to be a backend operation.
+     * @principle Restricts access to members and disables dangerous client-side
+     *   modifications to core tenant data.
+     */
+    match /tenants/{tenantId} {
+      allow get: if isMemberOfTenant(tenantId);
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Rules for user documents within a tenant. Users can manage
+     *   their own profile information. Tenant members can list other users
+     *   within the same tenant.
+     * @path /tenants/{tenantId}/users/{userId}
+     * @allow (create) An authenticated user ('user_abc') creating their own
+     *   document at /tenants/startup-a/users/user_abc.
+     * @allow (get, update, delete) The user 'user_abc' can read, update, or
+     *   delete their own document at /tenants/startup-a/users/user_abc.
+     * @deny (update) User 'user_abc' cannot update the document for 'user_xyz'.
+     * @principle Enforces self-service user profile management within the
+     *   confines of the user's assigned tenant.
+     */
+    match /tenants/{tenantId}/users/{userId} {
+      allow get: if isMemberOfTenant(tenantId) && isOwner(userId);
+      allow list: if isMemberOfTenant(tenantId);
+      allow create: if isMemberOfTenant(tenantId) && isOwner(userId) && hasValidTenantIdOnCreate(tenantId) && request.resource.data.id == userId;
+      allow update: if isMemberOfTenant(tenantId) && isOwner(userId) && isExistingDoc() && isTenantIdImmutable() && request.resource.data.id == resource.data.id;
+      allow delete: if isMemberOfTenant(tenantId) && isOwner(userId) && isExistingDoc();
+    }
+
+    /**
+     * @description Generic rules for tenant-specific data collections like
+     *   products. Any member of a tenant can fully manage the products
+     *   within that tenant.
+     * @path /tenants/{tenantId}/products/{productId}
+     * @allow (create, get, list, update, delete) Any user with
+     *   auth.token.tenantId = 'startup-a' can perform full CRUD operations on
+     *   any document within /tenants/startup-a/products.
+     * @deny (get) A user from 'startup-b' cannot read products from 'startup-a'.
+     * @principle Provides full collaborative access to tenant members for
+     *   managing their own data, while ensuring strict isolation from others.
+     */
+    match /tenants/{tenantId}/products/{productId} {
+      allow get, list: if isMemberOfTenant(tenantId);
+      allow create: if isMemberOfTenant(tenantId) && hasValidTenantIdOnCreate(tenantId);
+      allow update: if isMemberOfTenant(tenantId) && isExistingDoc() && isTenantIdImmutable();
+      allow delete: if isMemberOfTenant(tenantId) && isExistingDoc();
+    }
+
+    /**
+     * @description Rules for product categories. Any member of a tenant can
+     *   fully manage categories within that tenant.
+     * @path /tenants/{tenantId}/categories/{categoryId}
+     * @allow (create, get, list, update, delete) Any user with
+     *   auth.token.tenantId = 'startup-a' can perform full CRUD operations on
+     *   any document within /tenants/startup-a/categories.
+     * @deny (update) A user from 'startup-b' cannot edit categories in 'startup-a'.
+     * @principle Provides full collaborative access to tenant members for
+     *   managing their own data, while ensuring strict isolation from others.
+     */
+    match /tenants/{tenantId}/categories/{categoryId} {
+      allow get, list: if isMemberOfTenant(tenantId);
+      allow create: if isMemberOfTenant(tenantId) && hasValidTenantIdOnCreate(tenantId);
+      allow update: if isMemberOfTenant(tenantId) && isExistingDoc() && isTenantIdImmutable();
+      allow delete: if isMemberOfTenant(tenantId) && isExistingDoc();
+    }
+
+    /**
+     * @description Rules for inventory locations. Any member of a tenant can
+     *   fully manage locations within that tenant.
+     * @path /tenants/{tenantId}/locations/{locationId}
+     * @allow (create, get, list, update, delete) Any user with
+     *   auth.token.tenantId = 'startup-a' can perform full CRUD operations on
+     *   any document within /tenants/startup-a/locations.
+     * @deny (create) A user without a tenantId claim cannot create a location.
+     * @principle Provides full collaborative access to tenant members for
+     *   managing their own data, while ensuring strict isolation from others.
+     */
+    match /tenants/{tenantId}/locations/{locationId} {
+      allow get, list: if isMemberOfTenant(tenantId);
+      allow create: if isMemberOfTenant(tenantId) && hasValidTenantIdOnCreate(tenantId);
+      allow update: if isMemberOfTenant(tenantId) && isExistingDoc() && isTenantIdImmutable();
+      allow delete: if isMemberOfTenant(tenantId) && isExistingDoc();
+    }
+
+    /**
+     * @description Rules for inventory transactions. Any member of a tenant
+     *   can fully manage transactions within that tenant.
+     * @path /tenants/{tenantId}/inventoryTransactions/{inventoryTransactionId}
+     * @allow (create, get, list, update, delete) Any user with
+     *   auth.token.tenantId = 'startup-a' can perform full CRUD operations on
+     *   any document within /tenants/startup-a/inventoryTransactions.
+     * @deny (delete) A user from 'startup-b' cannot delete transactions in 'startup-a'.
+     * @principle Provides full collaborative access to tenant members for
+     *   managing their own data, while ensuring strict isolation from others.
+     */
+    match /tenants/{tenantId}/inventoryTransactions/{inventoryTransactionId} {
+      allow get, list: if isMemberOfTenant(tenantId);
+      allow create: if isMemberOfTenant(tenantId) && hasValidTenantIdOnCreate(tenantId);
+      allow update: if isMemberOfTenant(tenantId) && isExistingDoc() && isTenantIdImmutable();
+      allow delete: if isMemberOfTenant(tenantId) && isExistingDoc();
+    }
+
+    /**
+     * @description Rules for suppliers. Any member of a tenant can fully
+     *   manage suppliers within that tenant.
+     * @path /tenants/{tenantId}/suppliers/{supplierId}
+     * @allow (create, get, list, update, delete) Any user with
+     *   auth.token.tenantId = 'startup-a' can perform full CRUD operations on
+     *   any document within /tenants/startup-a/suppliers.
+     * @deny (list) A user who is not signed in cannot list suppliers.
+     * @principle Provides full collaborative access to tenant members for
+     *   managing their own data, while ensuring strict isolation from others.
+     */
+    match /tenants/{tenantId}/suppliers/{supplierId} {
+      allow get, list: if isMemberOfTenant(tenantId);
+      allow create: if isMemberOfTenant(tenantId) && hasValidTenantIdOnCreate(tenantId);
+      allow update: if isMemberOfTenant(tenantId) && isExistingDoc() && isTenantIdImmutable();
+      allow delete: if isMemberOfTenant(tenantId) && isExistingDoc();
+    }
+
+    /**
+     * @description Rules for purchase orders. Any member of a tenant can
+     *   fully manage purchase orders within that tenant.
+     * @path /tenants/{tenantId}/purchaseOrders/{purchaseOrderId}
+     * @allow (create, get, list, update, delete) Any user with
+     *   auth.token.tenantId = 'startup-a' can perform full CRUD operations on
+     *   any document within /tenants/startup-a/purchaseOrders.
+     * @deny (get) A user from 'startup-b' cannot read purchase orders in 'startup-a'.
+     * @principle Provides full collaborative access to tenant members for
+     *   managing their own data, while ensuring strict isolation from others.
+     */
+    match /tenants/{tenantId}/purchaseOrders/{purchaseOrderId} {
+      allow get, list: if isMemberOfTenant(tenantId);
+      allow create: if isMemberOfTenant(tenantId) && hasValidTenantIdOnCreate(tenantId);
+      allow update: if isMemberOfTenant(tenantId) && isExistingDoc() && isTenantIdImmutable();
+      allow delete: if isMemberOfTenant(tenantId) && isExistingDoc();
+    }
+  }
+}
