@@ -139,7 +139,9 @@ export default function InventoryPage() {
     
     let categoryId = selectedCategory;
     let supplierId = selectedSupplier;
+    
     const categoriesCollection = collection(firestore, `tenants/${tenantId}/categories`);
+    const suppliersCollection = collection(firestore, `tenants/${tenantId}/suppliers`);
 
     // Handle new category creation
     if (categoryId === 'new') {
@@ -164,7 +166,7 @@ export default function InventoryPage() {
             toast({ variant: 'destructive', title: 'Supplier name is required.' });
             return;
         }
-        const newSupplierRef = doc(collection(firestore, `tenants/${tenantId}/suppliers`));
+        const newSupplierRef = doc(suppliersCollection);
         addDocumentNonBlocking(newSupplierRef, {
             id: newSupplierRef.id,
             name: newSupplierName,
@@ -219,14 +221,14 @@ export default function InventoryPage() {
     } else {
       const collectionRef = collection(firestore, `tenants/${tenantId}/products`);
       const newProductRef = doc(collectionRef);
-      addDocumentNonBlocking(newProductRef, {
+      setDocumentNonBlocking(newProductRef, {
         id: newProductRef.id,
         ...productData,
         averageDailySales: Math.floor(Math.random() * 10) + 1,
         leadTimeDays: Math.floor(Math.random() * 10) + 5,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      }, {});
       toast({
         title: 'Product Added',
         description: `${productData.name} has been added to your inventory.`,
