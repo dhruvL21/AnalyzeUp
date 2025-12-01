@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -7,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DollarSign, ShoppingCart, Package, Download } from "lucide-react";
+import { DollarSign, ShoppingCart, Package, Download, Shirt } from "lucide-react";
 import { SalesChart } from "@/components/sales-chart";
 import {
   Table,
@@ -22,17 +23,40 @@ import Papa from "papaparse";
 import { useData } from "@/context/data-context";
 
 export default function ReportsPage() {
-  const { products } = useData();
+  const { products, transactions } = useData();
+
+  const totalRevenue = transactions
+    .filter(t => t.type === 'Sale')
+    .reduce((acc, t) => {
+      const product = products.find(p => p.name === t.productName);
+      return acc + (t.quantity * (product?.price || 0));
+    }, 0);
 
   const topSellingProducts = [...products]
-    .sort((a, b) => b.averageDailySales * b.price - a.averageDailySales * a.price)
+    .sort((a, b) => {
+        const salesA = transactions.filter(t => t.productName === a.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
+        const salesB = transactions.filter(t => t.productName === b.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
+        const revenueA = salesA * a.price;
+        const revenueB = salesB * b.price;
+        return revenueB - revenueA;
+    })
     .slice(0, 5);
     
-  const totalRevenue = products.reduce((acc, p) => acc + (p.averageDailySales * 30 * p.price), 0);
   const totalProductsInStock = products.reduce((acc, p) => acc + p.stock, 0);
+  const totalOrders = transactions.filter(t => t.type === 'Sale').length;
 
   const handleDownloadCsv = () => {
-    const csv = Papa.unparse(products);
+    const reportData = products.map(p => {
+        const sales = transactions.filter(t => t.productName === p.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
+        const revenue = sales * p.price;
+        return {
+            ...p,
+            totalSalesUnits: sales,
+            totalRevenue: revenue.toFixed(2),
+        }
+    });
+
+    const csv = Papa.unparse(reportData);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -51,7 +75,7 @@ export default function ReportsPage() {
         <div className="ml-auto">
           <Button size="sm" onClick={handleDownloadCsv}>
             <Download className="mr-2 h-4 w-4" />
-            Export CSV
+            Export Report
           </Button>
         </div>
       </div>
@@ -64,7 +88,7 @@ export default function ReportsPage() {
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             <p className="text-xs text-muted-foreground">
-              Based on the last 30 days
+              Total revenue from all sales
             </p>
           </CardContent>
         </Card>
@@ -74,9 +98,9 @@ export default function ReportsPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">584</div>
+            <div className="text-2xl font-bold">{totalOrders}</div>
             <p className="text-xs text-muted-foreground">
-              +12% from last month
+              Total number of sales transactions
             </p>
           </CardContent>
         </Card>
@@ -112,7 +136,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle>Top Selling Products</CardTitle>
             <CardDescription>
-              Your best-performing products by revenue this month.
+              Your best-performing products by revenue.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -120,18 +144,22 @@ export default function ReportsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
-                  <TableHead className="text-right">Monthly Revenue</TableHead>
+                  <TableHead className="text-right">Total Revenue</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {topSellingProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell className="text-right">
-                      ${(product.averageDailySales * 30 * product.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {topSellingProducts.map((product) => {
+                    const sales = transactions.filter(t => t.productName === product.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
+                    const revenue = sales * product.price;
+                    return (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell className="text-right">
+                          ${revenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </TableCell>
+                      </TableRow>
+                    )
+                })}
               </TableBody>
             </Table>
           </CardContent>

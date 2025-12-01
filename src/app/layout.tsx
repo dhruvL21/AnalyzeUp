@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
@@ -5,7 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Upstart Inventory',
-  description: 'Simple, affordable, and plug-and-play inventory & operations platform for startups.',
+  description: 'A modern inventory management platform for growing businesses.',
 };
 
 export default function RootLayout({

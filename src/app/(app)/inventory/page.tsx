@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
-import { PlusCircle, MoreHorizontal, Upload } from "lucide-react";
+import { PlusCircle, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,14 +28,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Product, Transaction } from "@/lib/data";
+import { Product } from "@/lib/data";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -54,14 +53,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import Papa from "papaparse";
 import { useData } from "@/context/data-context";
 
 export default function InventoryPage() {
-  const { products, setProducts, addTransactions } = useData();
+  const { products, setProducts } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [csvDialogOpen, setCsvDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleDelete = (productId: string) => {
@@ -71,10 +68,10 @@ export default function InventoryPage() {
       description: "The product has been successfully removed.",
     });
   };
-
+  
   const generateUniqueId = () => {
-    return `PROD${Date.now()}${(Math.random() * 1000).toFixed(0)}`;
-  }
+    return `PROD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -86,6 +83,7 @@ export default function InventoryPage() {
       category: formData.get("category") as string,
       supplier: formData.get("supplier") as string,
       description: formData.get("description") as string,
+      imageUrl: formData.get("imageUrl") as string,
     };
 
     if (editingProduct) {
@@ -103,7 +101,6 @@ export default function InventoryPage() {
     } else {
       const newProduct: Product = {
         id: generateUniqueId(),
-        imageUrl: `https://picsum.photos/seed/${Math.random()}/400/400`,
         averageDailySales: Math.floor(Math.random() * 10) + 1,
         leadTimeDays: Math.floor(Math.random() * 10) + 5,
         ...newProductData,
@@ -129,85 +126,12 @@ export default function InventoryPage() {
     setDialogOpen(true);
   };
 
-  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      Papa.parse<Product>(file, {
-        header: true,
-        dynamicTyping: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const newProducts = results.data.map(p => ({
-            ...p,
-            id: p.id || generateUniqueId(),
-            imageUrl: p.imageUrl || `https://picsum.photos/seed/${Math.random()}/400/400`,
-            stock: typeof p.stock === 'number' ? p.stock : 0,
-            price: typeof p.price === 'number' ? p.price : 0,
-            averageDailySales: typeof p.averageDailySales === 'number' ? p.averageDailySales : 0,
-            leadTimeDays: typeof p.leadTimeDays === 'number' ? p.leadTimeDays : 0,
-          }));
-
-          setProducts(newProducts);
-
-          const newTransactions = newProducts.flatMap(p => {
-              const numSales = Math.floor(Math.random() * 5);
-              return Array.from({length: numSales}, (_, i) => ({
-                  id: `TRN${(Math.random() * 10000).toFixed(0).padStart(4, "0")}`,
-                  productName: p.name,
-                  type: 'Sale' as const,
-                  quantity: Math.floor(Math.random() * 3) + 1,
-                  date: new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 30))).toISOString().split('T')[0]
-              }));
-          });
-          addTransactions(newTransactions);
-
-          toast({
-            title: "CSV Imported Successfully",
-            description: `${results.data.length} products have been added or updated.`,
-          });
-          setCsvDialogOpen(false);
-        },
-        error: (error) => {
-          toast({
-            variant: "destructive",
-            title: "CSV Import Error",
-            description: error.message,
-          });
-        },
-      });
-    }
-  };
-
-
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="flex flex-col gap-6">
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl">Inventory</h1>
           <div className="ml-auto flex items-center gap-2">
-            <Dialog open={csvDialogOpen} onOpenChange={setCsvDialogOpen}>
-              <DialogTrigger asChild>
-                 <Button size="sm" variant="outline" className="h-8 gap-1">
-                  <Upload className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Import
-                  </span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Import Products via CSV</DialogTitle>
-                  <DialogDescription>
-                    Upload a CSV file with product data. Make sure the headers match the product fields (id, name, description, stock, price, averageDailySales, leadTimeDays, category, supplier, imageUrl).
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="csv-file">CSV File</Label>
-                  <Input id="csv-file" type="file" accept=".csv" onChange={handleCsvUpload} />
-                </div>
-              </DialogContent>
-            </Dialog>
-
             <Button size="sm" className="h-8 gap-1" onClick={openAddDialog}>
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -251,6 +175,7 @@ export default function InventoryPage() {
                         height="64"
                         src={product.imageUrl || 'https://placehold.co/64x64'}
                         width="64"
+                        unoptimized
                       />
                     </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
@@ -317,6 +242,9 @@ export default function InventoryPage() {
           <DialogTitle>
             {editingProduct ? "Edit Product" : "Add Product"}
           </DialogTitle>
+           <DialogDescription>
+              {editingProduct ? "Update the details of your product." : "Add a new product to your inventory."}
+            </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -340,6 +268,19 @@ export default function InventoryPage() {
               name="description"
               defaultValue={editingProduct?.description}
               className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="imageUrl" className="text-right">
+              Image URL
+            </Label>
+            <Input
+              id="imageUrl"
+              name="imageUrl"
+              defaultValue={editingProduct?.imageUrl}
+              className="col-span-3"
+              placeholder="https://your-image-url.com/image.png"
               required
             />
           </div>
@@ -405,5 +346,3 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
-
-    

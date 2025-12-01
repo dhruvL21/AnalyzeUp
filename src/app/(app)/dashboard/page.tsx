@@ -23,6 +23,7 @@ import {
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
+  Shirt,
 } from "lucide-react";
 import { LowStockAlertItem } from "@/components/low-stock-alert-item";
 import { SalesChart } from "@/components/sales-chart";
@@ -38,8 +39,20 @@ export default function DashboardPage() {
     0
   );
 
-  // We take only the 5 most recent transactions for the dashboard
-  const recentTransactions = transactions.slice(0, 5);
+  const totalSales = transactions
+    .filter(t => t.type === 'Sale')
+    .reduce((acc, t) => acc + (t.quantity * (products.find(p => p.name === t.productName)?.price || 0)), 0);
+
+  const topSellingProduct = transactions
+    .filter(t => t.type === 'Sale')
+    .reduce((acc, t) => {
+      acc[t.productName] = (acc[t.productName] || 0) + t.quantity;
+      return acc;
+    }, {} as {[key: string]: number});
+  
+  const topSeller = Object.keys(topSellingProduct).length > 0 ? Object.entries(topSellingProduct).sort((a, b) => b[1] - a[1])[0] : ["N/A", 0];
+
+  const recentTransactions = transactions.slice(-5).reverse();
 
 
   return (
@@ -62,14 +75,14 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Sales This Month
+              Total Sales
             </CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+$12,234.50</div>
+            <div className="text-2xl font-bold">+${totalSales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
             <p className="text-xs text-muted-foreground">
-              +19% from last month
+              Total revenue from all sales
             </p>
           </CardContent>
         </Card>
@@ -81,7 +94,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{lowStockProducts.length}</div>
             <p className="text-xs text-muted-foreground">
-              Items needing attention
+              Items needing reordering
             </p>
           </CardContent>
         </Card>
@@ -90,11 +103,12 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Top Selling Product
             </CardTitle>
+            <Shirt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold">Organic Bananas</div>
+            <div className="text-xl font-bold truncate">{topSeller[0]}</div>
             <p className="text-xs text-muted-foreground">
-              +250 sold this month
+              {topSeller[1]} units sold
             </p>
           </CardContent>
         </Card>
@@ -119,10 +133,10 @@ export default function DashboardPage() {
               Items nearing their reorder point. Use AI to get suggestions.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {lowStockProducts.map((product) => (
+          <CardContent className="space-y-4 max-h-[400px] overflow-y-auto">
+            {lowStockProducts.length > 0 ? lowStockProducts.map((product) => (
               <LowStockAlertItem key={product.id} product={product} />
-            ))}
+            )) : <p className="text-sm text-muted-foreground">No items with low stock. Well done!</p>}
           </CardContent>
         </Card>
       </div>
