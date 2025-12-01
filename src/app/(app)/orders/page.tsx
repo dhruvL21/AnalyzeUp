@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,10 +50,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import type { PurchaseOrder } from '@/lib/types';
+import type { PurchaseOrder, Supplier, Product } from '@/lib/types';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
@@ -64,6 +65,13 @@ export default function OrdersPage() {
   const ordersRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/purchaseOrders`) : null), [firestore, tenantId]);
   const { data: orders, isLoading } = useCollection<PurchaseOrder>(ordersRef);
   
+  const suppliersRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/suppliers`) : null), [firestore, tenantId]);
+  const { data: suppliers } = useCollection<Supplier>(suppliersRef);
+  
+  const productsRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/products`) : null), [firestore, tenantId]);
+  const { data: products } = useCollection<Product>(productsRef);
+
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
   const { toast } = useToast();
@@ -92,12 +100,12 @@ export default function OrdersPage() {
     if(!tenantId || !firestore) return;
     const formData = new FormData(e.currentTarget);
     const newOrder = {
-      supplierId: formData.get('customer') as string, // This should be supplierId
+      supplierId: formData.get('supplierId') as string,
       status: 'Pending' as OrderStatus,
       orderDate: new Date().toISOString(),
       expectedDeliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), // Example logic
       quantity: Number(formData.get('quantity')),
-      productId: formData.get('product') as string, // This needs to be a product ID
+      productId: formData.get('productId') as string,
       tenantId: tenantId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -167,8 +175,8 @@ export default function OrdersPage() {
               <TableBody>
                 {orders?.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.supplierId}</TableCell> 
+                    <TableCell className="font-medium">{order.id.slice(0, 8)}...</TableCell>
+                    <TableCell>{suppliers?.find(s => s.id === order.supplierId)?.name || order.supplierId}</TableCell> 
                     <TableCell>
                       <Badge variant={getStatusVariant(order.status as OrderStatus)}>
                         {order.status}
@@ -254,28 +262,38 @@ export default function OrdersPage() {
           </DialogHeader>
           <form onSubmit={handleFormSubmit} className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="customer" className="text-right">
+              <Label htmlFor="supplierId" className="text-right">
                 Supplier
               </Label>
-              <Input
-                id="customer"
-                name="customer"
-                className="col-span-3"
-                placeholder="Supplier ID"
-                required
-              />
+              <Select name="supplierId" required>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers?.map((sup) => (
+                    <SelectItem key={sup.id} value={sup.id}>
+                      {sup.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="product" className="text-right">
+              <Label htmlFor="productId" className="text-right">
                 Product
               </Label>
-              <Input
-                id="product"
-                name="product"
-                className="col-span-3"
-                placeholder="Product ID"
-                required
-              />
+              <Select name="productId" required>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a product" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products?.map((prod) => (
+                    <SelectItem key={prod.id} value={prod.id}>
+                      {prod.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantity" className="text-right">
@@ -312,12 +330,12 @@ export default function OrdersPage() {
           {viewingOrder && (
             <div className="space-y-4">
               <div>
-                <Label>Supplier ID</Label>
-                <p>{viewingOrder.supplierId}</p>
+                <Label>Supplier</Label>
+                <p>{suppliers?.find(s => s.id === viewingOrder.supplierId)?.name || viewingOrder.supplierId}</p>
               </div>
                <div>
-                <Label>Product ID</Label>
-                <p>{viewingOrder.productId}</p>
+                <Label>Product</Label>
+                <p>{products?.find(p => p.id === viewingOrder.productId)?.name || viewingOrder.productId}</p>
               </div>
               <div>
                 <Label>Date</Label>
@@ -349,3 +367,4 @@ export default function OrdersPage() {
     </>
   );
 }
+
