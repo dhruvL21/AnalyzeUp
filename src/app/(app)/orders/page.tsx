@@ -1,15 +1,16 @@
-"use client";
 
-import React, { useState } from "react";
-import { PlusCircle, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { PlusCircle, MoreHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -17,15 +18,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -33,106 +34,74 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import type { PurchaseOrder } from '@/lib/types';
+import { useCollection, useFirebase } from '@/firebase';
+import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
-type Order = {
-  id: string;
-  customer: string;
-  date: string;
-  status: OrderStatus;
-  total: number;
-};
-
-const initialOrders: Order[] = [
-  {
-    id: "ORD001",
-    customer: "Liam Johnson",
-    date: "2023-10-23",
-    status: "Fulfilled",
-    total: 250.0,
-  },
-  {
-    id: "ORD002",
-    customer: "Olivia Smith",
-    date: "2023-10-24",
-    status: "Pending",
-    total: 150.75,
-  },
-  {
-    id: "ORD003",
-    customer: "Noah Williams",
-    date: "2023-10-25",
-    status: "Fulfilled",
-    total: 350.0,
-  },
-  {
-    id: "ORD004",
-    customer: "Emma Brown",
-    date: "2023-10-26",
-    status: "Cancelled",
-    total: 75.5,
-  },
-  {
-    id: "ORD005",
-    customer: "James Jones",
-    date: "2023-10-27",
-    status: "Fulfilled",
-    total: 220.0,
-  },
-];
-
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const { firestore, user } = useFirebase();
+  const tenantId = user?.uid;
+
+  const ordersRef = useMemo(() => tenantId && collection(firestore, `tenants/${tenantId}/purchaseOrders`), [firestore, tenantId]);
+  const { data: orders, isLoading } = useCollection<PurchaseOrder>(ordersRef);
+  
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
   const { toast } = useToast();
 
   const handleMarkAsFulfilled = (orderId: string) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId ? { ...order, status: "Fulfilled" } : order
-      )
-    );
+    if(!tenantId) return;
+    const docRef = doc(firestore, `tenants/${tenantId}/purchaseOrders`, orderId);
+    setDocumentNonBlocking(docRef, { status: "Fulfilled" }, { merge: true });
     toast({
-      title: "Order Status Updated",
+      title: 'Order Status Updated',
       description: `Order ${orderId} has been marked as Fulfilled.`,
     });
   };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if(!tenantId) return;
     const formData = new FormData(e.currentTarget);
-    const newOrder: Order = {
-      id: `ORD${(Math.random() * 1000).toFixed(0).padStart(3, "0")}`,
-      customer: formData.get("customer") as string,
-      total: Number(formData.get("total")),
-      date: new Date().toISOString().split("T")[0],
-      status: "Pending",
+    const newOrder = {
+      supplierId: formData.get('customer') as string, // This should be supplierId
+      status: 'Pending' as OrderStatus,
+      orderDate: new Date().toISOString(),
+      expectedDeliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), // Example logic
+      quantity: Number(formData.get('quantity')),
+      productId: formData.get('product') as string, // This needs to be a product ID
+      tenantId: tenantId,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     };
+    
+    addDocumentNonBlocking(collection(firestore, `tenants/${tenantId}/purchaseOrders`), newOrder);
 
-    setOrders([newOrder, ...orders]);
     toast({
-      title: "Order Created",
-      description: `New order for ${newOrder.customer} has been created.`,
+      title: 'Order Created',
+      description: `New purchase order has been created.`,
     });
     setDialogOpen(false);
   };
 
   const getStatusVariant = (status: OrderStatus) => {
     switch (status) {
-      case "Fulfilled":
-        return "secondary";
-      case "Pending":
-        return "outline";
-      case "Cancelled":
-        return "destructive";
+      case 'Fulfilled':
+        return 'secondary';
+      case 'Pending':
+        return 'outline';
+      case 'Cancelled':
+        return 'destructive';
       default:
-        return "default";
+        return 'default';
     }
   };
 
@@ -158,7 +127,7 @@ export default function OrdersPage() {
           <CardHeader>
             <CardTitle>Recent Orders</CardTitle>
             <CardDescription>
-              A list of recent orders from your customers.
+              A list of recent purchase orders from your suppliers.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -166,30 +135,30 @@ export default function OrdersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Order</TableHead>
-                  <TableHead>Customer</TableHead>
+                  <TableHead>Supplier</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="hidden md:table-cell">Date</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Quantity</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.map((order) => (
+                {orders?.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.customer}</TableCell>
+                    <TableCell>{order.supplierId}</TableCell> 
                     <TableCell>
-                      <Badge variant={getStatusVariant(order.status)}>
+                      <Badge variant={getStatusVariant(order.status as OrderStatus)}>
                         {order.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {order.date}
+                      {new Date(order.orderDate).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      ${order.total.toFixed(2)}
+                      {order.quantity}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -205,10 +174,12 @@ export default function OrdersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => setViewingOrder(order)}>
+                          <DropdownMenuItem
+                            onClick={() => setViewingOrder(order)}
+                          >
                             View Details
                           </DropdownMenuItem>
-                          {order.status === "Pending" && (
+                          {order.status === 'Pending' && (
                             <DropdownMenuItem
                               onClick={() => handleMarkAsFulfilled(order.id)}
                             >
@@ -235,76 +206,99 @@ export default function OrdersPage() {
           <form onSubmit={handleFormSubmit} className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="customer" className="text-right">
-                Customer
+                Supplier
               </Label>
               <Input
                 id="customer"
                 name="customer"
                 className="col-span-3"
+                placeholder="Supplier ID"
+                required
+              />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="product" className="text-right">
+                Product
+              </Label>
+              <Input
+                id="product"
+                name="product"
+                className="col-span-3"
+                placeholder="Product ID"
                 required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="total" className="text-right">
-                Total
+              <Label htmlFor="quantity" className="text-right">
+                Quantity
               </Label>
               <Input
-                id="total"
-                name="total"
+                id="quantity"
+                name="quantity"
                 type="number"
-                step="0.01"
+                step="1"
                 className="col-span-3"
                 required
               />
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="secondary">Cancel</Button>
+                <Button type="button" variant="secondary">
+                  Cancel
+                </Button>
               </DialogClose>
               <Button type="submit">Create Order</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-      
+
       {/* View Order Details Dialog */}
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
-            <CardDescription>Order ID: {viewingOrder?.id}</CardDescription>
+            <DialogDescription>Order ID: {viewingOrder?.id}</DialogDescription>
           </DialogHeader>
           {viewingOrder && (
             <div className="space-y-4">
               <div>
-                <Label>Customer</Label>
-                <p>{viewingOrder.customer}</p>
+                <Label>Supplier ID</Label>
+                <p>{viewingOrder.supplierId}</p>
+              </div>
+               <div>
+                <Label>Product ID</Label>
+                <p>{viewingOrder.productId}</p>
               </div>
               <div>
                 <Label>Date</Label>
-                <p>{viewingOrder.date}</p>
+                <p>{new Date(viewingOrder.orderDate).toLocaleDateString()}</p>
               </div>
               <div>
                 <Label>Status</Label>
                 <div>
-                  <Badge variant={getStatusVariant(viewingOrder.status)}>
+                  <Badge variant={getStatusVariant(viewingOrder.status as OrderStatus)}>
                     {viewingOrder.status}
                   </Badge>
                 </div>
               </div>
               <div>
-                <Label>Total</Label>
-                <p>${viewingOrder.total.toFixed(2)}</p>
+                <Label>Quantity</Label>
+                <p>{viewingOrder.quantity}</p>
               </div>
             </div>
           )}
-           <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="secondary">Close</Button>
-              </DialogClose>
-            </DialogFooter>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
   );
 }
+
+    

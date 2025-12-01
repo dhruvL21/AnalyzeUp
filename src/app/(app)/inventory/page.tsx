@@ -1,17 +1,17 @@
 
-"use client";
+'use client';
 
-import Image from "next/image";
-import React, { useState, useMemo } from "react";
-import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from 'next/image';
+import React, { useState, useMemo } from 'react';
+import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -19,16 +19,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Product } from "@/lib/data";
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import type { Product, Supplier } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -37,10 +37,10 @@ import {
   DialogDescription,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,81 +51,98 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useData } from "@/context/data-context";
-import { generateDescriptionAction } from "@/lib/actions";
+} from '@/components/ui/alert-dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { generateDescriptionAction } from '@/lib/actions';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-
+} from '@/components/ui/select';
+import { useCollection, useFirebase } from '@/firebase';
+import {
+  addDocumentNonBlocking,
+  deleteDocumentNonBlocking,
+  setDocumentNonBlocking,
+} from '@/firebase/non-blocking-updates';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
 
 export default function InventoryPage() {
-  const { products, setProducts } = useData();
+  const { firestore, user } = useFirebase();
+  const tenantId = user?.uid;
+
+  const productsRef = useMemo(
+    () => tenantId && collection(firestore, `tenants/${tenantId}/products`),
+    [firestore, tenantId]
+  );
+  const { data: products } = useCollection<Product>(productsRef);
+
+  const suppliersRef = useMemo(
+    () => tenantId && collection(firestore, `tenants/${tenantId}/suppliers`),
+    [firestore, tenantId]
+  );
+  const { data: suppliers } = useCollection<Supplier>(suppliersRef);
+  
+  const categoriesRef = useMemo(
+    () => tenantId && collection(firestore, `tenants/${tenantId}/categories`),
+    [firestore, tenantId]
+  );
+  const { data: categories } = useCollection<Product>(categoriesRef);
+
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  const categories = useMemo(() => [...new Set(products.map(p => p.category))], [products]);
-  const suppliers = useMemo(() => [...new Set(products.map(p => p.supplier))], [products]);
 
   const handleDelete = (productId: string) => {
-    setProducts(products.filter((p) => p.id !== productId));
+    if (!tenantId) return;
+    deleteDocumentNonBlocking(doc(firestore, `tenants/${tenantId}/products`, productId));
     toast({
-      title: "Product Deleted",
-      description: "The product has been successfully removed.",
+      title: 'Product Deleted',
+      description: 'The product has been successfully removed.',
     });
-  };
-
-  const generateUniqueId = () => {
-    return `PROD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!tenantId) return;
+
     const formData = new FormData(e.currentTarget);
-    const newProductData = {
-      name: formData.get("name") as string,
-      stock: Number(formData.get("stock")),
-      price: Number(formData.get("price")),
-      category: formData.get("category") as string,
-      supplier: formData.get("supplier") as string,
-      imageUrl: formData.get("imageUrl") as string,
+    const productData = {
+      name: formData.get('name') as string,
+      stock: Number(formData.get('stock')),
+      price: Number(formData.get('price')),
+      categoryId: formData.get('category') as string,
+      supplierId: formData.get('supplier') as string,
+      imageUrl: formData.get('imageUrl') as string,
+      description: description,
+      tenantId: tenantId,
+      updatedAt: serverTimestamp(),
     };
 
-    const productDescription = description;
-
     if (editingProduct) {
-      const updatedProduct: Product = {
-        ...editingProduct,
-        ...newProductData,
-        description: productDescription,
-      };
-      setProducts(
-        products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
-      );
+      const docRef = doc(firestore, `tenants/${tenantId}/products`, editingProduct.id);
+      setDocumentNonBlocking(docRef, { ...productData, updatedAt: serverTimestamp() }, { merge: true });
       toast({
-        title: "Product Updated",
-        description: `${updatedProduct.name} has been updated.`,
+        title: 'Product Updated',
+        description: `${productData.name} has been updated.`,
       });
     } else {
-      const newProduct: Product = {
-        id: generateUniqueId(),
+      const collectionRef = collection(firestore, `tenants/${tenantId}/products`);
+      addDocumentNonBlocking(collectionRef, {
+        ...productData,
         averageDailySales: Math.floor(Math.random() * 10) + 1,
         leadTimeDays: Math.floor(Math.random() * 10) + 5,
-        ...newProductData,
-        description: productDescription,
-      };
-      setProducts([newProduct, ...products]);
+        createdAt: serverTimestamp(),
+      });
       toast({
-        title: "Product Added",
-        description: `${newProduct.name} has been added to your inventory.`,
+        title: 'Product Added',
+        description: `${productData.name} has been added to your inventory.`,
       });
     }
 
@@ -151,23 +168,28 @@ export default function InventoryPage() {
 
     const formData = new FormData(form);
     const productName = formData.get('name') as string;
-    const category = formData.get('category') as string;
-    
-    if (!productName || !category) {
+    const categoryId = formData.get('category') as string;
+    const categoryName = categories?.find(c => c.id === categoryId)?.name || '';
+
+    if (!productName || !categoryName) {
       toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please enter a product name and select a category first.",
+        variant: 'destructive',
+        title: 'Missing Information',
+        description:
+          'Please enter a product name and select a category first.',
       });
       return;
     }
-    
+
     setIsGenerating(true);
-    const result = await generateDescriptionAction({ productName, category });
+    const result = await generateDescriptionAction({
+      productName,
+      category: categoryName,
+    });
     if (result.error) {
       toast({
-        variant: "destructive",
-        title: "Error",
+        variant: 'destructive',
+        title: 'Error',
         description: result.error,
       });
     } else if (result.data) {
@@ -207,16 +229,14 @@ export default function InventoryPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Stock
-                  </TableHead>
+                  <TableHead className="hidden md:table-cell">Stock</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product) => (
+                {products?.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell className="hidden sm:table-cell">
                       <Image
@@ -230,13 +250,25 @@ export default function InventoryPage() {
                     </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>
-                       <Badge
-                        variant={product.stock > 20 ? "outline" : product.stock > 0 ? "secondary" : "destructive"}
+                      <Badge
+                        variant={
+                          product.stock > 20
+                            ? 'outline'
+                            : product.stock > 0
+                            ? 'secondary'
+                            : 'destructive'
+                        }
                       >
-                        {product.stock > 20 ? "In Stock" : product.stock > 0 ? "Low Stock" : "Out of Stock"}
+                        {product.stock > 20
+                          ? 'In Stock'
+                          : product.stock > 0
+                          ? 'Low Stock'
+                          : 'Out of Stock'}
                       </Badge>
                     </TableCell>
-                    <TableCell>${typeof product.price === 'number' ? product.price.toFixed(2) : 'N/A'}</TableCell>
+                    <TableCell>
+                      ${typeof product.price === 'number' ? product.price.toFixed(2) : 'N/A'}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {product.stock}
                     </TableCell>
@@ -254,23 +286,34 @@ export default function InventoryPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => openEditDialog(product)}>
+                          <DropdownMenuItem
+                            onClick={() => openEditDialog(product)}
+                          >
                             Edit
                           </DropdownMenuItem>
-                           <AlertDialog>
+                          <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete</DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                Delete
+                              </DropdownMenuItem>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogTitle>
+                                  Are you sure?
+                                </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete the product.
+                                  This action cannot be undone. This will
+                                  permanently delete the product.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(product.id)}>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(product.id)}
+                                >
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -290,13 +333,19 @@ export default function InventoryPage() {
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>
-            {editingProduct ? "Edit Product" : "Add Product"}
+            {editingProduct ? 'Edit Product' : 'Add Product'}
           </DialogTitle>
-           <DialogDescription>
-              {editingProduct ? "Update the details of your product." : "Add a new product to your inventory."}
-            </DialogDescription>
+          <DialogDescription>
+            {editingProduct
+              ? 'Update the details of your product.'
+              : 'Add a new product to your inventory.'}
+          </DialogDescription>
         </DialogHeader>
-        <form id="product-form" onSubmit={handleFormSubmit} className="grid gap-4 py-4">
+        <form
+          id="product-form"
+          onSubmit={handleFormSubmit}
+          className="grid gap-4 py-4"
+        >
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name
@@ -323,10 +372,20 @@ export default function InventoryPage() {
                 className="col-span-3"
                 required
               />
-               <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
-                  {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                  Suggest Description
-                </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateDescription}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                Suggest Description
+              </Button>
             </div>
           </div>
 
@@ -372,38 +431,48 @@ export default function InventoryPage() {
             </div>
           </div>
 
-           <div className="grid grid-cols-2 gap-4">
-              <div className="grid grid-cols-2 items-center gap-4">
-                 <Label htmlFor="category" className="text-right">
-                  Category
-                </Label>
-                 <Select name="category" defaultValue={editingProduct?.category} required>
-                  <SelectTrigger className="col-span-1">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 items-center gap-4">
-                <Label htmlFor="supplier" className="text-right">
-                  Supplier
-                </Label>
-                 <Select name="supplier" defaultValue={editingProduct?.supplier} required>
-                  <SelectTrigger className="col-span-1">
-                    <SelectValue placeholder="Select a supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map(sup => <SelectItem key={sup} value={sup}>{sup}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="category" className="text-right">
+                Category
+              </Label>
+              <Select name="category" defaultValue={editingProduct?.categoryId} required>
+                <SelectTrigger className="col-span-1">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="supplier" className="text-right">
+                Supplier
+              </Label>
+              <Select name="supplier" defaultValue={editingProduct?.supplierId} required>
+                <SelectTrigger className="col-span-1">
+                  <SelectValue placeholder="Select a supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers?.map((sup) => (
+                    <SelectItem key={sup.id} value={sup.id}>
+                      {sup.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <DialogFooter>
             <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
             </DialogClose>
             <Button type="submit">Save changes</Button>
           </DialogFooter>
@@ -412,3 +481,5 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
+
+    

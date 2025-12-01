@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import {
   Card,
@@ -7,9 +7,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { DollarSign, ShoppingCart, Package, Download, Shirt } from "lucide-react";
-import { SalesChart } from "@/components/sales-chart";
+} from '@/components/ui/card';
+import {
+  DollarSign,
+  ShoppingCart,
+  Package,
+  Download,
+} from 'lucide-react';
+import { SalesChart } from '@/components/sales-chart';
 import {
   Table,
   TableBody,
@@ -17,52 +22,81 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import Papa from "papaparse";
-import { useData } from "@/context/data-context";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import Papa from 'papaparse';
+import { useCollection, useFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Product, Transaction } from '@/lib/types';
+import { useMemo } from 'react';
 
 export default function ReportsPage() {
-  const { products, transactions } = useData();
+  const { firestore, user } = useFirebase();
 
-  const totalRevenue = transactions
-    .filter(t => t.type === 'Sale')
-    .reduce((acc, t) => {
-      const product = products.find(p => p.name === t.productName);
-      return acc + (t.quantity * (product?.price || 0));
-    }, 0);
+  const productsRef = useMemo(
+    () => user && collection(firestore, `tenants/${user.uid}/products`),
+    [firestore, user]
+  );
+  const { data: products } = useCollection<Product>(productsRef);
 
-  const topSellingProducts = [...products]
-    .sort((a, b) => {
-        const salesA = transactions.filter(t => t.productName === a.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
-        const salesB = transactions.filter(t => t.productName === b.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
-        const revenueA = salesA * a.price;
-        const revenueB = salesB * b.price;
-        return revenueB - revenueA;
-    })
-    .slice(0, 5);
-    
-  const totalProductsInStock = products.reduce((acc, p) => acc + p.stock, 0);
-  const totalOrders = transactions.filter(t => t.type === 'Sale').length;
+  const transactionsRef = useMemo(
+    () => user && collection(firestore, `tenants/${user.uid}/inventoryTransactions`),
+    [firestore, user]
+  );
+  const { data: transactions } = useCollection<Transaction>(transactionsRef);
+
+  const totalRevenue =
+    transactions
+      ?.filter((t) => t.type === 'Sale')
+      .reduce((acc, t) => {
+        const product = products?.find((p) => p.id === t.productId);
+        return acc + t.quantity * (product?.price || 0);
+      }, 0) || 0;
+
+  const topSellingProducts = products
+    ? [...products]
+        .sort((a, b) => {
+          const salesA =
+            transactions
+              ?.filter((t) => t.productId === a.id && t.type === 'Sale')
+              .reduce((acc, t) => acc + t.quantity, 0) || 0;
+          const salesB =
+            transactions
+              ?.filter((t) => t.productId === b.id && t.type === 'Sale')
+              .reduce((acc, t) => acc + t.quantity, 0) || 0;
+          const revenueA = salesA * a.price;
+          const revenueB = salesB * b.price;
+          return revenueB - revenueA;
+        })
+        .slice(0, 5)
+    : [];
+
+  const totalProductsInStock =
+    products?.reduce((acc, p) => acc + p.stock, 0) || 0;
+  const totalOrders = transactions?.filter((t) => t.type === 'Sale').length || 0;
 
   const handleDownloadCsv = () => {
-    const reportData = products.map(p => {
-        const sales = transactions.filter(t => t.productName === p.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
-        const revenue = sales * p.price;
-        return {
-            ...p,
-            totalSalesUnits: sales,
-            totalRevenue: revenue.toFixed(2),
-        }
+    if (!products || !transactions) return;
+    const reportData = products.map((p) => {
+      const sales =
+        transactions
+          .filter((t) => t.productId === p.id && t.type === 'Sale')
+          .reduce((acc, t) => acc + t.quantity, 0) || 0;
+      const revenue = sales * p.price;
+      return {
+        ...p,
+        totalSalesUnits: sales,
+        totalRevenue: revenue.toFixed(2),
+      };
     });
 
     const csv = Papa.unparse(reportData);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "inventory_report.csv");
-    link.style.visibility = "hidden";
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'inventory_report.csv');
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -86,7 +120,13 @@ export default function ReportsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            <div className="text-2xl font-bold">
+              $
+              {totalRevenue.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
             <p className="text-xs text-muted-foreground">
               Total revenue from all sales
             </p>
@@ -149,16 +189,25 @@ export default function ReportsPage() {
               </TableHeader>
               <TableBody>
                 {topSellingProducts.map((product) => {
-                    const sales = transactions.filter(t => t.productName === product.name && t.type === 'Sale').reduce((acc, t) => acc + t.quantity, 0);
-                    const revenue = sales * product.price;
-                    return (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell className="text-right">
-                          ${revenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                        </TableCell>
-                      </TableRow>
-                    )
+                  const sales =
+                    transactions
+                      ?.filter((t) => t.productId === product.id && t.type === 'Sale')
+                      .reduce((acc, t) => acc + t.quantity, 0) || 0;
+                  const revenue = sales * product.price;
+                  return (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">
+                        {product.name}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        $
+                        {revenue.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                    </TableRow>
+                  );
                 })}
               </TableBody>
             </Table>
@@ -168,3 +217,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    

@@ -1,3 +1,5 @@
+
+'use client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -5,13 +7,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { ThemeToggle } from "./theme-toggle";
+} from '@/components/ui/dropdown-menu';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { ThemeToggle } from './theme-toggle';
+import { useFirebase } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
+  const { auth, user } = useFirebase();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    signOut(auth).then(() => {
+      router.push('/login');
+    });
+  };
+
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
       <div className="md:hidden">
@@ -25,11 +39,10 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage
-                src="https://picsum.photos/seed/avatar/40/40"
-                alt="User avatar"
-              />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarImage src={user?.photoURL || undefined} alt="User avatar" />
+              <AvatarFallback>
+                {user?.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -37,10 +50,10 @@ export function Header() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                Workspace Owner
+                {user?.displayName || 'Workspace Owner'}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                owner@example.com
+                {user?.email}
               </p>
             </div>
           </DropdownMenuLabel>
@@ -49,9 +62,11 @@ export function Header() {
           <DropdownMenuItem>Billing</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Log out</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
   );
 }
+
+    
