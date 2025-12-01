@@ -72,6 +72,10 @@ export default function InventoryPage() {
     });
   };
 
+  const generateUniqueId = () => {
+    return `PROD${Date.now()}${(Math.random() * 1000).toFixed(0)}`;
+  }
+
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -98,7 +102,7 @@ export default function InventoryPage() {
       });
     } else {
       const newProduct: Product = {
-        id: `PROD${(Math.random() * 1000).toFixed(0).padStart(3, "0")}`,
+        id: generateUniqueId(),
         imageUrl: `https://picsum.photos/seed/${Math.random()}/400/400`,
         averageDailySales: Math.floor(Math.random() * 10) + 1,
         leadTimeDays: Math.floor(Math.random() * 10) + 5,
@@ -135,7 +139,7 @@ export default function InventoryPage() {
         complete: (results) => {
           const newProducts = results.data.map(p => ({
             ...p,
-            id: p.id || `PROD${(Math.random() * 1000).toFixed(0).padStart(3, "0")}`,
+            id: p.id || generateUniqueId(),
             imageUrl: p.imageUrl || `https://picsum.photos/seed/${Math.random()}/400/400`,
             stock: typeof p.stock === 'number' ? p.stock : 0,
             price: typeof p.price === 'number' ? p.price : 0,
