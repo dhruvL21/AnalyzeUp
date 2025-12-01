@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, FormEvent, useEffect } from 'react';
+import { FirebaseError } from 'firebase/app';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,23 @@ export default function LoginPage() {
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
-    initiateEmailSignIn(auth, email, password);
+    initiateEmailSignIn(auth, email, password, (error) => {
+      if (error) {
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+          toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "Invalid email or password. Please try again.",
+          });
+        } else {
+           toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: error.message,
+          });
+        }
+      }
+    });
   };
   
   useEffect(() => {
@@ -40,24 +57,8 @@ export default function LoginPage() {
       }
     });
 
-    const errorUnsubscribe = auth.onIdTokenChanged(async (user) => {
-        if(!user) {
-            // This is a hacky way of catching login errors
-            // A proper implementation would use a different method
-            const probableError = auth.currentUser === null;
-            if(probableError) {
-                 toast({
-                    variant: "destructive",
-                    title: "Login Failed",
-                    description: "Invalid email or password. Please try again.",
-                });
-            }
-        }
-    })
-
     return () => {
         unsubscribe();
-        errorUnsubscribe();
     }
   }, [auth, router, toast]);
 
@@ -106,5 +107,3 @@ export default function LoginPage() {
     </Card>
   );
 }
-
-    

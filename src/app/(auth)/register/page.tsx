@@ -28,7 +28,23 @@ export default function RegisterPage() {
 
   const handleSignUp = (e: FormEvent) => {
     e.preventDefault();
-    initiateEmailSignUp(auth, email, password);
+    initiateEmailSignUp(auth, email, password, (error) => {
+       if (error) {
+        if (error.code === 'auth/email-already-in-use') {
+          toast({
+            variant: "destructive",
+            title: "Signup Failed",
+            description: "This email is already in use. Please try another.",
+          });
+        } else {
+           toast({
+            variant: "destructive",
+            title: "Signup Failed",
+            description: error.message,
+          });
+        }
+      }
+    });
   };
 
   useEffect(() => {
@@ -42,24 +58,8 @@ export default function RegisterPage() {
       }
     });
 
-     const errorUnsubscribe = auth.onIdTokenChanged(async (user) => {
-        if(!user) {
-            // This is a hacky way of catching login errors
-            // A proper implementation would use a different method
-            const probableError = auth.currentUser === null;
-            if(probableError) {
-                 toast({
-                    variant: "destructive",
-                    title: "Signup Failed",
-                    description: "Could not create an account. The email may be in use.",
-                });
-            }
-        }
-    })
-
     return () => {
         unsubscribe();
-        errorUnsubscribe();
     }
   }, [auth, router, toast]);
 
@@ -130,5 +130,3 @@ export default function RegisterPage() {
     </Card>
   );
 }
-
-    
