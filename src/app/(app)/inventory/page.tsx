@@ -60,6 +60,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectSeparator,
 } from '@/components/ui/select';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import {
@@ -115,6 +116,11 @@ export default function InventoryPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [selectedSupplier, setSelectedSupplier] = useState<string | undefined>(undefined);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newSupplierName, setNewSupplierName] = useState('');
+
 
   const handleDelete = (productId: string) => {
     if (!tenantId || !firestore) return;
@@ -130,27 +136,60 @@ export default function InventoryPage() {
     if (!tenantId || !firestore) return;
 
     const formData = new FormData(e.currentTarget);
-    const categoryId = formData.get('category') as string;
     
-    let finalCategoryId = categoryId;
+    let categoryId = selectedCategory;
+    let supplierId = selectedSupplier;
+
+    // Handle new category creation
+    if (categoryId === 'new') {
+        if (!newCategoryName.trim()) {
+            toast({ variant: 'destructive', title: 'Category name is required.' });
+            return;
+        }
+        const newCategoryRef = doc(collection(firestore, `tenants/${tenantId}/categories`));
+        addDocumentNonBlocking(newCategoryRef, {
+            name: newCategoryName,
+            tenantId: tenantId,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        });
+        categoryId = newCategoryRef.id;
+    }
+
+    // Handle new supplier creation
+    if (supplierId === 'new') {
+        if (!newSupplierName.trim()) {
+            toast({ variant: 'destructive', title: 'Supplier name is required.' });
+            return;
+        }
+        const newSupplierRef = doc(collection(firestore, `tenants/${tenantId}/suppliers`));
+        addDocumentNonBlocking(newSupplierRef, {
+            name: newSupplierName,
+            contactName: newSupplierName,
+            email: 'N/A',
+            phone: 'N/A',
+            address: 'N/A',
+            tenantId: tenantId,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        });
+        supplierId = newSupplierRef.id;
+    }
     
+    // Handle default category creation if not in firestore
     const isDefaultCategory = defaultCategories.some(dc => dc.id === categoryId);
     const categoryExistsInFirestore = fetchedCategories?.some(fc => fc.id === categoryId);
-
     if (isDefaultCategory && !categoryExistsInFirestore) {
-      // It's a default category that isn't in Firestore yet. Let's add it.
       const categoryDoc = defaultCategories.find(dc => dc.id === categoryId);
       if (categoryDoc) {
         const newCategoryRef = doc(collection(firestore, `tenants/${tenantId}/categories`), categoryDoc.id);
-        // We will "set" the document but we won't wait for it.
-        // The product will be created with the correct ID regardless.
         setDocumentNonBlocking(newCategoryRef, { 
             name: categoryDoc.name,
             tenantId: tenantId,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
         }, {});
-        finalCategoryId = newCategoryRef.id;
+        categoryId = newCategoryRef.id;
       }
     }
 
@@ -159,8 +198,8 @@ export default function InventoryPage() {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: finalCategoryId,
-      supplierId: formData.get('supplier') as string,
+      categoryId: categoryId,
+      supplierId: supplierId,
       imageUrl: formData.get('imageUrl') as string,
       description: description,
       tenantId: tenantId,
@@ -190,17 +229,28 @@ export default function InventoryPage() {
 
     setEditingProduct(null);
     setDialogOpen(false);
+    resetFormStates();
   };
+  
+  const resetFormStates = () => {
+    setEditingProduct(null);
+    setDescription('');
+    setSelectedCategory(undefined);
+    setSelectedSupplier(undefined);
+    setNewCategoryName('');
+    setNewSupplierName('');
+  }
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
     setDescription(product.description || '');
+    setSelectedCategory(product.categoryId);
+    setSelectedSupplier(product.supplierId);
     setDialogOpen(true);
   };
 
   const openAddDialog = () => {
-    setEditingProduct(null);
-    setDescription('');
+    resetFormStates();
     setDialogOpen(true);
   };
 
@@ -210,15 +260,14 @@ export default function InventoryPage() {
 
     const formData = new FormData(form);
     const productName = formData.get('name') as string;
-    const categoryId = formData.get('category') as string;
-    const categoryName = categories?.find(c => c.id === categoryId)?.name || '';
+    const categoryName = categories?.find(c => c.id === selectedCategory)?.name || newCategoryName || '';
 
     if (!productName || !categoryName) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
         description:
-          'Please enter a product name and select a category first.',
+          'Please enter a product name and select or enter a category first.',
       });
       return;
     }
@@ -473,41 +522,75 @@ export default function InventoryPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid grid-cols-2 items-center gap-4">
-              <Label htmlFor="category" className="text-right">
-                Category
-              </Label>
-              <Select name="category" defaultValue={editingProduct?.categoryId} required>
-                <SelectTrigger className="col-span-1">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories?.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="grid grid-cols-2 gap-4 items-start">
+             <div className="space-y-2">
+                <div className="grid grid-cols-2 items-center gap-4">
+                    <Label htmlFor="category" className="text-right">
+                        Category
+                    </Label>
+                    <Select name="category" value={selectedCategory} onValueChange={setSelectedCategory} required>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {categories?.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                            </SelectItem>
+                        ))}
+                        <SelectSeparator />
+                        <SelectItem value="new">Add New...</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                {selectedCategory === 'new' && (
+                <div className="grid grid-cols-2 items-center gap-4 pl-1">
+                    <div/>
+                    <Input
+                        name="newCategory"
+                        placeholder="New category name"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        className="col-span-1"
+                    />
+                </div>
+                )}
             </div>
-            <div className="grid grid-cols-2 items-center gap-4">
-              <Label htmlFor="supplier" className="text-right">
-                Supplier
-              </Label>
-              <Select name="supplier" defaultValue={editingProduct?.supplierId} required>
-                <SelectTrigger className="col-span-1">
-                  <SelectValue placeholder="Select a supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers?.map((sup) => (
-                    <SelectItem key={sup.id} value={sup.id}>
-                      {sup.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+            <div className="space-y-2">
+                 <div className="grid grid-cols-2 items-center gap-4">
+                    <Label htmlFor="supplier" className="text-right">
+                        Supplier
+                    </Label>
+                     <Select name="supplier" value={selectedSupplier} onValueChange={setSelectedSupplier} required>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a supplier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {suppliers?.map((sup) => (
+                            <SelectItem key={sup.id} value={sup.id}>
+                            {sup.name}
+                            </SelectItem>
+                        ))}
+                        <SelectSeparator />
+                        <SelectItem value="new">Add New...</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                {selectedSupplier === 'new' && (
+                    <div className="grid grid-cols-2 items-center gap-4 pl-1">
+                        <div/>
+                        <Input
+                            name="newSupplier"
+                            placeholder="New supplier name"
+                            value={newSupplierName}
+                            onChange={(e) => setNewSupplierName(e.target.value)}
+                            className="col-span-1"
+                        />
+                    </div>
+                )}
             </div>
+
           </div>
 
           <DialogFooter>
@@ -523,6 +606,5 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
-
 
     
