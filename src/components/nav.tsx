@@ -25,32 +25,32 @@ const navItems = [
     label: "Dashboard",
   },
   {
-    href: "/inventory",
+    href: "/dashboard/inventory",
     icon: Boxes,
     label: "Inventory",
   },
   {
-    href: "/orders",
+    href: "/dashboard/orders",
     icon: ShoppingCart,
     label: "Orders",
   },
   {
-    href: "/suppliers",
+    href: "/dashboard/suppliers",
     icon: Truck,
     label: "Suppliers",
   },
   {
-    href: "/reports",
+    href: "/dashboard/reports",
     icon: BarChart3,
     label: "Reports",
   },
   {
-    href: "/reports/visualizer",
+    href: "/dashboard/reports/visualizer",
     icon: PieChart,
     label: "Visualizer"
   },
   {
-    href: "/settings",
+    href: "/dashboard/settings",
     icon: Settings,
     label: "Settings",
   },
@@ -65,7 +65,7 @@ export default function Nav() {
         <SidebarMenuItem key={item.href}>
           <Link href={item.href}>
             <SidebarMenuButton
-              isActive={pathname.startsWith(item.href) && (item.href !== '/reports' || pathname === '/reports')}
+              isActive={pathname === item.href}
               tooltip={item.label}
             >
               <item.icon />
