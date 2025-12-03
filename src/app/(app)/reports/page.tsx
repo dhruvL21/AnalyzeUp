@@ -1,6 +1,7 @@
 
 'use client';
 
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -26,11 +27,25 @@ import {
 import { Button } from '@/components/ui/button';
 import Papa from 'papaparse';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, Timestamp } from 'firebase/firestore';
 import type { Product, Transaction } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { subDays } from 'date-fns';
+
+type ReportType = 'inventory_summary' | 'sales_report' | 'transaction_log';
+type DateRange = '7' | '30' | '90' | 'all';
 
 export default function ReportsPage() {
   const { firestore, user } = useFirebase();
+
+  const [reportType, setReportType] = useState<ReportType>('inventory_summary');
+  const [dateRange, setDateRange] = useState<DateRange>('30');
 
   const productsRef = useMemoFirebase(
     () => (user && firestore ? collection(firestore, `tenants/${user.uid}/products`) : null),
@@ -44,8 +59,21 @@ export default function ReportsPage() {
   );
   const { data: transactions } = useCollection<Transaction>(transactionsRef);
 
+  const getFilteredTransactions = () => {
+    if (!transactions) return [];
+    if (dateRange === 'all') return transactions;
+
+    const rangeStartDate = subDays(new Date(), parseInt(dateRange));
+    return transactions.filter((t) => {
+      const transactionDate = (t.transactionDate as Timestamp)?.toDate ? (t.transactionDate as Timestamp).toDate() : new Date(t.transactionDate as string);
+      return transactionDate >= rangeStartDate;
+    });
+  };
+
+  const filteredTransactions = getFilteredTransactions();
+
   const totalRevenue =
-    transactions
+    filteredTransactions
       ?.filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
         const product = products?.find((p) => p.id === t.productId);
@@ -54,58 +82,124 @@ export default function ReportsPage() {
 
   const topSellingProducts = products
     ? [...products]
-        .sort((a, b) => {
-          const salesA =
-            transactions
-              ?.filter((t) => t.productId === a.id && t.type === 'Sale')
+        .map(product => {
+          const sales =
+            filteredTransactions
+              ?.filter((t) => t.productId === product.id && t.type === 'Sale')
               .reduce((acc, t) => acc + t.quantity, 0) || 0;
-          const salesB =
-            transactions
-              ?.filter((t) => t.productId === b.id && t.type === 'Sale')
-              .reduce((acc, t) => acc + t.quantity, 0) || 0;
-          const revenueA = salesA * a.price;
-          const revenueB = salesB * b.price;
-          return revenueB - revenueA;
+          const revenue = sales * product.price;
+          return { ...product, revenue };
         })
+        .sort((a,b) => b.revenue - a.revenue)
         .slice(0, 5)
     : [];
 
   const totalProductsInStock =
     products?.reduce((acc, p) => acc + p.stock, 0) || 0;
-  const totalOrders = transactions?.filter((t) => t.type === 'Sale').length || 0;
+  const totalOrders = filteredTransactions?.filter((t) => t.type === 'Sale').length || 0;
 
   const handleDownloadCsv = () => {
     if (!products || !transactions) return;
-    const reportData = products.map((p) => {
-      const sales =
-        transactions
-          .filter((t) => t.productId === p.id && t.type === 'Sale')
-          .reduce((acc, t) => acc + t.quantity, 0) || 0;
-      const revenue = sales * p.price;
-      return {
-        ...p,
-        totalSalesUnits: sales,
-        totalRevenue: revenue.toFixed(2),
-      };
-    });
 
-    const csv = Papa.unparse(reportData);
+    let dataToExport: any[] = [];
+    let filename = 'report.csv';
+
+    const localFilteredTransactions = getFilteredTransactions();
+
+    switch (reportType) {
+      case 'inventory_summary':
+        dataToExport = products.map((p) => ({
+          productId: p.id,
+          productName: p.name,
+          sku: p.sku,
+          stock: p.stock,
+          price: p.price.toFixed(2),
+          inventoryValue: (p.stock * p.price).toFixed(2),
+          category: categories?.find(c => c.id === p.categoryId)?.name || 'N/A',
+        }));
+        filename = `inventory_summary_${new Date().toISOString().split('T')[0]}.csv`;
+        break;
+
+      case 'sales_report':
+        dataToExport = localFilteredTransactions
+          .filter((t) => t.type === 'Sale')
+          .map((t) => {
+            const product = products.find((p) => p.id === t.productId);
+            const revenue = product ? t.quantity * product.price : 0;
+            return {
+              transactionId: t.id,
+              transactionDate: (t.transactionDate as Timestamp)?.toDate ? (t.transactionDate as Timestamp).toDate().toISOString() : t.transactionDate,
+              productId: t.productId,
+              productName: product?.name || 'Unknown',
+              quantitySold: t.quantity,
+              pricePerUnit: product?.price.toFixed(2) || '0.00',
+              totalRevenue: revenue.toFixed(2),
+            };
+          });
+        filename = `sales_report_${dateRange}days_${new Date().toISOString().split('T')[0]}.csv`;
+        break;
+
+      case 'transaction_log':
+        dataToExport = localFilteredTransactions.map((t) => {
+           const product = products.find((p) => p.id === t.productId);
+            return {
+                transactionId: t.id,
+                transactionDate: (t.transactionDate as Timestamp)?.toDate ? (t.transactionDate as Timestamp).toDate().toISOString() : t.transactionDate,
+                type: t.type,
+                productId: t.productId,
+                productName: product?.name || 'Unknown',
+                quantity: t.quantity,
+                locationId: t.locationId,
+            }
+        });
+        filename = `transaction_log_${dateRange}days_${new Date().toISOString().split('T')[0]}.csv`;
+        break;
+    }
+
+    const csv = Papa.unparse(dataToExport);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'inventory_report.csv');
+    link.setAttribute('download', filename);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+  
+    const categoriesRef = useMemoFirebase(
+        () => (user && firestore ? collection(firestore, `tenants/${user.uid}/categories`) : null),
+        [firestore, user]
+    );
+    const { data: categories } = useCollection(categoriesRef);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+           <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Select date range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Last 7 Days</SelectItem>
+              <SelectItem value="30">Last 30 Days</SelectItem>
+              <SelectItem value="90">Last 90 Days</SelectItem>
+              <SelectItem value="all">All Time</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select report type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="inventory_summary">Inventory Summary</SelectItem>
+              <SelectItem value="sales_report">Sales Report</SelectItem>
+              <SelectItem value="transaction_log">Transaction Log</SelectItem>
+            </SelectContent>
+          </Select>
           <Button size="sm" onClick={handleDownloadCsv}>
             <Download className="mr-2 h-4 w-4" />
             Export Report
@@ -127,7 +221,7 @@ export default function ReportsPage() {
               })}
             </div>
             <p className="text-xs text-muted-foreground">
-              Total revenue from all sales
+              {dateRange === 'all' ? 'From all sales' : `From sales in the last ${dateRange} days`}
             </p>
           </CardContent>
         </Card>
@@ -139,7 +233,7 @@ export default function ReportsPage() {
           <CardContent>
             <div className="text-2xl font-bold">{totalOrders}</div>
             <p className="text-xs text-muted-foreground">
-              Total number of sales transactions
+             {dateRange === 'all' ? 'Total sales transactions' : `Sales transactions in the last ${dateRange} days`}
             </p>
           </CardContent>
         </Card>
@@ -175,7 +269,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle>Top Selling Products</CardTitle>
             <CardDescription>
-              Your best-performing products by revenue.
+              {`Your best-performing products by revenue ${dateRange === 'all' ? 'of all time' : `in the last ${dateRange} days`}.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -187,27 +281,20 @@ export default function ReportsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {topSellingProducts.map((product) => {
-                  const sales =
-                    transactions
-                      ?.filter((t) => t.productId === product.id && t.type === 'Sale')
-                      .reduce((acc, t) => acc + t.quantity, 0) || 0;
-                  const revenue = sales * product.price;
-                  return (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">
-                        {product.name}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        $
-                        {revenue.toLocaleString('en-US', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {topSellingProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium">
+                      {product.name}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      $
+                      {product.revenue.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </CardContent>
