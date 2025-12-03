@@ -42,7 +42,6 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-import { toPng } from 'recharts-to-png';
 import { salesData } from '@/lib/data';
 
 type ChartType =
@@ -78,6 +77,7 @@ export function DataVisualizer() {
   const handleDownload = useCallback(async () => {
     if (chartRef.current) {
       try {
+        const { toPng } = await import('recharts-to-png');
         const dataUrl = await toPng(chartRef.current.container.childNodes[0], { backgroundColor: 'hsl(var(--background))' });
         const link = document.createElement('a');
         link.download = `${chartType}-chart.png`;
