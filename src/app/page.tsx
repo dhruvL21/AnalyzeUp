@@ -1,17 +1,18 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Package, BotIcon, ZapIcon, BarChartIcon } from 'lucide-react';
+import { BotIcon, ZapIcon, BarChartIcon } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AnimatedHero } from '@/components/animated-hero';
+import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
 
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background animated-grid-background">
       <header className="px-4 lg:px-6 h-14 flex items-center sticky top-0 z-50 backdrop-blur-sm bg-background/60 border-b">
         <Link href="/" className="flex items-center justify-center">
-          <Package className="h-6 w-6 text-primary" />
-          <span className="ml-2 font-semibold text-foreground">Upstart Inventory</span>
+          <AnalyzeUpIcon className="h-6 w-6 text-primary" />
+          <span className="ml-2 font-semibold text-foreground">AnalyzeUp</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <Link
@@ -41,7 +42,7 @@ export default function LandingPage() {
                     The Smartest Way to Manage Your Inventory
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Upstart Inventory provides a powerful and intuitive platform to
+                    AnalyzeUp provides a powerful and intuitive platform to
                     streamline your stock, track sales, and make data-driven
                     decisions with the power of AI.
                   </p>
@@ -131,7 +132,7 @@ export default function LandingPage() {
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-background">
         <p className="text-xs text-muted-foreground">
-          &copy; 2024 Upstart Inventory. All rights reserved.
+          &copy; 2024 AnalyzeUp. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link

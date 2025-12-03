@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -91,7 +92,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="workspace-name">Workspace Name</Label>
-              <Input id="workspace-name" defaultValue="Upstart" />
+              <Input id="workspace-name" defaultValue="AnalyzeUp" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="timezone">Timezone</Label>

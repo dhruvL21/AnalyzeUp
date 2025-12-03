@@ -5,18 +5,25 @@ import {
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  FirebaseError
+  FirebaseError,
+  User,
   // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
 
-type AuthErrorCallback = (error: FirebaseError | null) => void;
+type AuthErrorCallback = (user: User | null, error: FirebaseError | null) => void;
 
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth, callback?: AuthErrorCallback): void {
-  signInAnonymously(authInstance).catch((error: FirebaseError) => {
+  signInAnonymously(authInstance)
+  .then((userCredential) => {
     if (callback) {
-      callback(error);
+      callback(userCredential.user, null);
+    }
+  })
+  .catch((error: FirebaseError) => {
+    if (callback) {
+      callback(null, error);
     }
   });
 }
@@ -24,18 +31,18 @@ export function initiateAnonymousSignIn(authInstance: Auth, callback?: AuthError
 /** Initiate email/password sign-up (non-blocking). */
 export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, callback?: AuthErrorCallback): void {
   createUserWithEmailAndPassword(authInstance, email, password)
-    .then(() => {
-        if(callback) callback(null);
+    .then((userCredential) => {
+        if(callback) callback(userCredential.user, null);
     })
     .catch((error: FirebaseError) => {
     if (callback) {
-      callback(error);
+      callback(null, error);
     }
   });
 }
 
 /** Initiate email/password sign-in (non-blocking). */
-export function initiateEmailSignIn(authInstance: Auth, email: string, password: string, callback?: AuthErrorCallback): void {
+export function initiateEmailSignIn(authInstance: Auth, email: string, password: string, callback?: (error: FirebaseError | null) => void): void {
   signInWithEmailAndPassword(authInstance, email, password)
    .then(() => {
         if(callback) callback(null);

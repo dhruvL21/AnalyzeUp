@@ -15,7 +15,7 @@ import { useFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Package } from 'lucide-react';
+import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
 
 function AppLayoutSkeleton() {
   return (
@@ -69,9 +69,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         <SidebarHeader>
           <div className="flex h-12 items-center justify-start px-3 text-xl font-semibold">
-            <Package className="h-6 w-6 text-primary" />
+            <AnalyzeUpIcon className="h-6 w-6 text-primary" />
             <span className="ml-2 group-data-[collapsible=icon]:hidden text-sidebar-foreground">
-              Upstart
+              AnalyzeUp
             </span>
           </div>
         </SidebarHeader>

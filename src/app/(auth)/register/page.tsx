@@ -11,11 +11,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent } from 'react';
 import { useAuth, initiateEmailSignUp } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import ClientOnly from '@/components/ClientOnly';
+import { signOut } from 'firebase/auth';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -29,7 +30,7 @@ export default function RegisterPage() {
 
   const handleSignUp = (e: FormEvent) => {
     e.preventDefault();
-    initiateEmailSignUp(auth, email, password, (error) => {
+    initiateEmailSignUp(auth, email, password, (user, error) => {
        if (error) {
         if (error.code === 'auth/email-already-in-use') {
           toast({
@@ -44,25 +45,18 @@ export default function RegisterPage() {
             description: error.message,
           });
         }
+      } else if (user) {
+        // User created successfully, now sign them out and redirect.
+        signOut(auth).then(() => {
+            router.push('/login?registered=true');
+        }).catch((signOutError) => {
+            console.error("Error signing out after registration:", signOutError);
+            // Still redirect, the user can log in manually.
+            router.push('/login?registered=true');
+        });
       }
     });
   };
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        toast({
-          title: 'Account Created',
-          description: "You've been successfully signed up.",
-        });
-        router.push('/dashboard');
-      }
-    });
-
-    return () => {
-        unsubscribe();
-    }
-  }, [auth, router, toast]);
 
   return (
     <Card className="w-full max-w-sm">

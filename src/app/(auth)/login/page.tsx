@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth, initiateEmailSignIn } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, FormEvent, useEffect } from 'react';
 import ClientOnly from '@/components/ClientOnly';
 
@@ -24,6 +24,16 @@ export default function LoginPage() {
   const auth = useAuth();
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+        toast({
+            title: "Account Created",
+            description: "You've been successfully signed up. Please sign in.",
+        });
+    }
+  }, [searchParams, toast]);
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
