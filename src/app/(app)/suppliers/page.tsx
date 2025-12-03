@@ -42,7 +42,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Supplier, Product } from '@/lib/types';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 
 export default function SuppliersPage() {
@@ -102,7 +102,8 @@ export default function SuppliersPage() {
       return;
     }
     
-    addDocumentNonBlocking(collection(firestore, `tenants/${tenantId}/suppliers`), newSupplierData);
+    const newSupplierRef = doc(suppliersRef);
+    setDocumentNonBlocking(newSupplierRef, { id: newSupplierRef.id, ...newSupplierData }, {});
 
     toast({
       title: 'Supplier Added',

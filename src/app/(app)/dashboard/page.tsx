@@ -30,7 +30,7 @@ import { SalesChart } from '@/components/sales-chart';
 import { useMemoFirebase, useCollection, useFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
-import { Transaction } from '@/lib/types';
+import type { Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function DashboardLoading() {
@@ -350,7 +350,12 @@ export default function DashboardPage() {
                   </TableCell>
                   <TableCell>{transaction.quantity}</TableCell>
                   <TableCell className="text-right">
-                    {transaction.transactionDate instanceof Date ? transaction.transactionDate.toLocaleDateString() : 'N/A'}
+                    {transaction.transactionDate && typeof (transaction.transactionDate as any).toDate === 'function' 
+                      ? (transaction.transactionDate as any).toDate().toLocaleDateString()
+                      : transaction.transactionDate instanceof Date 
+                        ? transaction.transactionDate.toLocaleDateString()
+                        : 'N/A'
+                    }
                   </TableCell>
                 </TableRow>
               ))}

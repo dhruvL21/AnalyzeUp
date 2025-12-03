@@ -219,8 +219,7 @@ export default function InventoryPage() {
         description: `${productData.name} has been updated.`,
       });
     } else {
-      const collectionRef = collection(firestore, `tenants/${tenantId}/products`);
-      const newProductRef = doc(collectionRef);
+      const newProductRef = doc(productsRef);
       setDocumentNonBlocking(newProductRef, {
         id: newProductRef.id,
         ...productData,
@@ -614,7 +613,3 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
-
-    
-
-    

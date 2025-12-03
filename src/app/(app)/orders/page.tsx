@@ -82,7 +82,7 @@ export default function OrdersPage() {
     setDocumentNonBlocking(docRef, { status: "Fulfilled" }, { merge: true });
     toast({
       title: 'Order Status Updated',
-      description: `Order ${orderId} has been marked as Fulfilled.`,
+      description: `Order has been marked as Fulfilled.`,
     });
   };
 
@@ -99,7 +99,10 @@ export default function OrdersPage() {
     e.preventDefault();
     if(!tenantId || !firestore) return;
     const formData = new FormData(e.currentTarget);
+    
+    const newOrderRef = doc(ordersRef);
     const newOrder = {
+      id: newOrderRef.id,
       supplierId: formData.get('supplierId') as string,
       status: 'Pending' as OrderStatus,
       orderDate: new Date().toISOString(),
@@ -111,7 +114,7 @@ export default function OrdersPage() {
       updatedAt: serverTimestamp()
     };
     
-    addDocumentNonBlocking(collection(firestore, `tenants/${tenantId}/purchaseOrders`), newOrder);
+    setDocumentNonBlocking(newOrderRef, newOrder, {});
 
     toast({
       title: 'Order Created',
@@ -325,7 +328,7 @@ export default function OrdersPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>Order ID: {viewingOrder?.id}</DialogDescription>
+            <DialogDescription>Order ID: {viewingOrder?.id.slice(0,8)}...</DialogDescription>
           </DialogHeader>
           {viewingOrder && (
             <div className="space-y-4">
@@ -367,4 +370,3 @@ export default function OrdersPage() {
     </>
   );
 }
-

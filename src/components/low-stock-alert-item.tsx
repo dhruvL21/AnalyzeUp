@@ -2,9 +2,9 @@
 "use client";
 
 import { useState } from "react";
-import type { Product } from "@/lib/data";
+import type { Product } from "@/lib/types";
 import { Button } from "./ui/button";
-import { getReorderSuggestionAction } from "@/lib/actions";
+import { getLowStockAlerts } from "@/ai/flows/low-stock-alerts";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Loader2, Lightbulb } from "lucide-react";
 import type { LowStockAlertsOutput } from "@/ai/flows/low-stock-alerts";
@@ -25,21 +25,21 @@ export function LowStockAlertItem({ product }: LowStockAlertItemProps) {
     setIsLoading(true);
     setSuggestion(null);
 
-    const result = await getReorderSuggestionAction({
-      productId: product.id,
-      currentStock: product.stock,
-      averageDailySales: product.averageDailySales,
-      leadTimeDays: product.leadTimeDays,
-    });
-
-    if (result.error) {
+    try {
+      const result = await getLowStockAlerts({
+        productId: product.id,
+        currentStock: product.stock,
+        averageDailySales: product.averageDailySales,
+        leadTimeDays: product.leadTimeDays,
+      });
+      setSuggestion(result);
+    } catch (error) {
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: result.error,
+        description: "Failed to get AI suggestion. Please try again.",
       });
-    } else if (result.data) {
-      setSuggestion(result.data);
     }
 
     setIsLoading(false);
