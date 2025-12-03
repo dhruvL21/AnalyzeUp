@@ -41,6 +41,8 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { salesData } from '@/lib/data';
 
 type ChartType =
@@ -72,19 +74,31 @@ const chartComponents = {
 export function DataVisualizer() {
   const [chartType, setChartType] = useState<ChartType>('bar');
   const chartRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = useCallback(async () => {
-    if (chartRef.current) {
-      try {
-        const toPng = (await import('recharts-to-png')).default;
-        const dataUrl = await toPng(chartRef.current, { backgroundColor: 'hsl(var(--background))' });
-        const link = document.createElement('a');
-        link.download = `${chartType}-chart.png`;
-        link.href = dataUrl;
-        link.click();
-      } catch(err) {
-        console.error(err);
-      }
+    if (!chartRef.current) return;
+
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(chartRef.current, {
+        backgroundColor: null, // Use parent background
+        logging: false,
+        useCORS: true,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`${chartType}-chart.pdf`);
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
+    } finally {
+      setIsDownloading(false);
     }
   }, [chartType]);
   
@@ -228,9 +242,9 @@ export function DataVisualizer() {
               <SelectItem value="radialBar">Radial Bar Chart</SelectItem>
             </SelectContent>
           </Select>
-          <Button size="sm" onClick={handleDownload}>
+          <Button size="sm" onClick={handleDownload} disabled={isDownloading}>
             <Download className="mr-2 h-4 w-4" />
-            Download Chart
+            {isDownloading ? 'Downloading...' : 'Download as PDF'}
           </Button>
         </div>
       </div>
