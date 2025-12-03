@@ -72,13 +72,13 @@ const chartComponents = {
 
 export function DataVisualizer() {
   const [chartType, setChartType] = useState<ChartType>('bar');
-  const chartRef = useRef<any>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = useCallback(async () => {
     if (chartRef.current) {
       try {
         const { toPng } = await import('recharts-to-png');
-        const dataUrl = await toPng(chartRef.current.container.childNodes[0], { backgroundColor: 'hsl(var(--background))' });
+        const dataUrl = await toPng(chartRef.current, { backgroundColor: 'hsl(var(--background))' });
         const link = document.createElement('a');
         link.download = `${chartType}-chart.png`;
         link.href = dataUrl;
@@ -243,8 +243,8 @@ export function DataVisualizer() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px] w-full bg-background p-4 rounded-lg">
-            <ResponsiveContainer width="100%" height="100%" ref={chartRef}>
+          <div ref={chartRef} className="h-[400px] w-full bg-background p-4 rounded-lg">
+            <ResponsiveContainer width="100%" height="100%">
               {renderChart()}
             </ResponsiveContainer>
           </div>
