@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   Truck,
   BarChart3,
+  PieChart,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -44,6 +45,11 @@ const navItems = [
     label: "Reports",
   },
   {
+    href: "/reports/visualizer",
+    icon: PieChart,
+    label: "Visualizer"
+  },
+  {
     href: "/settings",
     icon: Settings,
     label: "Settings",
@@ -59,7 +65,7 @@ export default function Nav() {
         <SidebarMenuItem key={item.href}>
           <Link href={item.href}>
             <SidebarMenuButton
-              isActive={pathname === item.href}
+              isActive={pathname.startsWith(item.href) && (item.href !== '/reports' || pathname === '/reports')}
               tooltip={item.label}
             >
               <item.icon />
