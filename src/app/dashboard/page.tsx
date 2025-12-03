@@ -27,11 +27,13 @@ import {
 } from 'lucide-react';
 import { LowStockAlertItem } from '@/components/low-stock-alert-item';
 import { SalesChart } from '@/components/sales-chart';
-import { useMemoFirebase, useCollection, useFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirebase } from '@/firebase';
 import type { Product } from '@/lib/types';
 import type { Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { mockProducts } from '@/lib/mock-products';
+import { mockTransactions } from '@/lib/mock-transactions';
+import { useState, useEffect } from 'react';
 
 function DashboardLoading() {
   return (
@@ -151,21 +153,20 @@ function DashboardLoading() {
 }
 
 export default function DashboardPage() {
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const productsRef = useMemoFirebase(
-    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/products`) : null),
-    [firestore, user]
-  );
-  const { data: products, isLoading: isLoadingProducts } =
-    useCollection<Product>(productsRef);
+  // For this example, we'll use mock data directly.
+  const products: Product[] = mockProducts;
+  const transactions: Transaction[] = mockTransactions;
 
-  const transactionsRef = useMemoFirebase(
-    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/inventoryTransactions`) : null),
-    [firestore, user]
-  );
-  const { data: transactions, isLoading: isLoadingTransactions } =
-    useCollection<Transaction>(transactionsRef);
+  useEffect(() => {
+    // Simulate data loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const lowStockProducts = products?.filter((p) => p.stock < 20);
 
@@ -196,9 +197,9 @@ export default function DashboardPage() {
       ? Object.entries(topSellingProduct).sort((a, b) => b[1] - a[1])[0]
       : ['N/A', 0];
 
-  const recentTransactions = transactions?.slice(-5).reverse();
+  const recentTransactions = transactions?.slice(0, 5).reverse();
 
-  if (isLoadingProducts || isLoadingTransactions) {
+  if (isLoading) {
     return <DashboardLoading />;
   }
 
@@ -278,7 +279,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
             <CardDescription>
-              A look at your sales performance over the past 6 months.
+              A look at your sales performance over the past 12 months.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -350,12 +351,7 @@ export default function DashboardPage() {
                   </TableCell>
                   <TableCell>{transaction.quantity}</TableCell>
                   <TableCell className="text-right">
-                    {transaction.transactionDate && typeof (transaction.transactionDate as any).toDate === 'function' 
-                      ? (transaction.transactionDate as any).toDate().toLocaleDateString()
-                      : transaction.transactionDate instanceof Date 
-                        ? transaction.transactionDate.toLocaleDateString()
-                        : 'N/A'
-                    }
+                    {new Date(transaction.transactionDate as string).toLocaleDateString()}
                   </TableCell>
                 </TableRow>
               ))}

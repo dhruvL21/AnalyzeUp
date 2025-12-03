@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,35 +51,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { PurchaseOrder, Supplier, Product } from '@/lib/types';
-import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { useFirebase } from '@/firebase';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { mockOrders } from '@/lib/mock-orders';
+import { mockSuppliers } from '@/lib/mock-suppliers';
+import { mockProducts } from '@/lib/mock-products';
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
 export default function OrdersPage() {
-  const { firestore, user } = useFirebase();
-  const tenantId = user?.uid;
+  const { user } = useFirebase();
+  const { toast } = useToast();
 
-  const ordersRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/purchaseOrders`) : null), [firestore, tenantId]);
-  const { data: orders, isLoading } = useCollection<PurchaseOrder>(ordersRef);
-  
-  const suppliersRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/suppliers`) : null), [firestore, tenantId]);
-  const { data: suppliers } = useCollection<Supplier>(suppliersRef);
-  
-  const productsRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/products`) : null), [firestore, tenantId]);
-  const { data: products } = useCollection<Product>(productsRef);
-
+  const [orders, setOrders] = useState<PurchaseOrder[]>(mockOrders);
+  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
+  const [products, setProducts] = useState<Product[]>(mockProducts);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
-  const { toast } = useToast();
-
+  
   const handleMarkAsFulfilled = (orderId: string) => {
-    if(!tenantId || !firestore) return;
-    const docRef = doc(firestore, `tenants/${tenantId}/purchaseOrders`, orderId);
-    setDocumentNonBlocking(docRef, { status: "Fulfilled" }, { merge: true });
+    setOrders(orders.map(o => o.id === orderId ? {...o, status: "Fulfilled"} : o));
     toast({
       title: 'Order Status Updated',
       description: `Order has been marked as Fulfilled.`,
@@ -87,8 +79,7 @@ export default function OrdersPage() {
   };
 
   const handleDeleteOrder = (orderId: string) => {
-    if (!tenantId || !firestore) return;
-    deleteDocumentNonBlocking(doc(firestore, `tenants/${tenantId}/purchaseOrders`, orderId));
+    setOrders(orders.filter(o => o.id !== orderId));
     toast({
       title: 'Order Deleted',
       description: 'The purchase order has been successfully removed.',
@@ -97,24 +88,23 @@ export default function OrdersPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(!tenantId || !firestore) return;
+    if(!user) return;
+
     const formData = new FormData(e.currentTarget);
-    
-    const newOrderRef = doc(ordersRef);
-    const newOrder = {
-      id: newOrderRef.id,
+    const newOrder: PurchaseOrder = {
+      id: `PO-${orders.length + 1}`,
       supplierId: formData.get('supplierId') as string,
-      status: 'Pending' as OrderStatus,
+      status: 'Pending',
       orderDate: new Date().toISOString(),
-      expectedDeliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), // Example logic
+      expectedDeliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
       quantity: Number(formData.get('quantity')),
       productId: formData.get('productId') as string,
-      tenantId: tenantId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      tenantId: user.uid,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     
-    setDocumentNonBlocking(newOrderRef, newOrder, {});
+    setOrders([newOrder, ...orders]);
 
     toast({
       title: 'Order Created',
@@ -123,7 +113,7 @@ export default function OrdersPage() {
     setDialogOpen(false);
   };
 
-  const getStatusVariant = (status: OrderStatus) => {
+  const getStatusVariant = (status: OrderStatus): "secondary" | "outline" | "destructive" | "default" => {
     switch (status) {
       case 'Fulfilled':
         return 'secondary';

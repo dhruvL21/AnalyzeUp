@@ -41,23 +41,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Supplier, Product } from '@/lib/types';
-import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { useFirebase } from '@/firebase';
+import { mockSuppliers } from '@/lib/mock-suppliers';
+import { mockProducts } from '@/lib/mock-products';
+
 
 export default function SuppliersPage() {
-  const { firestore, user } = useFirebase();
-  const tenantId = user?.uid;
-
-  const productsRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/products`) : null), [firestore, tenantId]);
-  const { data: products } = useCollection<Product>(productsRef);
+  const { user } = useFirebase();
+  const { toast } = useToast();
   
-  const suppliersRef = useMemoFirebase(() => (tenantId && firestore ? collection(firestore, `tenants/${tenantId}/suppliers`) : null), [firestore, tenantId]);
-  const { data: suppliers } = useCollection<Supplier>(suppliersRef);
+  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { toast } = useToast();
-
+  
   const supplierProductCount = useMemo(() => {
     if (!suppliers || !products) return {};
     const count: { [key: string]: number } = {};
@@ -69,8 +66,8 @@ export default function SuppliersPage() {
 
 
   const handleDeleteSupplier = (supplierId: string) => {
-    if (!tenantId || !firestore) return;
-    deleteDocumentNonBlocking(doc(firestore, `tenants/${tenantId}/suppliers`, supplierId));
+    if (!user) return;
+    setSuppliers(suppliers.filter(s => s.id !== supplierId));
     toast({
       title: 'Supplier Deleted',
       description: 'The supplier has been successfully removed.',
@@ -79,7 +76,7 @@ export default function SuppliersPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(!tenantId || !firestore) return;
+    if(!user) return;
 
     const formData = new FormData(e.currentTarget);
     const newSupplierData = {
@@ -88,9 +85,7 @@ export default function SuppliersPage() {
       email: formData.get('email') as string,
       phone: 'N/A',
       address: 'N/A',
-      tenantId: tenantId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      tenantId: user.uid,
     };
 
     if (suppliers?.find((s) => s.name === newSupplierData.name)) {
@@ -102,8 +97,14 @@ export default function SuppliersPage() {
       return;
     }
     
-    const newSupplierRef = doc(suppliersRef);
-    setDocumentNonBlocking(newSupplierRef, { id: newSupplierRef.id, ...newSupplierData }, {});
+    const newSupplier: Supplier = {
+      id: `SUP${suppliers.length + 1}`,
+      ...newSupplierData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    setSuppliers([newSupplier, ...suppliers]);
 
     toast({
       title: 'Supplier Added',

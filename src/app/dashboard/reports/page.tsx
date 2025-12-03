@@ -26,9 +26,8 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Papa from 'papaparse';
-import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { collection, Timestamp } from 'firebase/firestore';
-import type { Product, Transaction } from '@/lib/types';
+import { useFirebase } from '@/firebase';
+import type { Product, Transaction, Category } from '@/lib/types';
 import {
   Select,
   SelectContent,
@@ -37,27 +36,28 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { subDays } from 'date-fns';
+import { mockProducts } from '@/lib/mock-products';
+import { mockTransactions } from '@/lib/mock-transactions';
+
 
 type ReportType = 'inventory_summary' | 'sales_report' | 'transaction_log';
 type DateRange = '7' | '30' | '90' | 'all';
 
 export default function ReportsPage() {
-  const { firestore, user } = useFirebase();
+  const { user } = useFirebase();
 
   const [reportType, setReportType] = useState<ReportType>('inventory_summary');
   const [dateRange, setDateRange] = useState<DateRange>('30');
 
-  const productsRef = useMemoFirebase(
-    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/products`) : null),
-    [firestore, user]
-  );
-  const { data: products } = useCollection<Product>(productsRef);
-
-  const transactionsRef = useMemoFirebase(
-    () => (user && firestore ? collection(firestore, `tenants/${user.uid}/inventoryTransactions`) : null),
-    [firestore, user]
-  );
-  const { data: transactions } = useCollection<Transaction>(transactionsRef);
+  // Using mock data
+  const products: Product[] = mockProducts;
+  const transactions: Transaction[] = mockTransactions;
+  const categories: Category[] = [
+    { id: 'tops', name: 'Tops', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
+    { id: 'bottoms', name: 'Bottoms', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
+    { id: 'essentials', name: 'Essentials', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
+    { id: 'accessories', name: 'Accessories', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
+  ];
 
   const getFilteredTransactions = () => {
     if (!transactions) return [];
@@ -65,7 +65,7 @@ export default function ReportsPage() {
 
     const rangeStartDate = subDays(new Date(), parseInt(dateRange));
     return transactions.filter((t) => {
-      const transactionDate = (t.transactionDate as Timestamp)?.toDate ? (t.transactionDate as Timestamp).toDate() : new Date(t.transactionDate as string);
+      const transactionDate = new Date(t.transactionDate as string);
       return transactionDate >= rangeStartDate;
     });
   };
@@ -128,7 +128,7 @@ export default function ReportsPage() {
             const revenue = product ? t.quantity * product.price : 0;
             return {
               transactionId: t.id,
-              transactionDate: (t.transactionDate as Timestamp)?.toDate ? (t.transactionDate as Timestamp).toDate().toISOString() : t.transactionDate,
+              transactionDate: t.transactionDate,
               productId: t.productId,
               productName: product?.name || 'Unknown',
               quantitySold: t.quantity,
@@ -144,7 +144,7 @@ export default function ReportsPage() {
            const product = products.find((p) => p.id === t.productId);
             return {
                 transactionId: t.id,
-                transactionDate: (t.transactionDate as Timestamp)?.toDate ? (t.transactionDate as Timestamp).toDate().toISOString() : t.transactionDate,
+                transactionDate: t.transactionDate,
                 type: t.type,
                 productId: t.productId,
                 productName: product?.name || 'Unknown',
@@ -168,12 +168,6 @@ export default function ReportsPage() {
     document.body.removeChild(link);
   };
   
-    const categoriesRef = useMemoFirebase(
-        () => (user && firestore ? collection(firestore, `tenants/${user.uid}/categories`) : null),
-        [firestore, user]
-    );
-    const { data: categories } = useCollection(categoriesRef);
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center">
@@ -258,7 +252,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle>Sales Overview</CardTitle>
             <CardDescription>
-              Your sales trend over the last 6 months.
+              Your sales trend over the last 12 months.
             </CardDescription>
           </CardHeader>
           <CardContent>
