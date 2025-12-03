@@ -73,20 +73,43 @@ const chartComponents = {
 
 export function DataVisualizer() {
   const [chartType, setChartType] = useState<ChartType>('bar');
-  const chartRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<any>(null);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (chartRef.current) {
-      toPng(chartRef.current, { backgroundColor: 'transparent' }).then((dataUrl) => {
+      try {
+        const dataUrl = await toPng(chartRef.current.container.childNodes[0], { backgroundColor: 'hsl(var(--background))' });
         const link = document.createElement('a');
         link.download = `${chartType}-chart.png`;
         link.href = dataUrl;
         link.click();
-      });
+      } catch(err) {
+        console.error(err);
+      }
     }
   }, [chartType]);
   
   const renderChart = () => {
+    const ChartComponent = chartComponents[chartType];
+    const commonProps = {
+        data: salesData,
+    };
+    
+    const commonChildren = [
+      <CartesianGrid key="grid" strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />,
+      <XAxis key="xaxis" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />,
+      <YAxis key="yaxis" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value: number) => `$${value}`} />,
+      <Tooltip
+        key="tooltip"
+        cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
+        contentStyle={{
+            backgroundColor: "hsl(var(--background))",
+            border: "1px solid hsl(var(--border))",
+        }}
+    />,
+      <Legend key="legend" />,
+    ];
+    
     switch (chartType) {
         case 'pie':
         return (
@@ -161,53 +184,23 @@ export function DataVisualizer() {
 
         case 'line':
              return (
-                <LineChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-                    <Tooltip
-                        cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-                        contentStyle={{
-                            backgroundColor: "hsl(var(--background))",
-                            border: "1px solid hsl(var(--border))",
-                        }}
-                    />
-                    <Legend />
+                <LineChart {...commonProps}>
+                    {commonChildren}
                     <Line type="monotone" dataKey="sales" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
                 </LineChart>
             );
         case 'area':
              return (
-                <AreaChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-                    <Tooltip
-                        cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-                        contentStyle={{
-                            backgroundColor: "hsl(var(--background))",
-                            border: "1px solid hsl(var(--border))",
-                        }}
-                    />
-                    <Legend />
+                <AreaChart {...commonProps}>
+                    {commonChildren}
                     <Area type="monotone" dataKey="sales" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
                 </AreaChart>
             );
 
         default: // bar
             return (
-                <BarChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-                    <Tooltip
-                        cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-                        contentStyle={{
-                            backgroundColor: "hsl(var(--background))",
-                            border: "1px solid hsl(var(--border))",
-                        }}
-                    />
-                    <Legend />
+                <BarChart {...commonProps}>
+                    {commonChildren}
                     <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
             )
@@ -250,8 +243,8 @@ export function DataVisualizer() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div ref={chartRef} className="h-[400px] w-full bg-background p-4 rounded-lg">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[400px] w-full bg-background p-4 rounded-lg">
+            <ResponsiveContainer width="100%" height="100%" ref={chartRef}>
               {renderChart()}
             </ResponsiveContainer>
           </div>
