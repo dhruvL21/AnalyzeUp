@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
@@ -77,8 +76,7 @@ export function DataVisualizer() {
   const handleDownload = useCallback(async () => {
     if (chartRef.current) {
       try {
-        const module = await import('recharts-to-png');
-        const toPng = module.default;
+        const toPng = (await import('recharts-to-png')).default;
         const dataUrl = await toPng(chartRef.current, { backgroundColor: 'hsl(var(--background))' });
         const link = document.createElement('a');
         link.download = `${chartType}-chart.png`;
