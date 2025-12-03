@@ -2,12 +2,12 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Package, BotIcon, ZapIcon, BarChartIcon } from 'lucide-react';
-import Image from 'next/image';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { AnimatedHero } from '@/components/animated-hero';
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-background">
+    <div className="flex flex-col min-h-[100dvh] bg-background animated-grid-background">
       <header className="px-4 lg:px-6 h-14 flex items-center sticky top-0 z-50 backdrop-blur-sm bg-background/60 border-b">
         <Link href="/" className="flex items-center justify-center">
           <Package className="h-6 w-6 text-primary" />
@@ -61,14 +61,9 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </div>
-              <Image
-                src="https://picsum.photos/seed/inventory-hero/600/600"
-                width="600"
-                height="600"
-                alt="Inventory Management Dashboard"
-                data-ai-hint="inventory dashboard"
-                className="mx-auto aspect-square overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
-              />
+              <div className="flex items-center justify-center lg:order-last min-h-[250px] lg:min-h-[300px]">
+                  <AnimatedHero />
+              </div>
             </div>
           </div>
         </section>
