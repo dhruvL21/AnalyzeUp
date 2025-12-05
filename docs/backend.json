@@ -4,15 +4,20 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user account within the Upstart Inventory system.",
+      "description": "Represents a user account within the system.  Does NOT store authentication secrets (passwords) - assume an external auth system.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user."
+          "description": "Unique identifier for the User entity."
         },
         "tenantId": {
           "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N User)"
+          "description": "Reference to Tenant. (Relationship: Tenant 1:N User).  Indicates which tenant/workspace this user belongs to."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
         },
         "firstName": {
           "type": "string",
@@ -22,407 +27,67 @@
           "type": "string",
           "description": "The user's last name."
         },
-        "email": {
-          "type": "string",
-          "description": "The user's email address.",
-          "format": "email"
-        },
         "role": {
           "type": "string",
-          "description": "The user's role within the tenant (e.g., Owner, Manager, Staff)."
+          "description": "The user's role within the tenant (e.g., Owner, Manager, Staff).",
+          "format": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the user was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The date and time when the user was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "tenantId",
+        "email",
         "firstName",
         "lastName",
-        "email",
-        "role"
+        "role",
+        "createdAt",
+        "updatedAt"
       ]
     },
     "Tenant": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Tenant",
       "type": "object",
-      "description": "Represents a startup or company using the Upstart Inventory system (multi-tenancy).",
+      "description": "Represents a tenant or workspace in the multi-tenant SaaS application (e.g., a startup's account).",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the tenant."
+          "description": "Unique identifier for the Tenant entity."
         },
         "name": {
           "type": "string",
-          "description": "The name of the tenant (company/startup)."
+          "description": "The name of the tenant (e.g., startup's name)."
         },
-        "description": {
+        "domain": {
           "type": "string",
-          "description": "A brief description of the tenant."
+          "description": "The tenant's domain (optional)."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp indicating when the tenant was created.",
+          "description": "The date and time when the tenant was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The date and time when the tenant was last updated.",
           "format": "date-time"
         }
       },
       "required": [
         "id",
         "name",
-        "createdAt"
-      ]
-    },
-    "Product": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Product",
-      "type": "object",
-      "description": "Represents a product in the inventory system.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the product."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N Product)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the product."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the product."
-        },
-        "sku": {
-          "type": "string",
-          "description": "Stock Keeping Unit (SKU) for the product."
-        },
-        "category": {
-          "type": "string",
-          "description": "The category the product belongs to."
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "name",
-        "sku"
-      ]
-    },
-    "Location": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Location",
-      "type": "object",
-      "description": "Represents a physical location where inventory is stored (e.g., warehouse, store).",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the location."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N Location)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the location."
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of location (e.g., warehouse, store, dark store)."
-        },
-        "address": {
-          "type": "string",
-          "description": "The physical address of the location."
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "name",
-        "type"
-      ]
-    },
-    "InventoryTransaction": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "InventoryTransaction",
-      "type": "object",
-      "description": "Represents a transaction that changes the inventory level of a product at a specific location.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the inventory transaction."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N InventoryTransaction)"
-        },
-        "productId": {
-          "type": "string",
-          "description": "Reference to Product. (Relationship: Product 1:N InventoryTransaction)"
-        },
-        "locationId": {
-          "type": "string",
-          "description": "Reference to Location. (Relationship: Location 1:N InventoryTransaction)"
-        },
-        "transactionType": {
-          "type": "string",
-          "description": "The type of transaction (e.g., purchase, sale, transfer, adjustment)."
-        },
-        "quantity": {
-          "type": "number",
-          "description": "The quantity of the product involved in the transaction."
-        },
-        "transactionDate": {
-          "type": "string",
-          "description": "The date and time of the transaction.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "productId",
-        "locationId",
-        "transactionType",
-        "quantity",
-        "transactionDate"
-      ]
-    },
-    "SalesOrder": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SalesOrder",
-      "type": "object",
-      "description": "Represents a sales order placed by a customer.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the sales order."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N SalesOrder)"
-        },
-        "orderDate": {
-          "type": "string",
-          "description": "The date the order was placed.",
-          "format": "date-time"
-        },
-        "channel": {
-          "type": "string",
-          "description": "The sales channel (e.g., website, marketplace, POS)."
-        },
-        "totalAmount": {
-          "type": "number",
-          "description": "The total amount of the order."
-        },
-        "status": {
-          "type": "string",
-          "description": "The status of the order (e.g., pending, processing, completed, cancelled)."
-        },
-        "lineItemIds": {
-          "type": "array",
-          "description": "References to LineItems. (Relationship: SalesOrder 1:N LineItem)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "orderDate",
-        "channel",
-        "totalAmount",
-        "status",
-        "lineItemIds"
-      ]
-    },
-    "LineItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LineItem",
-      "type": "object",
-      "description": "Represents a line item in a sales order.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the line item."
-        },
-        "productId": {
-          "type": "string",
-          "description": "Reference to Product. (Relationship: Product 1:N LineItem)"
-        },
-        "quantity": {
-          "type": "number",
-          "description": "The quantity of the product in this line item."
-        },
-        "unitPrice": {
-          "type": "number",
-          "description": "The price of one unit of the product."
-        },
-        "totalPrice": {
-          "type": "number",
-          "description": "total price"
-        }
-      },
-      "required": [
-        "id",
-        "productId",
-        "quantity",
-        "unitPrice"
-      ]
-    },
-    "Supplier": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Supplier",
-      "type": "object",
-      "description": "Represents a supplier of products.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the supplier."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N Supplier)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the supplier."
-        },
-        "contactName": {
-          "type": "string",
-          "description": "The name of the contact person at the supplier."
-        },
-        "contactEmail": {
-          "type": "string",
-          "description": "The email address of the contact person.",
-          "format": "email"
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "name"
-      ]
-    },
-    "PurchaseOrder": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PurchaseOrder",
-      "type": "object",
-      "description": "Represents a purchase order placed with a supplier.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the purchase order."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N PurchaseOrder)"
-        },
-        "supplierId": {
-          "type": "string",
-          "description": "Reference to Supplier. (Relationship: Supplier 1:N PurchaseOrder)"
-        },
-        "orderDate": {
-          "type": "string",
-          "description": "The date the order was placed.",
-          "format": "date-time"
-        },
-        "expectedDeliveryDate": {
-          "type": "string",
-          "description": "The expected delivery date.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The status of the order (e.g., draft, sent, received, cancelled)."
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "supplierId",
-        "orderDate",
-        "expectedDeliveryDate",
-        "status"
-      ]
-    },
-    "Integration": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Integration",
-      "type": "object",
-      "description": "Represents an integration with an external system (e.g., e-commerce platform, POS system).",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the integration."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N Integration)"
-        },
-        "platform": {
-          "type": "string",
-          "description": "The name of the platform being integrated with (e.g., Shopify, WooCommerce, QuickBooks)."
-        },
-        "apiKey": {
-          "type": "string",
-          "description": "The API key for the integration."
-        },
-        "webhookUrl": {
-          "type": "string",
-          "description": "The webhook URL for receiving updates from the external system.",
-          "format": "uri"
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "platform",
-        "apiKey",
-        "webhookUrl"
-      ]
-    },
-    "Alert": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Alert",
-      "type": "object",
-      "description": "Represents an alert or notification triggered by certain events (e.g., low stock, stockout).",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the alert."
-        },
-        "tenantId": {
-          "type": "string",
-          "description": "Reference to Tenant. (Relationship: Tenant 1:N Alert)"
-        },
-        "productId": {
-          "type": "string",
-          "description": "Reference to Product. (Relationship: Product 1:N Alert)"
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of alert (e.g., low stock, stockout, dead stock)."
-        },
-        "message": {
-          "type": "string",
-          "description": "The message associated with the alert."
-        },
-        "timestamp": {
-          "type": "string",
-          "description": "The timestamp when the alert was triggered.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "tenantId",
-        "productId",
-        "type",
-        "message",
-        "timestamp"
+        "createdAt",
+        "updatedAt"
       ]
     }
   },
@@ -435,223 +100,42 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles.  Includes tenantId and role for authorization.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
-      },
-      {
         "path": "/tenants/{tenantId}",
         "definition": {
           "entityName": "Tenant",
           "schema": {
             "$ref": "#/backend/entities/Tenant"
           },
-          "description": "Stores tenant information.",
+          "description": "Represents a tenant or workspace in the application.",
           "params": [
             {
               "name": "tenantId",
-              "description": "The unique identifier of the tenant."
+              "description": "The unique identifier for the tenant."
             }
           ]
         }
       },
       {
-        "path": "/tenants/{tenantId}/products/{productId}",
+        "path": "/tenants/{tenantId}/users/{userId}",
         "definition": {
-          "entityName": "Product",
+          "entityName": "User",
           "schema": {
-            "$ref": "#/backend/entities/Product"
+            "$ref": "#/backend/entities/User"
           },
-          "description": "Products belonging to a specific tenant. Includes denormalized 'tenantId' for authorization independence.",
+          "description": "Represents a user account within a specific tenant. Includes denormalized 'tenantId' for authorization independence.",
           "params": [
             {
               "name": "tenantId",
-              "description": "The unique identifier of the tenant."
+              "description": "The unique identifier for the tenant."
             },
             {
-              "name": "productId",
-              "description": "The unique identifier of the product."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/locations/{locationId}",
-        "definition": {
-          "entityName": "Location",
-          "schema": {
-            "$ref": "#/backend/entities/Location"
-          },
-          "description": "Locations associated with a tenant. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "locationId",
-              "description": "The unique identifier of the location."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/inventoryTransactions/{inventoryTransactionId}",
-        "definition": {
-          "entityName": "InventoryTransaction",
-          "schema": {
-            "$ref": "#/backend/entities/InventoryTransaction"
-          },
-          "description": "Inventory transactions for a tenant's products. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "inventoryTransactionId",
-              "description": "The unique identifier of the inventory transaction."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/salesOrders/{salesOrderId}",
-        "definition": {
-          "entityName": "SalesOrder",
-          "schema": {
-            "$ref": "#/backend/entities/SalesOrder"
-          },
-          "description": "Sales orders for a tenant. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "salesOrderId",
-              "description": "The unique identifier of the sales order."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/salesOrders/{salesOrderId}/lineItems/{lineItemId}",
-        "definition": {
-          "entityName": "LineItem",
-          "schema": {
-            "$ref": "#/backend/entities/LineItem"
-          },
-          "description": "Line items for a sales order. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "salesOrderId",
-              "description": "The unique identifier of the sales order."
-            },
-            {
-              "name": "lineItemId",
-              "description": "The unique identifier of the line item."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/suppliers/{supplierId}",
-        "definition": {
-          "entityName": "Supplier",
-          "schema": {
-            "$ref": "#/backend/entities/Supplier"
-          },
-          "description": "Suppliers for a tenant. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "supplierId",
-              "description": "The unique identifier of the supplier."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/purchaseOrders/{purchaseOrderId}",
-        "definition": {
-          "entityName": "PurchaseOrder",
-          "schema": {
-            "$ref": "#/backend/entities/PurchaseOrder"
-          },
-          "description": "Purchase orders for a tenant. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "purchaseOrderId",
-              "description": "The unique identifier of the purchase order."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/integrations/{integrationId}",
-        "definition": {
-          "entityName": "Integration",
-          "schema": {
-            "$ref": "#/backend/entities/Integration"
-          },
-          "description": "Integrations for a tenant. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "integrationId",
-              "description": "The unique identifier of the integration."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/tenants/{tenantId}/alerts/{alertId}",
-        "definition": {
-          "entityName": "Alert",
-          "schema": {
-            "$ref": "#/backend/entities/Alert"
-          },
-          "description": "Alerts for a tenant. Includes denormalized 'tenantId' for authorization independence.",
-          "params": [
-            {
-              "name": "tenantId",
-              "description": "The unique identifier of the tenant."
-            },
-            {
-              "name": "alertId",
-              "description": "The unique identifier of the alert."
+              "name": "userId",
+              "description": "The unique identifier for the user."
             }
           ]
         }
       }
     ],
-    "reasoning": "This Firestore structure is designed for the Upstart Inventory application, prioritizing security, scalability, and ease of maintenance. It addresses the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters).  \n\n**Authorization Independence:**  We achieve this by denormalizing tenantId and user role into every document that requires tenant-level or role-based authorization. This eliminates the need for `get()` calls in security rules, allowing for atomic operations and simplifying rule logic.\n\n**Clarity of Intent:**  The structure uses explicit, semantic naming conventions for collections and documents, making the authorization intent clear from the path itself. For example, `/tenants/{tenantId}/products/{productId}` immediately indicates that products belong to tenants.\n\n**DBAC (No Custom Claims):** User roles are stored within the `users` collection, eliminating reliance on custom claims.  Security rules can directly access the user's role based on their `uid` and the denormalized `tenantId`.\n\n**QAPs (Rules are not Filters):**  The structure supports secure `list` operations by segregating data based on tenancy and user roles. The tenant ID is included in every document, enabling filtering by tenant without exposing data across tenants. The use of path-based ownership (`/users/{userId}/...`) ensures that only the owner can access their private data. Collaborative data is implicitly handled via the tenant structure (all users within a tenant can access tenant data based on role).\n\n**Structure Overview:**\n\n*   `/users/{userId}`: Stores user profiles, including the `tenantId` they belong to and their `role` within that tenant.\n*   `/tenants/{tenantId}`: Stores tenant information.  \n*   `/tenants/{tenantId}/products/{productId}`: Products belonging to a specific tenant. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/locations/{locationId}`: Locations associated with a tenant. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/inventoryTransactions/{inventoryTransactionId}`: Inventory transactions for a tenant's products. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/salesOrders/{salesOrderId}`: Sales orders for a tenant. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/salesOrders/{salesOrderId}/lineItems/{lineItemId}`: line items for a sales order. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/suppliers/{supplierId}`: Suppliers for a tenant. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/purchaseOrders/{purchaseOrderId}`: Purchase orders for a tenant. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/integrations/{integrationId}`: Integrations for a tenant. Includes denormalized `tenantId`.\n*   `/tenants/{tenantId}/alerts/{alertId}`: Alerts for a tenant. Includes denormalized `tenantId` and `productId`.\n\nThis structure facilitates robust and easily debuggable security rules while adhering to best practices for Firestore data modeling."
+    "reasoning": "This Firestore structure is designed to support Upstart Inventory, a multi-tenant SaaS platform for startups. The primary goal is to provide a secure, scalable, and easily maintainable data structure that aligns with Firestore's best practices, particularly emphasizing authorization independence. Here's a breakdown of the design and its adherence to the core principles:\n\n**1. Authorization Independence (CRITICAL):**\n   - **Tenants:** Each startup operates within its own tenant.  The `tenantId` is denormalized into every `User` document. This allows security rules to validate that a user belongs to the correct tenant without needing to perform expensive `get()` operations on the `Tenant` document itself.\n   - **Users:** User documents are stored within a tenant-specific subcollection (`/tenants/{tenantId}/users/{userId}`).  Access control is enforced based on the authenticated user's ID and the denormalized `tenantId`. This eliminates the need to check parent document attributes, such as ownership, during authorization checks.\n\n**2. Clarity of Intent (Debuggability):**\n   - The structure clearly reflects the relationships between tenants and users. The path `/tenants/{tenantId}/users/{userId}` expresses the 'tenant owns users' relationship. This makes it very clear how to implement the security rule.\n   - The use of descriptive field names (e.g., `tenantId`, `userId`) enhances readability and understanding of the data model.\n\n**3. DBAC (No Custom Claims):**\n   - The `User` document stores the `role` of the user. Security rules use this information, coupled with the user's ID and tenant ID, to authorize operations. No custom claims are needed.\n\n**4. QAPs (Rules are not Filters):**\n   - The structure enables secure `list` operations by isolating data within tenant-specific subcollections. A rule can allow listing users within a tenant based on the authenticated user's `tenantId`, preventing unauthorized access to other tenants' data.  The `tenantId` parameter allows this QAP to be met simply.\n\n**5. Invariants:**\n   - The structure supports data integrity by providing clear ownership. Each user belongs to exactly one tenant (defined by `tenantId` in `User`).\n   - Timestamps (`createdAt`, `updatedAt`) enforce invariants related to data creation and modification times. Although the structure does not automatically enforce timestamp correctness, these fields provide a mechanism to track and validate the data's history in server side code via firebase functions.\n\n**Design Strategy Mandates:**\n\n*   **A. Authorization Independence via Denormalization:** The `tenantId` is denormalized from the `Tenant` document into the `User` document. This allows security rules to avoid using `get()` calls to fetch the `Tenant`'s properties, making operations atomic and easier to debug.\n*   **B. Structural Segregation (Homogeneous Security Posture):** Tenants are separated into different collections. This provides a strong security boundary, ensuring data is isolated and that different tenants cannot interfere with each other. Also, User drafts and User public profiles would live in separate collections, as needed.\n*   **C. Access Modeling:** The structure uses path-based ownership (`/tenants/{tenantId}/users/{userId}`) to represent the tenant-user relationship.  This is the preferred pattern for private data owned by a tenant or user.\n*   **D. Data Clarity and Predictability:**  The schema includes explicit state modelling (through the `role` field in the `User` document) and predictable naming conventions."
   }
 }
-    
