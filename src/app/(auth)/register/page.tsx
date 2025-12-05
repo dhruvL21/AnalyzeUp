@@ -1,4 +1,3 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,12 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useState, FormEvent } from 'react';
-import { useAuth, initiateEmailSignUp, useFirestore } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import ClientOnly from '@/components/ClientOnly';
-import { signOut } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { signOut, type AuthError, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -30,71 +29,71 @@ export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSignUp = (e: FormEvent) => {
+  const handleSignUp = async (e: FormEvent) => {
     e.preventDefault();
-    initiateEmailSignUp(auth, email, password, (user, error) => {
-       if (error) {
-        if (error.code === 'auth/email-already-in-use') {
-          toast({
-            variant: "destructive",
-            title: "Signup Failed",
-            description: "This email is already in use. Please try another.",
-          });
-        } else {
-           toast({
-            variant: "destructive",
-            title: "Signup Failed",
-            description: error.message,
-          });
-        }
-      } else if (user) {
-        // Create user profile and tenant in Firestore
-        const userRef = doc(firestore, 'users', user.uid);
-        const tenantRef = doc(firestore, 'tenants', user.uid); // Using UID as tenantId for simplicity
 
-        const newUserProfile = {
-            id: user.uid,
-            tenantId: user.uid,
-            firstName: firstName,
-            lastName: lastName,
-            email: user.email,
-            role: 'Owner', // Assign a default role
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-        };
+    try {
+      // 1. Create the user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-        const newTenant = {
-            id: user.uid,
-            name: `${firstName}'s Workspace`,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-        };
+      if (!user) {
+        throw new Error("User creation failed.");
+      }
 
-        Promise.all([
-            setDoc(userRef, newUserProfile),
-            setDoc(tenantRef, newTenant)
-        ]).then(() => {
-             // User created successfully, now sign them out and redirect.
-            signOut(auth).then(() => {
-                router.push('/login?registered=true');
-            }).catch((signOutError) => {
-                console.error("Error signing out after registration:", signOutError);
-                // Still redirect, the user can log in manually.
-                router.push('/login?registered=true');
-            });
-        }).catch((firestoreError) => {
-            console.error("Error creating user profile in Firestore:", firestoreError);
-            toast({
-                variant: "destructive",
-                title: "Signup Error",
-                description: "Could not create user profile. Please contact support.",
-            });
-            // Optional: delete the auth user if firestore setup fails
-            user.delete();
+      // 2. Create the user profile and tenant documents in Firestore within a batch
+      const batch = writeBatch(firestore);
+
+      const userRef = doc(firestore, 'users', user.uid);
+      const tenantRef = doc(firestore, 'tenants', user.uid); // Using UID as tenantId
+
+      const newUserProfile = {
+        id: user.uid,
+        tenantId: user.uid, // The user's tenant is themselves
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email,
+        role: 'Owner',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      const newTenant = {
+        id: user.uid,
+        name: `${firstName}'s Workspace`,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      batch.set(userRef, newUserProfile);
+      batch.set(tenantRef, newTenant);
+      
+      // 3. Commit the batch
+      await batch.commit();
+
+      // 4. Sign the user out and redirect to login page
+      await signOut(auth);
+      router.push('/login?registered=true');
+
+    } catch (error) {
+      const authError = error as AuthError;
+      console.error("Signup Error:", authError);
+      if (authError.code === 'auth/email-already-in-use') {
+        toast({
+          variant: "destructive",
+          title: "Signup Failed",
+          description: "This email is already in use. Please try another.",
+        });
+      } else {
+         toast({
+          variant: "destructive",
+          title: "Signup Failed",
+          description: authError.message || "An unexpected error occurred.",
         });
       }
-    });
+    }
   };
+
 
   return (
     <Card className="w-full max-w-sm">

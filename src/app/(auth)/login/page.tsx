@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, FormEvent, useEffect } from 'react';
 import ClientOnly from '@/components/ClientOnly';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -35,10 +35,12 @@ export default function LoginPage() {
     }
   }, [searchParams, toast]);
 
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    initiateEmailSignIn(auth, email, password, (error) => {
-      if (error) {
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        router.push('/dashboard');
+    } catch (error: any) {
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
           toast({
             variant: "destructive",
@@ -52,8 +54,7 @@ export default function LoginPage() {
             description: error.message,
           });
         }
-      }
-    });
+    }
   };
   
   useEffect(() => {
