@@ -1,4 +1,5 @@
-import { FieldValue } from 'firebase/firestore';
+
+import { FieldValue, Timestamp } from 'firebase/firestore';
 
 export interface User {
   id: string;
@@ -24,8 +25,8 @@ export interface Product {
   description: string;
   sku: string;
   categoryId: string;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  createdAt: FieldValue | Date | string | Timestamp;
+  updatedAt: FieldValue | Date | string | Timestamp;
   stock: number;
   price: number;
   imageUrl: string;
@@ -39,8 +40,8 @@ export interface Category {
   tenantId: string;
   name: string;
   description: string;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  createdAt: FieldValue | Date | string | Timestamp;
+  updatedAt: FieldValue | Date | string | Timestamp;
 }
 
 export interface Location {
@@ -49,8 +50,8 @@ export interface Location {
   name: string;
   type: string;
   address: string;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  createdAt: FieldValue | Date | string | Timestamp;
+  updatedAt: FieldValue | Date | string | Timestamp;
 }
 
 export interface Transaction {
@@ -60,9 +61,9 @@ export interface Transaction {
   locationId: string;
   type: 'Sale' | 'Purchase';
   quantity: number;
-  transactionDate: FieldValue | Date | string;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  transactionDate: FieldValue | Date | string | Timestamp;
+  createdAt: FieldValue | Date | string | Timestamp;
+  updatedAt: FieldValue | Date | string | Timestamp;
 }
 
 export interface Supplier {
@@ -73,8 +74,8 @@ export interface Supplier {
   email: string;
   phone: string;
   address: string;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  createdAt: FieldValue | Date | string | Timestamp;
+  updatedAt: FieldValue | Date | string | Timestamp;
 }
 
 export interface PurchaseOrder {
@@ -86,6 +87,6 @@ export interface PurchaseOrder {
   status: string;
   productId: string;
   quantity: number;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  createdAt: FieldValue | Date | string | Timestamp;
+  updatedAt: FieldValue | Date | string | Timestamp;
 }

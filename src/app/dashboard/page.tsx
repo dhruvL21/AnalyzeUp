@@ -27,15 +27,14 @@ import {
 } from 'lucide-react';
 import { LowStockAlertItem } from '@/components/low-stock-alert-item';
 import { SalesChart } from '@/components/sales-chart';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import type { Product } from '@/lib/types';
 import type { Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { mockProducts } from '@/lib/mock-products';
-import { mockTransactions } from '@/lib/mock-transactions';
 import { useState, useEffect, useMemo } from 'react';
 import { salesData } from '@/lib/data';
 import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
+import { collection } from 'firebase/firestore';
 
 
 function DashboardLoading() {
@@ -169,20 +168,19 @@ function DashboardLoading() {
 }
 
 export default function DashboardPage() {
-  const { user } = useFirebase();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, firestore } = useFirebase();
 
-  // For this example, we'll use mock data directly.
-  const products: Product[] = mockProducts;
-  const transactions: Transaction[] = mockTransactions;
+  const productsQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'products') : null
+  , [firestore, user]);
+  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
 
-  useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const transactionsQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'inventoryTransactions') : null
+  , [firestore, user]);
+  const { data: transactions, isLoading: transactionsLoading } = useCollection<Transaction>(transactionsQuery);
+
+  const isLoading = productsLoading || transactionsLoading;
 
   const lowStockProducts = products?.filter((p) => p.stock < 20);
 
@@ -404,7 +402,7 @@ export default function DashboardPage() {
                     </TableCell>
                     <TableCell>{transaction.quantity}</TableCell>
                     <TableCell className="text-right">
-                      {new Date(transaction.transactionDate as string).toLocaleDateString()}
+                      {new Date((transaction.transactionDate as any).toDate()).toLocaleDateString()}
                     </TableCell>
                   </TableRow>
                 ))}

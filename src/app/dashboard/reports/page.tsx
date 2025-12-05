@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Papa from 'papaparse';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import type { Product, Transaction, Category } from '@/lib/types';
 import {
   Select,
@@ -35,29 +35,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { subDays } from 'date-fns';
-import { mockProducts } from '@/lib/mock-products';
-import { mockTransactions } from '@/lib/mock-transactions';
+import { subDays, toDate } from 'date-fns';
+import { collection } from 'firebase/firestore';
 
 
 type ReportType = 'inventory_summary' | 'sales_report' | 'transaction_log';
 type DateRange = '7' | '30' | '90' | 'all';
 
 export default function ReportsPage() {
-  const { user } = useFirebase();
+  const { user, firestore } = useFirebase();
 
   const [reportType, setReportType] = useState<ReportType>('inventory_summary');
   const [dateRange, setDateRange] = useState<DateRange>('30');
+  
+  const productsQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'products') : null
+  , [firestore, user]);
+  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
 
-  // Using mock data
-  const products: Product[] = mockProducts;
-  const transactions: Transaction[] = mockTransactions;
-  const categories: Category[] = [
-    { id: 'tops', name: 'Tops', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
-    { id: 'bottoms', name: 'Bottoms', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
-    { id: 'essentials', name: 'Essentials', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
-    { id: 'accessories', name: 'Accessories', tenantId: 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() },
-  ];
+  const transactionsQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'inventoryTransactions') : null
+  , [firestore, user]);
+  const { data: transactions, isLoading: transactionsLoading } = useCollection<Transaction>(transactionsQuery);
+  
+  const categoriesQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'categories') : null
+  , [firestore, user]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesQuery);
 
   const getFilteredTransactions = () => {
     if (!transactions) return [];
@@ -65,7 +69,7 @@ export default function ReportsPage() {
 
     const rangeStartDate = subDays(new Date(), parseInt(dateRange));
     return transactions.filter((t) => {
-      const transactionDate = new Date(t.transactionDate as string);
+      const transactionDate = toDate(t.transactionDate as any);
       return transactionDate >= rangeStartDate;
     });
   };

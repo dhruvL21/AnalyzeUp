@@ -51,27 +51,39 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { PurchaseOrder, Supplier, Product } from '@/lib/types';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockOrders } from '@/lib/mock-orders';
-import { mockSuppliers } from '@/lib/mock-suppliers';
-import { mockProducts } from '@/lib/mock-products';
+import { collection, doc, serverTimestamp, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
 export default function OrdersPage() {
-  const { user } = useFirebase();
+  const { user, firestore } = useFirebase();
   const { toast } = useToast();
+  
+  const ordersQuery = useMemoFirebase(() => 
+    user ? collection(firestore, 'tenants', user.uid, 'purchaseOrders') : null
+  , [firestore, user]);
+  const { data: orders, isLoading: ordersLoading } = useCollection<PurchaseOrder>(ordersQuery);
 
-  const [orders, setOrders] = useState<PurchaseOrder[]>(mockOrders);
-  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const suppliersQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'suppliers') : null
+  , [firestore, user]);
+  const { data: suppliers, isLoading: suppliersLoading } = useCollection<Supplier>(suppliersQuery);
+
+  const productsQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'products') : null
+  , [firestore, user]);
+  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
   
   const handleMarkAsFulfilled = (orderId: string) => {
-    setOrders(orders.map(o => o.id === orderId ? {...o, status: "Fulfilled"} : o));
+    if(!user) return;
+    const docRef = doc(firestore, 'tenants', user.uid, 'purchaseOrders', orderId);
+    updateDoc(docRef, { status: "Fulfilled", updatedAt: serverTimestamp() });
     toast({
       title: 'Order Status Updated',
       description: `Order has been marked as Fulfilled.`,
@@ -79,7 +91,9 @@ export default function OrdersPage() {
   };
 
   const handleDeleteOrder = (orderId: string) => {
-    setOrders(orders.filter(o => o.id !== orderId));
+     if(!user) return;
+    const docRef = doc(firestore, 'tenants', user.uid, 'purchaseOrders', orderId);
+    deleteDoc(docRef);
     toast({
       title: 'Order Deleted',
       description: 'The purchase order has been successfully removed.',
@@ -91,8 +105,7 @@ export default function OrdersPage() {
     if(!user) return;
 
     const formData = new FormData(e.currentTarget);
-    const newOrder: PurchaseOrder = {
-      id: `PO-${orders.length + 1}`,
+    const newOrderData = {
       supplierId: formData.get('supplierId') as string,
       status: 'Pending',
       orderDate: new Date().toISOString(),
@@ -100,11 +113,12 @@ export default function OrdersPage() {
       quantity: Number(formData.get('quantity')),
       productId: formData.get('productId') as string,
       tenantId: user.uid,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
     
-    setOrders([newOrder, ...orders]);
+    const docRef = doc(collection(firestore, 'tenants', user.uid, 'purchaseOrders'));
+    setDoc(docRef, newOrderData);
 
     toast({
       title: 'Order Created',

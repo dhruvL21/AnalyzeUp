@@ -41,17 +41,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Supplier, Product } from '@/lib/types';
-import { useFirebase } from '@/firebase';
-import { mockSuppliers } from '@/lib/mock-suppliers';
-import { mockProducts } from '@/lib/mock-products';
+import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, doc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 
 
 export default function SuppliersPage() {
-  const { user } = useFirebase();
+  const { user, firestore } = useFirebase();
   const { toast } = useToast();
   
-  const [products, setProducts] = useState<Product[]>(mockProducts);
-  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
+  const productsQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'products') : null
+  , [firestore, user]);
+  const { data: products } = useCollection<Product>(productsQuery);
+
+  const suppliersQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'suppliers') : null
+  , [firestore, user]);
+  const { data: suppliers } = useCollection<Supplier>(suppliersQuery);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   
@@ -67,7 +73,8 @@ export default function SuppliersPage() {
 
   const handleDeleteSupplier = (supplierId: string) => {
     if (!user) return;
-    setSuppliers(suppliers.filter(s => s.id !== supplierId));
+    const docRef = doc(firestore, 'tenants', user.uid, 'suppliers', supplierId);
+    deleteDoc(docRef);
     toast({
       title: 'Supplier Deleted',
       description: 'The supplier has been successfully removed.',
@@ -86,6 +93,8 @@ export default function SuppliersPage() {
       phone: 'N/A',
       address: 'N/A',
       tenantId: user.uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
 
     if (suppliers?.find((s) => s.name === newSupplierData.name)) {
@@ -97,14 +106,7 @@ export default function SuppliersPage() {
       return;
     }
     
-    const newSupplier: Supplier = {
-      id: `SUP${suppliers.length + 1}`,
-      ...newSupplierData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    setSuppliers([newSupplier, ...suppliers]);
+    addDoc(collection(firestore, 'tenants', user.uid, 'suppliers'), newSupplierData);
 
     toast({
       title: 'Supplier Added',

@@ -62,31 +62,27 @@ import {
   SelectValue,
   SelectSeparator,
 } from '@/components/ui/select';
-import { useFirebase } from '@/firebase';
-import { mockProducts } from '@/lib/mock-products';
-import { mockSuppliers } from '@/lib/mock-suppliers';
-
-const defaultCategories = [
-  { id: 'tops', name: 'Tops' },
-  { id: 'bottoms', name: 'Bottoms' },
-  { id: 'essentials', name: 'Essentials' },
-  { id: 'accessories', name: 'Accessories' },
-];
+import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, doc, serverTimestamp, setDoc, deleteDoc, addDoc } from 'firebase/firestore';
 
 export default function InventoryPage() {
-  const { user } = useFirebase();
+  const { user, firestore } = useFirebase();
   const { toast } = useToast();
-  
-  // In a real app, you'd fetch from Firestore. Here we use mock data.
-  const [products, setProducts] = useState<Product[]>(mockProducts);
-  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
 
-  const categories: Category[] = useMemo(() => {
-    // In a real app, you would fetch categories from Firestore.
-    // For now, we'll just use the default categories.
-    return defaultCategories.map(c => ({...c, tenantId: user?.uid || 'tenant-1', description: '', createdAt: new Date(), updatedAt: new Date() }));
-  }, [user]);
+  const productsQuery = useMemoFirebase(() => 
+    user ? collection(firestore, 'tenants', user.uid, 'products') : null
+  , [firestore, user]);
+  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
 
+  const suppliersQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'suppliers') : null
+  , [firestore, user]);
+  const { data: suppliers, isLoading: suppliersLoading } = useCollection<Supplier>(suppliersQuery);
+
+  const categoriesQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'tenants', user.uid, 'categories') : null
+  , [firestore, user]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesQuery);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -100,7 +96,9 @@ export default function InventoryPage() {
 
 
   const handleDelete = (productId: string) => {
-    setProducts(products.filter(p => p.id !== productId));
+    if (!user) return;
+    const docRef = doc(firestore, 'tenants', user.uid, 'products', productId);
+    deleteDoc(docRef);
     toast({
       title: 'Product Deleted',
       description: 'The product has been successfully removed.',
@@ -122,9 +120,10 @@ export default function InventoryPage() {
             toast({ variant: 'destructive', title: 'Category name is required.' });
             return;
         }
-        // In a real app, you'd create this in Firestore.
-        categoryId = newCategoryName.toLowerCase().replace(' ', '-');
-        // For mock purposes, we don't add it to the categories list.
+        const newCategory = { name: newCategoryName, tenantId: user.uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+        const categoriesCol = collection(firestore, 'tenants', user.uid, 'categories');
+        const docRef = await addDoc(categoriesCol, newCategory);
+        categoryId = docRef.id;
     }
 
     // Handle new supplier creation
@@ -133,17 +132,17 @@ export default function InventoryPage() {
             toast({ variant: 'destructive', title: 'Supplier name is required.' });
             return;
         }
-        const newSupplier: Supplier = {
-            id: `SUP${suppliers.length + 1}`,
-            tenantId: user.uid,
+        const newSupplier = {
             name: newSupplierName,
+            tenantId: user.uid,
             contactName: newSupplierName,
             email: 'N/A', phone: 'N/A', address: 'N/A',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
         };
-        setSuppliers([...suppliers, newSupplier]);
-        supplierId = newSupplier.id;
+        const suppliersCol = collection(firestore, 'tenants', user.uid, 'suppliers');
+        const docRef = await addDoc(suppliersCol, newSupplier);
+        supplierId = docRef.id;
     }
     
     const productData = {
@@ -158,18 +157,19 @@ export default function InventoryPage() {
       sku: 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
       averageDailySales: Math.floor(Math.random() * 10) + 1,
       leadTimeDays: Math.floor(Math.random() * 10) + 5,
+      updatedAt: serverTimestamp(),
     };
 
     if (editingProduct) {
-      const updatedProduct = { ...editingProduct, ...productData, updatedAt: new Date().toISOString() };
-      setProducts(products.map(p => p.id === editingProduct.id ? updatedProduct : p));
+      const docRef = doc(firestore, 'tenants', user.uid, 'products', editingProduct.id);
+      setDoc(docRef, { ...productData }, { merge: true });
       toast({
         title: 'Product Updated',
         description: `${productData.name} has been updated.`,
       });
     } else {
-      const newProduct: Product = { id: `PROD${products.length + 1}`, ...productData, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()};
-      setProducts([...products, newProduct]);
+      const docRef = doc(collection(firestore, 'tenants', user.uid, 'products'));
+      setDoc(docRef, { ...productData, createdAt: serverTimestamp() });
       toast({
         title: 'Product Added',
         description: `${productData.name} has been added to your inventory.`,
