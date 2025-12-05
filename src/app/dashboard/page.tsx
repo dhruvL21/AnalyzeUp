@@ -33,7 +33,10 @@ import type { Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mockProducts } from '@/lib/mock-products';
 import { mockTransactions } from '@/lib/mock-transactions';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { salesData } from '@/lib/data';
+import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
+
 
 function DashboardLoading() {
   return (
@@ -82,17 +85,17 @@ function DashboardLoading() {
           </CardContent>
         </Card>
       </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
+      
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Sales Performance</CardTitle>
+            <CardTitle>AI Strategy Advisor</CardTitle>
             <CardDescription>
-              A look at your sales performance over the past 6 months.
+              Click the button to get AI-powered suggestions to grow your business.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-24 w-full" />
           </CardContent>
         </Card>
         <Card>
@@ -110,44 +113,57 @@ function DashboardLoading() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>
-            An overview of the latest inventory movements.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead className="text-right">Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-5 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-16" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-8" />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Skeleton className="h-5 w-24 ml-auto" />
-                  </TableCell>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Sales Performance</CardTitle>
+            <CardDescription>
+              A look at your sales performance over the past 6 months.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Transactions</CardTitle>
+            <CardDescription>
+              An overview of the latest inventory movements.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead className="text-right">Date</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {[...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-8" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-5 w-24 ml-auto" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -182,7 +198,7 @@ export default function DashboardPage() {
         return acc + t.quantity * (product?.price || 0);
       }, 0) || 0;
 
-  const topSellingProduct =
+  const topSellingProductMap = useMemo(() => 
     transactions
       ?.filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
@@ -190,12 +206,31 @@ export default function DashboardPage() {
           products?.find((p) => p.id === t.productId)?.name || 'Unknown';
         acc[productName] = (acc[productName] || 0) + t.quantity;
         return acc;
-      }, {} as { [key: string]: number }) || {};
+      }, {} as { [key: string]: number }) || {}
+  , [transactions, products]);
 
   const topSeller =
-    Object.keys(topSellingProduct).length > 0
-      ? Object.entries(topSellingProduct).sort((a, b) => b[1] - a[1])[0]
+    Object.keys(topSellingProductMap).length > 0
+      ? Object.entries(topSellingProductMap).sort((a, b) => b[1] - a[1])[0]
       : ['N/A', 0];
+      
+  const topSellingProductsForAI = useMemo(() => 
+    Object.entries(topSellingProductMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([name, unitsSold]) => ({ name, unitsSold }))
+  , [topSellingProductMap]);
+
+  const salesTrend = useMemo(() => {
+    const lastSixMonths = salesData.slice(-6);
+    const firstHalfSales = lastSixMonths.slice(0, 3).reduce((sum, item) => sum + item.sales, 0);
+    const secondHalfSales = lastSixMonths.slice(3, 6).reduce((sum, item) => sum + item.sales, 0);
+    if (secondHalfSales > firstHalfSales * 1.1) return "Strongly Upward";
+    if (secondHalfSales > firstHalfSales) return "Upward";
+    if (secondHalfSales < firstHalfSales * 0.9) return "Strongly Downward";
+    if (secondHalfSales < firstHalfSales) return "Downward";
+    return "Stable";
+  }, []);
 
   const recentTransactions = transactions?.slice(0, 5).reverse();
 
@@ -274,6 +309,45 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+            <CardHeader>
+                <CardTitle>AI Strategy Advisor</CardTitle>
+                <CardDescription>
+                Get AI-powered suggestions based on your current business data to help you grow.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <BusinessStrategyAdvisor
+                    totalInventoryValue={totalInventoryValue}
+                    totalSales={totalSales}
+                    lowStockItemCount={lowStockProducts?.length || 0}
+                    topSellingProducts={topSellingProductsForAI}
+                    salesTrend={salesTrend}
+                />
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Low Stock Alerts</CardTitle>
+                <CardDescription>
+                Items nearing their reorder point. Use AI to get suggestions.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 max-h-[400px] overflow-y-auto">
+                {lowStockProducts && lowStockProducts.length > 0 ? (
+                lowStockProducts.map((product) => (
+                    <LowStockAlertItem key={product.id} product={product} />
+                ))
+                ) : (
+                <p className="text-sm text-muted-foreground">
+                    No items with low stock. Well done!
+                </p>
+                )}
+            </CardContent>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -288,77 +362,57 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Low Stock Alerts</CardTitle>
+            <CardTitle>Recent Transactions</CardTitle>
             <CardDescription>
-              Items nearing their reorder point. Use AI to get suggestions.
+              An overview of the latest inventory movements.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 max-h-[400px] overflow-y-auto">
-            {lowStockProducts && lowStockProducts.length > 0 ? (
-              lowStockProducts.map((product) => (
-                <LowStockAlertItem key={product.id} product={product} />
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No items with low stock. Well done!
-              </p>
-            )}
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead className="text-right">Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentTransactions?.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell className="font-medium">
+                      {products?.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          transaction.type === 'Sale'
+                            ? 'destructive'
+                            : 'secondary'
+                        }
+                        className="capitalize"
+                      >
+                        <div className="flex items-center">
+                          {transaction.type === 'Sale' ? (
+                            <ArrowDownRight className="mr-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpRight className="mr-1 h-3 w-3" />
+                          )}
+                          {transaction.type}
+                        </div>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{transaction.quantity}</TableCell>
+                    <TableCell className="text-right">
+                      {new Date(transaction.transactionDate as string).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>
-            An overview of the latest inventory movements.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead className="text-right">Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentTransactions?.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell className="font-medium">
-                    {products?.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        transaction.type === 'Sale'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                      className="capitalize"
-                    >
-                      <div className="flex items-center">
-                        {transaction.type === 'Sale' ? (
-                          <ArrowDownRight className="mr-1 h-3 w-3" />
-                        ) : (
-                          <ArrowUpRight className="mr-1 h-3 w-3" />
-                        )}
-                        {transaction.type}
-                      </div>
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{transaction.quantity}</TableCell>
-                  <TableCell className="text-right">
-                    {new Date(transaction.transactionDate as string).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 }
