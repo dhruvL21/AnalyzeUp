@@ -12,11 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useState, FormEvent } from 'react';
-import { useAuth, initiateEmailSignUp } from '@/firebase';
+import { useAuth, initiateEmailSignUp, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import ClientOnly from '@/components/ClientOnly';
 import { signOut } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -25,6 +26,7 @@ export default function RegisterPage() {
   const [lastName, setLastName] = useState('');
 
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -46,13 +48,49 @@ export default function RegisterPage() {
           });
         }
       } else if (user) {
-        // User created successfully, now sign them out and redirect.
-        signOut(auth).then(() => {
-            router.push('/login?registered=true');
-        }).catch((signOutError) => {
-            console.error("Error signing out after registration:", signOutError);
-            // Still redirect, the user can log in manually.
-            router.push('/login?registered=true');
+        // Create user profile and tenant in Firestore
+        const userRef = doc(firestore, 'users', user.uid);
+        const tenantRef = doc(firestore, 'tenants', user.uid); // Using UID as tenantId for simplicity
+
+        const newUserProfile = {
+            id: user.uid,
+            tenantId: user.uid,
+            firstName: firstName,
+            lastName: lastName,
+            email: user.email,
+            role: 'Owner', // Assign a default role
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        };
+
+        const newTenant = {
+            id: user.uid,
+            name: `${firstName}'s Workspace`,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        };
+
+        Promise.all([
+            setDoc(userRef, newUserProfile),
+            setDoc(tenantRef, newTenant)
+        ]).then(() => {
+             // User created successfully, now sign them out and redirect.
+            signOut(auth).then(() => {
+                router.push('/login?registered=true');
+            }).catch((signOutError) => {
+                console.error("Error signing out after registration:", signOutError);
+                // Still redirect, the user can log in manually.
+                router.push('/login?registered=true');
+            });
+        }).catch((firestoreError) => {
+            console.error("Error creating user profile in Firestore:", firestoreError);
+            toast({
+                variant: "destructive",
+                title: "Signup Error",
+                description: "Could not create user profile. Please contact support.",
+            });
+            // Optional: delete the auth user if firestore setup fails
+            user.delete();
         });
       }
     });
