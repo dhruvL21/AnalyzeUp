@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -46,20 +47,18 @@ export async function POST(req: NextRequest) {
     const uid = userRecord.uid;
     const tenantId = uid; // For this app, each user is their own tenant
 
-    // Set custom claims for the user
-    await auth.setCustomUserClaims(uid, { tenantId, role: 'Owner' });
-
     // Use a batch write to create user and tenant documents atomically
     const batch: WriteBatch = firestore.batch();
 
-    const userRef = firestore.collection('users').doc(uid);
+    // CORRECTED: User document is now created within the tenant's 'users' subcollection
+    const userRef = firestore.collection('tenants').doc(tenantId).collection('users').doc(uid);
     batch.set(userRef, {
       id: uid,
       tenantId: tenantId,
       email,
       firstName,
       lastName,
-      role: 'Owner',
+      role: 'Owner', // Default role for a new user
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -72,12 +71,19 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+
+    // Add placeholder documents to create the subcollections
+    const productCollectionRef = firestore.collection('tenants').doc(tenantId).collection('products');
+    batch.set(productCollectionRef.doc(), {});
     
-    // Add product and transaction collections for the new tenant
-    const productRef = firestore.collection('tenants').doc(tenantId).collection('products').doc();
-    batch.set(productRef, {});
-    const transactionRef = firestore.collection('tenants').doc(tenantId).collection('inventoryTransactions').doc();
-    batch.set(transactionRef, {});
+    const transactionCollectionRef = firestore.collection('tenants').doc(tenantId).collection('inventoryTransactions');
+    batch.set(transactionCollectionRef.doc(), {});
+
+    const suppliersCollectionRef = firestore.collection('tenants').doc(tenantId).collection('suppliers');
+    batch.set(suppliersCollectionRef.doc(), {});
+
+    const purchaseOrdersCollectionRef = firestore.collection('tenants').doc(tenantId).collection('purchaseOrders');
+    batch.set(purchaseOrdersCollectionRef.doc(), {});
 
 
     await batch.commit();
