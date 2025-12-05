@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,9 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import type { Product, Supplier } from '@/lib/types';
-import { mockProducts } from '@/lib/mock-products';
-import { mockSuppliers } from '@/lib/mock-suppliers';
+import type { Product } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -63,8 +61,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useData } from '@/context/data-context';
 
-// Mock categories since they are not in the provided mock data
+// Mock categories and suppliers for the form dropdowns
 const mockCategories = [
     { id: 'tops', name: 'Tops' },
     { id: 'bottoms', name: 'Bottoms' },
@@ -74,19 +73,11 @@ const mockCategories = [
 
 export default function InventoryPage() {
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const { products, suppliers, addProduct, updateProduct, deleteProduct, isLoading } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const handleDelete = (productId: string) => {
-    setProducts(products.filter((p) => p.id !== productId));
-    toast({
-      title: 'Product Deleted',
-      description: 'The product has been successfully removed.',
-    });
-  };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -97,43 +88,26 @@ export default function InventoryPage() {
       price: Number(formData.get('price')),
       categoryId: formData.get('category') as string,
       supplierId: formData.get('supplier') as string,
-      imageUrl: formData.get('imageUrl') as string,
+      imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Math.random()}/400/400`,
       description: description,
+      sku: 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
     };
 
     if (editingProduct) {
       const updatedProduct = {
         ...editingProduct,
         ...productData,
+        description: description, // ensure description from state is used
         updatedAt: new Date().toISOString(),
       };
-      setProducts(
-        products.map((p) => (p.id === editingProduct.id ? updatedProduct : p))
-      );
-      toast({
-        title: 'Product Updated',
-        description: `${productData.name} has been updated.`,
-      });
+      updateProduct(updatedProduct);
     } else {
-      const newProduct = {
-        id: `PROD${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
-        tenantId: 'tenant-1',
-        ...productData,
-        sku: 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        averageDailySales: Math.floor(Math.random() * 10) + 1,
-        leadTimeDays: Math.floor(Math.random() * 10) + 5,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setProducts([newProduct, ...products]);
-      toast({
-        title: 'Product Added',
-        description: `${productData.name} has been added to your inventory.`,
-      });
+      addProduct(productData);
     }
 
     setEditingProduct(null);
     setDialogOpen(false);
+    setDescription('');
   };
 
   const openEditDialog = (product: Product) => {
@@ -224,7 +198,21 @@ export default function InventoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product) => (
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="hidden sm:table-cell">
+                        <div className="aspect-square rounded-md bg-muted w-16 h-16 animate-pulse" />
+                      </TableCell>
+                      <TableCell><div className='h-5 w-32 bg-muted rounded animate-pulse'/></TableCell>
+                      <TableCell><div className='h-6 w-20 bg-muted rounded-full animate-pulse'/></TableCell>
+                      <TableCell><div className='h-5 w-16 bg-muted rounded animate-pulse'/></TableCell>
+                      <TableCell className="hidden md:table-cell"><div className='h-5 w-10 bg-muted rounded animate-pulse'/></TableCell>
+                      <TableCell><div className='h-8 w-8 bg-muted rounded-md animate-pulse'/></TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell className="hidden sm:table-cell">
                       <Image
@@ -300,7 +288,7 @@ export default function InventoryPage() {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDelete(product.id)}
+                                  onClick={() => deleteProduct(product.id)}
                                 >
                                   Delete
                                 </AlertDialogAction>
@@ -311,7 +299,7 @@ export default function InventoryPage() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                )))}
               </TableBody>
             </Table>
           </CardContent>
@@ -445,7 +433,7 @@ export default function InventoryPage() {
                   <SelectValue placeholder="Select a supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockSuppliers.map((sup) => (
+                  {suppliers.map((sup) => (
                     <SelectItem key={sup.id} value={sup.id}>
                       {sup.name}
                     </SelectItem>

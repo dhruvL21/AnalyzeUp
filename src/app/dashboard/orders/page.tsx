@@ -49,40 +49,16 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { mockOrders } from '@/lib/mock-orders';
-import { mockSuppliers } from '@/lib/mock-suppliers';
-import { mockProducts } from '@/lib/mock-products';
 import type { PurchaseOrder } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useData } from '@/context/data-context';
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<PurchaseOrder[]>(mockOrders);
+  const { orders, suppliers, products, addOrder, deleteOrder, updateOrderStatus } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
-  const { toast } = useToast();
-
-  const handleMarkAsFulfilled = (orderId: string) => {
-    setOrders(
-      orders.map((o) =>
-        o.id === orderId ? { ...o, status: 'Fulfilled' } : o
-      )
-    );
-    toast({
-      title: 'Order Status Updated',
-      description: `Order ${orderId} has been marked as Fulfilled.`,
-    });
-  };
-
-  const handleDeleteOrder = (orderId: string) => {
-    setOrders(orders.filter((o) => o.id !== orderId));
-    toast({
-      title: 'Order Deleted',
-      description: 'The purchase order has been successfully removed.',
-    });
-  };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,20 +72,7 @@ export default function OrdersPage() {
       productId: formData.get('productId') as string,
     };
     
-    const newOrder: PurchaseOrder = {
-      id: `PO-${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
-      tenantId: 'tenant-1',
-      ...newOrderData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
-    setOrders([newOrder, ...orders]);
-
-    toast({
-      title: 'Order Created',
-      description: `New purchase order for supplier ${newOrder.supplierId} has been created.`,
-    });
+    addOrder(newOrderData);
     setDialogOpen(false);
   };
 
@@ -169,7 +132,7 @@ export default function OrdersPage() {
                 {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{mockSuppliers.find(s => s.id === order.supplierId)?.name || order.supplierId}</TableCell>
+                    <TableCell>{suppliers.find(s => s.id === order.supplierId)?.name || order.supplierId}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusVariant(order.status as OrderStatus)}>
                         {order.status}
@@ -202,7 +165,7 @@ export default function OrdersPage() {
                           </DropdownMenuItem>
                           {order.status === 'Pending' && (
                             <DropdownMenuItem
-                              onClick={() => handleMarkAsFulfilled(order.id)}
+                              onClick={() => updateOrderStatus(order.id, 'Fulfilled')}
                             >
                               Mark as Fulfilled
                             </DropdownMenuItem>
@@ -229,7 +192,7 @@ export default function OrdersPage() {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDeleteOrder(order.id)}
+                                  onClick={() => deleteOrder(order.id)}
                                 >
                                   Delete
                                 </AlertDialogAction>
@@ -263,7 +226,7 @@ export default function OrdersPage() {
                   <SelectValue placeholder="Select a supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockSuppliers.map((sup) => (
+                  {suppliers.map((sup) => (
                     <SelectItem key={sup.id} value={sup.id}>
                       {sup.name}
                     </SelectItem>
@@ -280,7 +243,7 @@ export default function OrdersPage() {
                   <SelectValue placeholder="Select a product" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockProducts.map((prod) => (
+                  {products.map((prod) => (
                     <SelectItem key={prod.id} value={prod.id}>
                       {prod.name}
                     </SelectItem>
@@ -324,11 +287,11 @@ export default function OrdersPage() {
             <div className="space-y-4">
               <div>
                 <Label>Supplier</Label>
-                <p>{mockSuppliers.find(s => s.id === viewingOrder.supplierId)?.name || viewingOrder.supplierId}</p>
+                <p>{suppliers.find(s => s.id === viewingOrder.supplierId)?.name || viewingOrder.supplierId}</p>
               </div>
                <div>
                 <Label>Product</Label>
-                <p>{mockProducts.find(p => p.id === viewingOrder.productId)?.name || viewingOrder.productId}</p>
+                <p>{products.find(p => p.id === viewingOrder.productId)?.name || viewingOrder.productId}</p>
               </div>
               <div>
                 <Label>Date</Label>

@@ -39,33 +39,20 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { mockSuppliers } from '@/lib/mock-suppliers';
-import { mockProducts } from '@/lib/mock-products';
-import type { Supplier } from '@/lib/types';
+import { useData } from '@/context/data-context';
 
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
+  const { suppliers, products, addSupplier, deleteSupplier } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { toast } = useToast();
 
   const supplierProductCount = useMemo(() => {
     const count: { [key: string]: number } = {};
     suppliers.forEach(supplier => {
-      count[supplier.id] = mockProducts.filter(p => p.supplierId === supplier.id).length;
+      count[supplier.id] = products.filter(p => p.supplierId === supplier.id).length;
     });
     return count;
-  }, [suppliers]);
-
-
-  const handleDeleteSupplier = (supplierId: string) => {
-    setSuppliers(suppliers.filter((s) => s.id !== supplierId));
-    toast({
-      title: 'Supplier Deleted',
-      description: 'The supplier has been successfully removed.',
-    });
-  };
+  }, [suppliers, products]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,30 +65,10 @@ export default function SuppliersPage() {
       address: 'N/A',
     };
 
-    if (suppliers.find((s) => s.name === newSupplierData.name)) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'A supplier with this name already exists.',
-      });
-      return;
+    addSupplier(newSupplierData);
+    if (!suppliers.find((s) => s.name === newSupplierData.name)) {
+        setDialogOpen(false);
     }
-
-    const newSupplier: Supplier = {
-      id: `SUP${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
-      tenantId: 'tenant-1',
-      ...newSupplierData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setSuppliers([newSupplier, ...suppliers]);
-
-    toast({
-      title: 'Supplier Added',
-      description: `${newSupplier.name} has been added to your suppliers list.`,
-    });
-    setDialogOpen(false);
   };
 
   return (
@@ -165,7 +132,7 @@ export default function SuppliersPage() {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => handleDeleteSupplier(supplier.id)}
+                            onClick={() => deleteSupplier(supplier.id)}
                           >
                             Delete
                           </AlertDialogAction>

@@ -26,8 +26,6 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Papa from 'papaparse';
-import { mockProducts } from '@/lib/mock-products';
-import { mockTransactions } from '@/lib/mock-transactions';
 import type { Product, Transaction } from '@/lib/types';
 import {
   Select,
@@ -37,18 +35,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { subDays } from 'date-fns';
+import { useData } from '@/context/data-context';
 
 type ReportType = 'inventory_summary' | 'sales_report' | 'transaction_log';
 type DateRange = '7' | '30' | '90' | 'all';
 
 export default function ReportsPage() {
+  const { products, transactions } = useData();
   const [reportType, setReportType] = useState<ReportType>('inventory_summary');
   const [dateRange, setDateRange] = useState<DateRange>('30');
 
   const getFilteredTransactions = () => {
-    if (dateRange === 'all') return mockTransactions;
+    if (dateRange === 'all') return transactions;
     const rangeStartDate = subDays(new Date(), parseInt(dateRange));
-    return mockTransactions.filter((t) => {
+    return transactions.filter((t) => {
       const transactionDate = new Date(t.transactionDate as string);
       return transactionDate >= rangeStartDate;
     });
@@ -60,11 +60,11 @@ export default function ReportsPage() {
     filteredTransactions
       .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
-        const product = mockProducts.find((p) => p.id === t.productId);
+        const product = products.find((p) => p.id === t.productId);
         return acc + t.quantity * (product?.price || 0);
       }, 0) || 0;
 
-  const topSellingProducts = [...mockProducts]
+  const topSellingProducts = [...products]
     .map(product => {
       const sales =
         filteredTransactions
@@ -77,7 +77,7 @@ export default function ReportsPage() {
     .slice(0, 5);
 
   const totalProductsInStock =
-    mockProducts.reduce((acc, p) => acc + p.stock, 0) || 0;
+    products.reduce((acc, p) => acc + p.stock, 0) || 0;
   const totalOrders = filteredTransactions.filter((t) => t.type === 'Sale').length || 0;
 
   const handleDownloadCsv = () => {
@@ -88,7 +88,7 @@ export default function ReportsPage() {
 
     switch (reportType) {
       case 'inventory_summary':
-        dataToExport = mockProducts.map((p) => ({
+        dataToExport = products.map((p) => ({
           productId: p.id,
           productName: p.name,
           sku: p.sku,
@@ -104,7 +104,7 @@ export default function ReportsPage() {
         dataToExport = localFilteredTransactions
           .filter((t) => t.type === 'Sale')
           .map((t) => {
-            const product = mockProducts.find((p) => p.id === t.productId);
+            const product = products.find((p) => p.id === t.productId);
             const revenue = product ? t.quantity * product.price : 0;
             return {
               transactionId: t.id,
@@ -121,7 +121,7 @@ export default function ReportsPage() {
 
       case 'transaction_log':
         dataToExport = localFilteredTransactions.map((t) => {
-           const product = mockProducts.find((p) => p.id === t.productId);
+           const product = products.find((p) => p.id === t.productId);
             return {
                 transactionId: t.id,
                 transactionDate: t.transactionDate,
@@ -277,5 +277,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-    

@@ -27,14 +27,11 @@ import {
 } from 'lucide-react';
 import { LowStockAlertItem } from '@/components/low-stock-alert-item';
 import { SalesChart } from '@/components/sales-chart';
-import { mockProducts } from '@/lib/mock-products';
-import { mockTransactions } from '@/lib/mock-transactions';
-import type { Product } from '@/lib/types';
-import type { Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { salesData } from '@/lib/data';
 import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
+import { useData } from '@/context/data-context';
 
 
 function DashboardLoading() {
@@ -168,17 +165,7 @@ function DashboardLoading() {
 }
 
 export default function DashboardPage() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
-  const [transactions, setTransactions] =
-    useState<Transaction[]>(mockTransactions);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate data fetching
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  const { products, transactions, isLoading } = useData();
 
   const lowStockProducts = products.filter((p) => p.stock < 20);
 
