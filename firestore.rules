@@ -53,20 +53,22 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
-    /**
-     * Checks for document existence. Critical for safe update/delete ops.
-     */
-    function documentExists() {
-      return resource != null;
-    }
-
+    
     /**
      * Retrieves the authenticated user's profile document data from the
      * `/users` collection. This is central to the multi-tenancy logic.
+     * This function assumes the document exists.
      */
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    /**
+     * Checks if the user document for the currently authenticated user exists.
+     * Important for allowing a user to create their own profile after sign-up.
+     */
+    function userDocExists() {
+        return exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
     /**
@@ -74,7 +76,8 @@ service cloud.firestore {
      * This is the core authorization check for all tenant-scoped data.
      */
     function isUserOfTenant(tenantId) {
-      return isSignedIn() && getUserData().tenantId == tenantId;
+      // The user document MUST exist and their tenantId must match.
+      return userDocExists() && getUserData().tenantId == tenantId;
     }
 
     // --------------------------------------------------------------------
@@ -93,9 +96,11 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && documentExists() && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId) && documentExists();
+      // Allow create if the user is creating their OWN document.
+      // This is essential for the sign-up flow.
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     // --------------------------------------------------------------------
@@ -111,10 +116,8 @@ service cloud.firestore {
      * @principle Enforces tenant-level data segregation. Access is granted based on the user's tenant membership.
      */
     match /tenants/{tenantId} {
-      allow get, list: if isUserOfTenant(tenantId);
-      allow create: if isUserOfTenant(tenantId); // Assumes tenant is created by an admin/backend, then users are added.
-      allow update: if isUserOfTenant(tenantId) && documentExists();
-      allow delete: if isUserOfTenant(tenantId) && documentExists();
+      // Reads and writes are allowed if the user is a member of that tenant.
+      allow read, write: if isUserOfTenant(tenantId);
     }
 
     /**
@@ -125,11 +128,9 @@ service cloud.firestore {
      * @deny A user in tenant 'widgets-inc' cannot (list) sales orders under `/tenants/acme/salesOrders`.
      * @principle Uses a recursive wildcard to apply a consistent tenant-ownership security model to all business data.
      */
-    match /tenants/{tenantId}/{path=**} {
-      allow get, list: if isUserOfTenant(tenantId);
-      allow create: if isUserOfTenant(tenantId) && request.resource.data.tenantId == tenantId;
-      allow update: if isUserOfTenant(tenantId) && documentExists() && request.resource.data.tenantId == resource.data.tenantId;
-      allow delete: if isUserOfTenant(tenantId) && documentExists();
+    match /tenants/{tenantId}/{collection}/{docId=**} {
+      // Any user of a tenant can read/write data within their tenant's subcollections.
+      allow read, write: if isUserOfTenant(tenantId);
     }
   }
 }

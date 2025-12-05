@@ -11,86 +11,56 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useState, FormEvent } from 'react';
-import { useAuth, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import ClientOnly from '@/components/ClientOnly';
-import { signOut, type AuthError, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSignUp = async (e: FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
-      // 1. Create the user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const response = await fetch('/api/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+        }),
+      });
 
-      if (!user) {
-        throw new Error("User creation failed.");
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'An unexpected error occurred.');
       }
-
-      // 2. Create the user profile and tenant documents in Firestore within a batch
-      const batch = writeBatch(firestore);
-
-      const userRef = doc(firestore, 'users', user.uid);
-      const tenantRef = doc(firestore, 'tenants', user.uid); // Using UID as tenantId
-
-      const newUserProfile = {
-        id: user.uid,
-        tenantId: user.uid, // The user's tenant is themselves
-        firstName: firstName,
-        lastName: lastName,
-        email: user.email,
-        role: 'Owner',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-
-      const newTenant = {
-        id: user.uid,
-        name: `${firstName}'s Workspace`,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-
-      batch.set(userRef, newUserProfile);
-      batch.set(tenantRef, newTenant);
       
-      // 3. Commit the batch
-      await batch.commit();
-
-      // 4. Sign the user out and redirect to login page
-      await signOut(auth);
+      // On success, redirect to the login page with a success message
       router.push('/login?registered=true');
 
-    } catch (error) {
-      const authError = error as AuthError;
-      console.error("Signup Error:", authError);
-      if (authError.code === 'auth/email-already-in-use') {
-        toast({
-          variant: "destructive",
-          title: "Signup Failed",
-          description: "This email is already in use. Please try another.",
-        });
-      } else {
-         toast({
-          variant: "destructive",
-          title: "Signup Failed",
-          description: authError.message || "An unexpected error occurred.",
-        });
-      }
+    } catch (error: any) {
+      console.error("Signup Error:", error);
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: error.message || "An unexpected error occurred.",
+      });
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -149,8 +119,8 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Create an account
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Creating account...' : 'Create an account'}
             </Button>
           </form>
         </ClientOnly>
