@@ -1,12 +1,17 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Product, PurchaseOrder, Supplier, Transaction } from '@/lib/types';
-import { mockProducts } from '@/lib/mock-products';
-import { mockOrders } from '@/lib/mock-orders';
-import { mockSuppliers } from '@/lib/mock-suppliers';
-import { mockTransactions } from '@/lib/mock-transactions';
+import { useMemoFirebase, useCollection, useUser, useFirestore } from '@/firebase';
+import { collection, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import {
+    addDocumentNonBlocking,
+    updateDocumentNonBlocking,
+    deleteDocumentNonBlocking,
+    setDocumentNonBlocking
+} from '@/firebase';
+
 
 interface DataContextProps {
   products: Product[];
@@ -26,124 +31,159 @@ interface DataContextProps {
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
 
-// Helper functions to interact with localStorage
-const loadFromStorage = <T,>(key: string, fallback: T): T => {
-  if (typeof window === 'undefined') {
-    return fallback;
-  }
-  try {
-    const item = window.localStorage.getItem(key);
-    return item ? JSON.parse(item) : fallback;
-  } catch (error) {
-    console.error(`Error reading from localStorage key “${key}”:`, error);
-    return fallback;
-  }
-};
-
-const saveToStorage = <T,>(key: string, value: T) => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  try {
-    const item = JSON.stringify(value);
-    window.localStorage.setItem(key, item);
-  } catch (error) {
-    console.error(`Error writing to localStorage key “${key}”:`, error);
-  }
-};
-
-
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+  const tenantId = user?.uid;
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const productsRef = useMemoFirebase(
+    () => (firestore && tenantId ? collection(firestore, 'tenants', tenantId, 'products') : null),
+    [firestore, tenantId]
+  );
+  const { data: products = [], isLoading: productsLoading } = useCollection<Product>(productsRef);
 
-  useEffect(() => {
-    setProducts(loadFromStorage('products', mockProducts));
-    setOrders(loadFromStorage('orders', mockOrders));
-    setSuppliers(loadFromStorage('suppliers', mockSuppliers));
-    setTransactions(loadFromStorage('transactions', mockTransactions));
-    setIsLoading(false);
-  }, []);
+  const ordersRef = useMemoFirebase(
+    () => (firestore && tenantId ? collection(firestore, 'tenants', tenantId, 'purchaseOrders') : null),
+    [firestore, tenantId]
+  );
+  const { data: orders = [], isLoading: ordersLoading } = useCollection<PurchaseOrder>(ordersRef);
 
-  useEffect(() => {
-    if (!isLoading) {
-        saveToStorage('products', products);
-    }
-  }, [products, isLoading]);
-
-  useEffect(() => {
-    if (!isLoading) {
-        saveToStorage('orders', orders);
-    }
-  }, [orders, isLoading]);
-
-  useEffect(() => {
-     if (!isLoading) {
-        saveToStorage('suppliers', suppliers);
-    }
-  }, [suppliers, isLoading]);
+  const suppliersRef = useMemoFirebase(
+    () => (firestore && tenantId ? collection(firestore, 'tenants', tenantId, 'suppliers') : null),
+    [firestore, tenantId]
+  );
+  const { data: suppliers = [], isLoading: suppliersLoading } = useCollection<Supplier>(suppliersRef);
   
-  useEffect(() => {
-    if (!isLoading) {
-       saveToStorage('transactions', transactions);
-   }
- }, [transactions, isLoading]);
+  const transactionsRef = useMemoFirebase(
+    () => (firestore && tenantId ? collection(firestore, 'tenants', tenantId, 'inventoryTransactions') : null),
+    [firestore, tenantId]
+  );
+  const { data: transactions = [], isLoading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
 
+  const isLoading = isUserLoading || productsLoading || ordersLoading || suppliersLoading || transactionsLoading;
 
-  const addProduct = (productData: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+ const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+    if (!firestore || !tenantId) return;
+    const newDocRef = doc(collection(firestore, 'tenants', tenantId, 'products'));
     const newProduct: Product = {
-      id: `PROD${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
-      tenantId: 'tenant-1',
+      id: newDocRef.id,
+      tenantId: tenantId,
       ...productData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      averageDailySales: Math.floor(Math.random() * 10) + 1, // Mock data
-      leadTimeDays: Math.floor(Math.random() * 10) + 5, // Mock data
+      averageDailySales: Math.floor(Math.random() * 10) + 1,
+      leadTimeDays: Math.floor(Math.random() * 10) + 5,
     };
-    setProducts(prev => [newProduct, ...prev]);
+    setDocumentNonBlocking(newDocRef, newProduct, {});
     toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-  };
+  }, [firestore, tenantId, toast]);
 
-  const updateProduct = (updatedProduct: Product) => {
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  const updateProduct = useCallback(async (updatedProduct: Product) => {
+    if (!firestore || !tenantId) return;
+    const docRef = doc(firestore, 'tenants', tenantId, 'products', updatedProduct.id);
+    updateDocumentNonBlocking(docRef, {
+        ...updatedProduct,
+        updatedAt: new Date().toISOString(),
+    });
     toast({ title: 'Product Updated', description: `${updatedProduct.name} has been updated.` });
-  };
-
-  const deleteProduct = (productId: string) => {
-    setProducts(prev => prev.filter(p => p.id !== productId));
+  }, [firestore, tenantId, toast]);
+  
+  const deleteProduct = useCallback(async (productId: string) => {
+    if (!firestore || !tenantId) return;
+    const docRef = doc(firestore, 'tenants', tenantId, 'products', productId);
+    deleteDocumentNonBlocking(docRef);
     toast({ title: 'Product Deleted', description: 'The product has been removed.' });
-  };
+  }, [firestore, tenantId, toast]);
 
-  const addOrder = (orderData: Omit<PurchaseOrder, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+
+  const addOrder = useCallback(async (orderData: Omit<PurchaseOrder, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+    if (!firestore || !tenantId) return;
+
+    const batch = writeBatch(firestore);
+    
+    // 1. Create the new purchase order
+    const orderRef = doc(collection(firestore, 'tenants', tenantId, 'purchaseOrders'));
     const newOrder: PurchaseOrder = {
-        id: `PO-${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
-        tenantId: 'tenant-1',
+        id: orderRef.id,
+        tenantId: tenantId,
         ...orderData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };
-    setOrders(prev => [newOrder, ...prev]);
-    const supplierName = suppliers.find(s => s.id === newOrder.supplierId)?.name || 'the supplier';
-    toast({ title: 'Order Created', description: `New purchase order for ${supplierName} has been created.` });
-  }
+    batch.set(orderRef, newOrder);
 
-  const deleteOrder = (orderId: string) => {
-    setOrders(prev => prev.filter(o => o.id !== orderId));
+    // 2. Create a corresponding inventory transaction
+    const transactionRef = doc(collection(firestore, 'tenants', tenantId, 'inventoryTransactions'));
+    const newTransaction: Transaction = {
+        id: transactionRef.id,
+        tenantId: tenantId,
+        productId: newOrder.productId,
+        locationId: 'MAIN-WAREHOUSE', // Assuming a default location
+        type: 'Purchase',
+        quantity: newOrder.quantity,
+        transactionDate: newOrder.orderDate,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+    batch.set(transactionRef, newTransaction);
+    
+    try {
+        await batch.commit();
+        const supplierName = suppliers.find(s => s.id === newOrder.supplierId)?.name || 'the supplier';
+        toast({ title: 'Order Created', description: `New purchase order for ${supplierName} has been created.` });
+    } catch(e) {
+        console.error("Failed to create order and transaction: ", e);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not create order.' });
+    }
+  }, [firestore, tenantId, toast, suppliers]);
+
+  const deleteOrder = useCallback(async (orderId: string) => {
+    if (!firestore || !tenantId) return;
+    const docRef = doc(firestore, 'tenants', tenantId, 'purchaseOrders', orderId);
+    deleteDocumentNonBlocking(docRef);
     toast({ title: 'Order Deleted', description: 'The purchase order has been removed.' });
-  }
+  }, [firestore, tenantId, toast]);
 
-  const updateOrderStatus = (orderId: string, status: string) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-    toast({ title: 'Order Status Updated', description: `Order ${orderId} has been marked as ${status}.` });
-  }
-  
-  const addSupplier = (supplierData: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
-     if (suppliers.find((s) => s.name === supplierData.name)) {
+  const updateOrderStatus = useCallback(async (orderId: string, status: string) => {
+    if (!firestore || !tenantId || status !== 'Fulfilled') {
+        if(status !== 'Fulfilled') {
+             const docRef = doc(firestore, 'tenants', tenantId, 'purchaseOrders', orderId);
+            updateDocumentNonBlocking(docRef, { status: status, updatedAt: new Date().toISOString() });
+            toast({ title: 'Order Status Updated', description: `Order ${orderId} has been marked as ${status}.` });
+        }
+        return;
+    };
+    
+    const orderToUpdate = orders.find(o => o.id === orderId);
+    if (!orderToUpdate) return;
+    
+    const batch = writeBatch(firestore);
+
+    // 1. Update order status
+    const orderRef = doc(firestore, 'tenants', tenantId, 'purchaseOrders', orderId);
+    batch.update(orderRef, { status: 'Fulfilled', updatedAt: new Date().toISOString() });
+
+    // 2. Update product stock
+    const productRef = doc(firestore, 'tenants', tenantId, 'products', orderToUpdate.productId);
+    const product = products.find(p => p.id === orderToUpdate.productId);
+    if (product) {
+        const newStock = product.stock + orderToUpdate.quantity;
+        batch.update(productRef, { stock: newStock });
+    }
+
+    try {
+        await batch.commit();
+        toast({ title: 'Order Fulfilled', description: `Order ${orderId} marked as fulfilled and stock updated.` });
+    } catch (e) {
+        console.error("Failed to fulfill order: ", e);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fulfill order.' });
+    }
+  }, [firestore, tenantId, toast, orders, products]);
+
+  const addSupplier = useCallback(async (supplierData: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+    if (!firestore || !tenantId) return;
+    if (suppliers.find((s) => s.name === supplierData.name)) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -151,39 +191,43 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       });
       return;
     }
+    const newDocRef = doc(collection(firestore, 'tenants', tenantId, 'suppliers'));
     const newSupplier: Supplier = {
-      id: `SUP${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
-      tenantId: 'tenant-1',
+      id: newDocRef.id,
+      tenantId: tenantId,
       ...supplierData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setSuppliers(prev => [newSupplier, ...prev]);
+    setDocumentNonBlocking(newDocRef, newSupplier, {});
     toast({ title: 'Supplier Added', description: `${newSupplier.name} has been added.` });
-  }
+  }, [firestore, tenantId, toast, suppliers]);
 
-  const deleteSupplier = (supplierId: string) => {
-    setSuppliers(prev => prev.filter(s => s.id !== supplierId));
+  const deleteSupplier = useCallback(async (supplierId: string) => {
+    if (!firestore || !tenantId) return;
+    const docRef = doc(firestore, 'tenants', tenantId, 'suppliers', supplierId);
+    deleteDocumentNonBlocking(docRef);
     toast({ title: 'Supplier Deleted', description: 'The supplier has been removed.' });
-  }
+  }, [firestore, tenantId, toast]);
 
+  const value = {
+    products,
+    orders,
+    suppliers,
+    transactions,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    addOrder,
+    deleteOrder,
+    updateOrderStatus,
+    addSupplier,
+    deleteSupplier,
+    isLoading,
+  };
 
   return (
-    <DataContext.Provider value={{ 
-        products, 
-        orders, 
-        suppliers, 
-        transactions, 
-        addProduct, 
-        updateProduct, 
-        deleteProduct,
-        addOrder,
-        deleteOrder,
-        updateOrderStatus,
-        addSupplier,
-        deleteSupplier,
-        isLoading
-    }}>
+    <DataContext.Provider value={value}>
       {children}
     </DataContext.Provider>
   );

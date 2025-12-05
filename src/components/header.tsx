@@ -1,4 +1,3 @@
-
 'use client';
 import {
   DropdownMenu,
@@ -12,12 +11,18 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
+import { useAuth, useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
+    const { user } = useUser();
+    const auth = useAuth();
+    const router = useRouter();
+
 
   const handleLogout = () => {
-    // Handle logout logic
-    console.log('User logged out');
+    auth.signOut();
+    router.push('/login');
   };
 
   return (
@@ -33,9 +38,9 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">
             <Avatar className="h-9 w-9">
-              {/* <AvatarImage src={user?.photoURL || undefined} alt="User avatar" /> */}
+              <AvatarImage src={user?.photoURL || undefined} alt="User avatar" />
               <AvatarFallback>
-                {'WO'}
+                {user?.displayName?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -44,17 +49,15 @@ export function Header() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                Workspace Owner
+                {user?.displayName || 'User'}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                owner@example.com
+                {user?.email}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>Settings</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
         </DropdownMenuContent>
@@ -62,7 +65,3 @@ export function Header() {
     </header>
   );
 }
-
-    
-
-    

@@ -1,10 +1,10 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
 import { DataProvider } from '@/context/data-context';
+import { FirebaseClientProvider } from '@/firebase';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -27,9 +27,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <DataProvider>
-            {children}
-          </DataProvider>
+          <FirebaseClientProvider>
+            <DataProvider>
+                {children}
+            </DataProvider>
+          </FirebaseClientProvider>
           <Toaster />
         </ThemeProvider>
       </body>

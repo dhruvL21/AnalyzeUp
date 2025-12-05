@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BotIcon, ZapIcon, BarChartIcon } from 'lucide-react';
@@ -22,11 +21,11 @@ export default function LandingPage() {
             Features
           </Link>
           <Link
-            href="/dashboard"
+            href="/login"
           >
             <Button variant="ghost">Sign In</Button>
           </Link>
-          <Link href="/dashboard">
+          <Link href="/register">
             <Button>Sign Up</Button>
           </Link>
           <ThemeToggle />
@@ -49,7 +48,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Link
-                    href="/dashboard"
+                    href="/register"
                     className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   >
                     Get Started Free
