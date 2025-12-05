@@ -107,36 +107,16 @@ service cloud.firestore {
      * @description Governs access to a Tenant document. A tenant's own members
      *              can read its details, but cannot list, create, or modify them.
      * @path        /tenants/{tenantId}
-     * @allow       (get) A user with auth.uid='user-123' can read the document at
-     *              /tenants/acme-corp/ if their own user document exists at
-     *              /tenants/acme-corp/users/user-123.
-     * @deny        (get) A user from 'mega-corp' trying to read /tenants/acme-corp/.
-     * @deny        (list) Any user trying to list all tenants.
-     * @principle   Enforces tenant data isolation. Access is granted only to
-     *              verified members of that tenant. Writes are disabled, assuming
-     *              server-side management.
      */
     match /tenants/{tenantId} {
       allow get: if isUserInTenant(tenantId);
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow list, create, update, delete: if false;
 
       /**
        * @description Governs access to User documents within a Tenant. Users can manage
        *              their own profile and view the profiles of other users in the
        *              same tenant.
        * @path        /tenants/{tenantId}/users/{userId}
-       * @allow       (get) User 'A' from tenant 'T' can read user 'B's profile in tenant 'T'.
-       * @allow       (list) User 'A' from tenant 'T' can list all users in tenant 'T'.
-       * @allow       (create) A new user 'A' can create their own profile at path
-       *              /tenants/T/users/A, provided the document data contains the correct IDs.
-       * @allow       (update) User 'A' can update their own profile.
-       * @deny        (update) User 'A' cannot update user 'B's profile.
-       * @deny        (get) A user from tenant 'S' cannot read any user profiles in tenant 'T'.
-       * @principle   Combines self-ownership for writes with shared read access for
-       *              members of the same tenant. Enforces relational integrity on create/update.
        */
       match /users/{userId} {
         allow get: if isUserInTenant(tenantId);
@@ -144,6 +124,15 @@ service cloud.firestore {
         allow create: if isOwner(userId) && hasCorrectIdsOnCreate(tenantId, userId);
         allow update: if isExistingOwner(userId) && hasImmutableIds();
         allow delete: if isExistingOwner(userId);
+      }
+      
+      /**
+       * @description Governs access to all other data collections within a tenant
+       *              (e.g., products, orders, transactions).
+       * @path        /tenants/{tenantId}/{collection}/{docId}
+       */
+      match /{collection}/{docId} {
+        allow read, write: if isUserInTenant(tenantId);
       }
     }
   }
