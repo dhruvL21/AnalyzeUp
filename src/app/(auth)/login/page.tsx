@@ -38,8 +38,14 @@ export default function LoginPage() {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     try {
-        await signInWithEmailAndPassword(auth, email, password);
-        router.push('/dashboard');
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (userCredential.user) {
+          toast({
+              title: "Logged In",
+              description: "You have been successfully logged in.",
+          });
+          router.push('/dashboard');
+        }
     } catch (error: any) {
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
           toast({
@@ -56,22 +62,6 @@ export default function LoginPage() {
         }
     }
   };
-  
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (user) {
-        toast({
-            title: "Logged In",
-            description: "You have been successfully logged in.",
-        });
-        router.push('/dashboard');
-      }
-    });
-
-    return () => {
-        unsubscribe();
-    }
-  }, [auth, router, toast]);
 
   return (
     <Card className="w-full max-w-sm">
