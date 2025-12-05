@@ -40,41 +40,27 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import type { Supplier, Product } from '@/lib/types';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { mockSuppliers } from '@/lib/mock-suppliers';
+import { mockProducts } from '@/lib/mock-products';
+import type { Supplier } from '@/lib/types';
 
 
 export default function SuppliersPage() {
-  const { user, firestore } = useFirebase();
-  const { toast } = useToast();
-  
-  const productsQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'products') : null
-  , [firestore, user]);
-  const { data: products } = useCollection<Product>(productsQuery);
-
-  const suppliersQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'suppliers') : null
-  , [firestore, user]);
-  const { data: suppliers } = useCollection<Supplier>(suppliersQuery);
-
+  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
   const [dialogOpen, setDialogOpen] = useState(false);
-  
+  const { toast } = useToast();
+
   const supplierProductCount = useMemo(() => {
-    if (!suppliers || !products) return {};
     const count: { [key: string]: number } = {};
     suppliers.forEach(supplier => {
-      count[supplier.id] = products.filter(p => p.supplierId === supplier.id).length;
+      count[supplier.id] = mockProducts.filter(p => p.supplierId === supplier.id).length;
     });
     return count;
-  }, [suppliers, products]);
+  }, [suppliers]);
 
 
   const handleDeleteSupplier = (supplierId: string) => {
-    if (!user) return;
-    const docRef = doc(firestore, 'tenants', user.uid, 'suppliers', supplierId);
-    deleteDoc(docRef);
+    setSuppliers(suppliers.filter((s) => s.id !== supplierId));
     toast({
       title: 'Supplier Deleted',
       description: 'The supplier has been successfully removed.',
@@ -83,8 +69,6 @@ export default function SuppliersPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(!user) return;
-
     const formData = new FormData(e.currentTarget);
     const newSupplierData = {
       name: formData.get('name') as string,
@@ -92,12 +76,9 @@ export default function SuppliersPage() {
       email: formData.get('email') as string,
       phone: 'N/A',
       address: 'N/A',
-      tenantId: user.uid,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
     };
 
-    if (suppliers?.find((s) => s.name === newSupplierData.name)) {
+    if (suppliers.find((s) => s.name === newSupplierData.name)) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -105,12 +86,20 @@ export default function SuppliersPage() {
       });
       return;
     }
-    
-    addDoc(collection(firestore, 'tenants', user.uid, 'suppliers'), newSupplierData);
+
+    const newSupplier: Supplier = {
+      id: `SUP${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
+      tenantId: 'tenant-1',
+      ...newSupplierData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setSuppliers([newSupplier, ...suppliers]);
 
     toast({
       title: 'Supplier Added',
-      description: `${newSupplierData.name} has been added to your suppliers list.`,
+      description: `${newSupplier.name} has been added to your suppliers list.`,
     });
     setDialogOpen(false);
   };
@@ -134,7 +123,7 @@ export default function SuppliersPage() {
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {suppliers?.map((supplier) => (
+          {suppliers.map((supplier) => (
             <Card key={supplier.id}>
               <CardHeader className="flex flex-row items-start justify-between">
                 <div>
@@ -238,3 +227,5 @@ export default function SuppliersPage() {
     </>
   );
 }
+
+    

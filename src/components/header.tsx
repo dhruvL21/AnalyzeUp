@@ -12,18 +12,12 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
-import { useFirebase } from '@/firebase';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
 
 export function Header() {
-  const { auth, user } = useFirebase();
-  const router = useRouter();
 
   const handleLogout = () => {
-    signOut(auth).then(() => {
-      router.push('/login');
-    });
+    // Handle logout logic
+    console.log('User logged out');
   };
 
   return (
@@ -39,9 +33,9 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={user?.photoURL || undefined} alt="User avatar" />
+              {/* <AvatarImage src={user?.photoURL || undefined} alt="User avatar" /> */}
               <AvatarFallback>
-                {user?.email?.charAt(0).toUpperCase()}
+                {'WO'}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -50,10 +44,10 @@ export function Header() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user?.displayName || 'Workspace Owner'}
+                Workspace Owner
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                {user?.email}
+                owner@example.com
               </p>
             </div>
           </DropdownMenuLabel>
@@ -68,5 +62,7 @@ export function Header() {
     </header>
   );
 }
+
+    
 
     

@@ -1,21 +1,19 @@
 
-import { FieldValue, Timestamp } from 'firebase/firestore';
-
 export interface User {
   id: string;
   tenantId: string;
   email: string;
   firstName: string;
   lastName: string;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Tenant {
   id: string;
   name: string;
-  createdAt: FieldValue | Date | string;
-  updatedAt: FieldValue | Date | string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Product {
@@ -25,8 +23,8 @@ export interface Product {
   description: string;
   sku: string;
   categoryId: string;
-  createdAt: FieldValue | Date | string | Timestamp;
-  updatedAt: FieldValue | Date | string | Timestamp;
+  createdAt: string;
+  updatedAt: string;
   stock: number;
   price: number;
   imageUrl: string;
@@ -37,11 +35,8 @@ export interface Product {
 
 export interface Category {
   id: string;
-  tenantId: string;
   name: string;
   description: string;
-  createdAt: FieldValue | Date | string | Timestamp;
-  updatedAt: FieldValue | Date | string | Timestamp;
 }
 
 export interface Location {
@@ -50,8 +45,8 @@ export interface Location {
   name: string;
   type: string;
   address: string;
-  createdAt: FieldValue | Date | string | Timestamp;
-  updatedAt: FieldValue | Date | string | Timestamp;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Transaction {
@@ -61,9 +56,9 @@ export interface Transaction {
   locationId: string;
   type: 'Sale' | 'Purchase';
   quantity: number;
-  transactionDate: FieldValue | Date | string | Timestamp;
-  createdAt: FieldValue | Date | string | Timestamp;
-  updatedAt: FieldValue | Date | string | Timestamp;
+  transactionDate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Supplier {
@@ -74,8 +69,8 @@ export interface Supplier {
   email: string;
   phone: string;
   address: string;
-  createdAt: FieldValue | Date | string | Timestamp;
-  updatedAt: FieldValue | Date | string | Timestamp;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PurchaseOrder {
@@ -87,6 +82,8 @@ export interface PurchaseOrder {
   status: string;
   productId: string;
   quantity: number;
-  createdAt: FieldValue | Date | string | Timestamp;
-  updatedAt: FieldValue | Date | string | Timestamp;
+  createdAt: string;
+  updatedAt: string;
 }
+
+    

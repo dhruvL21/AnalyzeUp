@@ -11,55 +11,9 @@ import {
 } from '@/components/ui/sidebar';
 import Nav from '@/components/nav';
 import { Header } from '@/components/header';
-import { useFirebase } from '@/firebase';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
 
-function AppLayoutSkeleton() {
-  return (
-    <div className="flex min-h-screen">
-      <div className="hidden md:block border-r border-sidebar-border p-2 bg-sidebar">
-         <div className="flex flex-col h-full w-[16rem] bg-sidebar rounded-lg p-2 gap-2">
-            <Skeleton className="h-12 w-full bg-sidebar-accent" />
-            <div className="flex-1 space-y-2 py-2">
-                <Skeleton className="h-8 w-full bg-sidebar-accent" />
-                <Skeleton className="h-8 w-full bg-sidebar-accent" />
-                <Skeleton className="h-8 w-full bg-sidebar-accent" />
-                <Skeleton className="h-8 w-full bg-sidebar-accent" />
-            </div>
-            <Skeleton className="h-12 w-full bg-sidebar-accent" />
-        </div>
-      </div>
-      <main className="flex-1 flex flex-col bg-background">
-        <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
-            <div className="w-full flex-1"></div>
-            <Skeleton className="h-8 w-8 rounded-full" />
-            <Skeleton className="h-9 w-9 rounded-full" />
-        </header>
-        <div className="flex-1 p-4 md:p-6">
-            <Skeleton className="w-full h-full" />
-        </div>
-      </main>
-    </div>
-  );
-}
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, isUserLoading } = useFirebase();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
-
-  if (isUserLoading || !user) {
-    return <AppLayoutSkeleton />;
-  }
-
   return (
     <SidebarProvider>
       <Sidebar
@@ -81,17 +35,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <div className="flex items-center gap-3 p-2">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={user.photoURL || undefined} alt="User avatar" />
-              <AvatarFallback>
-                {user.email?.charAt(0).toUpperCase()}
-              </AvatarFallback>
+              {/* Add user avatar image and fallback here */}
             </Avatar>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
               <span className="text-sm font-medium text-sidebar-foreground">
-                {user.displayName || 'Workspace Owner'}
+                Workspace Owner
               </span>
               <span className="text-xs text-sidebar-foreground/70">
-                {user.email}
+                owner@example.com
               </span>
             </div>
           </div>
@@ -104,3 +55,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    

@@ -28,7 +28,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import type { Product, Supplier, Category } from '@/lib/types';
+import type { Product, Supplier } from '@/lib/types';
+import { mockProducts } from '@/lib/mock-products';
+import { mockSuppliers } from '@/lib/mock-suppliers';
 import {
   Dialog,
   DialogContent,
@@ -60,116 +62,70 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectSeparator,
 } from '@/components/ui/select';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, serverTimestamp, setDoc, deleteDoc, addDoc } from 'firebase/firestore';
+
+// Mock categories since they are not in the provided mock data
+const mockCategories = [
+    { id: 'tops', name: 'Tops' },
+    { id: 'bottoms', name: 'Bottoms' },
+    { id: 'accessories', name: 'Accessories' },
+    { id: 'essentials', name: 'Essentials' },
+];
 
 export default function InventoryPage() {
-  const { user, firestore } = useFirebase();
   const { toast } = useToast();
-
-  const productsQuery = useMemoFirebase(() => 
-    user ? collection(firestore, 'tenants', user.uid, 'products') : null
-  , [firestore, user]);
-  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
-
-  const suppliersQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'suppliers') : null
-  , [firestore, user]);
-  const { data: suppliers, isLoading: suppliersLoading } = useCollection<Supplier>(suppliersQuery);
-
-  const categoriesQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'categories') : null
-  , [firestore, user]);
-  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesQuery);
-
+  const [products, setProducts] = useState<Product[]>(mockProducts);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
-  const [selectedSupplier, setSelectedSupplier] = useState<string | undefined>(undefined);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newSupplierName, setNewSupplierName] = useState('');
-
 
   const handleDelete = (productId: string) => {
-    if (!user) return;
-    const docRef = doc(firestore, 'tenants', user.uid, 'products', productId);
-    deleteDoc(docRef);
+    setProducts(products.filter((p) => p.id !== productId));
     toast({
       title: 'Product Deleted',
       description: 'The product has been successfully removed.',
     });
   };
 
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user) return;
-
     const formData = new FormData(e.currentTarget);
-    
-    let categoryId = selectedCategory;
-    let supplierId = selectedSupplier;
-
-    // Handle new category creation
-    if (categoryId === 'new') {
-        if (!newCategoryName.trim()) {
-            toast({ variant: 'destructive', title: 'Category name is required.' });
-            return;
-        }
-        const newCategory = { name: newCategoryName, tenantId: user.uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-        const categoriesCol = collection(firestore, 'tenants', user.uid, 'categories');
-        const docRef = await addDoc(categoriesCol, newCategory);
-        categoryId = docRef.id;
-    }
-
-    // Handle new supplier creation
-    if (supplierId === 'new') {
-        if (!newSupplierName.trim()) {
-            toast({ variant: 'destructive', title: 'Supplier name is required.' });
-            return;
-        }
-        const newSupplier = {
-            name: newSupplierName,
-            tenantId: user.uid,
-            contactName: newSupplierName,
-            email: 'N/A', phone: 'N/A', address: 'N/A',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-        };
-        const suppliersCol = collection(firestore, 'tenants', user.uid, 'suppliers');
-        const docRef = await addDoc(suppliersCol, newSupplier);
-        supplierId = docRef.id;
-    }
-    
     const productData = {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: categoryId!,
-      supplierId: supplierId!,
+      categoryId: formData.get('category') as string,
+      supplierId: formData.get('supplier') as string,
       imageUrl: formData.get('imageUrl') as string,
       description: description,
-      tenantId: user.uid,
-      sku: 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-      averageDailySales: Math.floor(Math.random() * 10) + 1,
-      leadTimeDays: Math.floor(Math.random() * 10) + 5,
-      updatedAt: serverTimestamp(),
     };
 
     if (editingProduct) {
-      const docRef = doc(firestore, 'tenants', user.uid, 'products', editingProduct.id);
-      setDoc(docRef, { ...productData }, { merge: true });
+      const updatedProduct = {
+        ...editingProduct,
+        ...productData,
+        updatedAt: new Date().toISOString(),
+      };
+      setProducts(
+        products.map((p) => (p.id === editingProduct.id ? updatedProduct : p))
+      );
       toast({
         title: 'Product Updated',
         description: `${productData.name} has been updated.`,
       });
     } else {
-      const docRef = doc(collection(firestore, 'tenants', user.uid, 'products'));
-      setDoc(docRef, { ...productData, createdAt: serverTimestamp() });
+      const newProduct = {
+        id: `PROD${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
+        tenantId: 'tenant-1',
+        ...productData,
+        sku: 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        averageDailySales: Math.floor(Math.random() * 10) + 1,
+        leadTimeDays: Math.floor(Math.random() * 10) + 5,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setProducts([newProduct, ...products]);
       toast({
         title: 'Product Added',
         description: `${productData.name} has been added to your inventory.`,
@@ -178,28 +134,17 @@ export default function InventoryPage() {
 
     setEditingProduct(null);
     setDialogOpen(false);
-    resetFormStates();
   };
-  
-  const resetFormStates = () => {
-    setEditingProduct(null);
-    setDescription('');
-    setSelectedCategory(undefined);
-    setSelectedSupplier(undefined);
-    setNewCategoryName('');
-    setNewSupplierName('');
-  }
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
     setDescription(product.description || '');
-    setSelectedCategory(product.categoryId);
-    setSelectedSupplier(product.supplierId);
     setDialogOpen(true);
   };
 
   const openAddDialog = () => {
-    resetFormStates();
+    setEditingProduct(null);
+    setDescription('');
     setDialogOpen(true);
   };
 
@@ -209,14 +154,16 @@ export default function InventoryPage() {
 
     const formData = new FormData(form);
     const productName = formData.get('name') as string;
-    const categoryName = categories?.find(c => c.id === selectedCategory)?.name || newCategoryName || '';
+    const categoryId = formData.get('category') as string;
+    const category =
+      mockCategories.find((c) => c.id === categoryId)?.name || '';
 
-    if (!productName || !categoryName) {
+    if (!productName || !category) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
         description:
-          'Please enter a product name and select or enter a category first.',
+          'Please enter a product name and select a category first.',
       });
       return;
     }
@@ -225,7 +172,7 @@ export default function InventoryPage() {
     try {
         const result = await generateDescription({
             productName,
-            category: categoryName,
+            category,
         });
         setDescription(result.description);
     } catch (error) {
@@ -277,7 +224,7 @@ export default function InventoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products?.map((product) => (
+                {products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell className="hidden sm:table-cell">
                       <Image
@@ -371,7 +318,7 @@ export default function InventoryPage() {
         </Card>
       </div>
 
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
             {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -471,75 +418,41 @@ export default function InventoryPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 items-start">
-             <div className="space-y-2">
-                <div className="grid grid-cols-2 items-center gap-4">
-                    <Label htmlFor="category" className="text-right">
-                        Category
-                    </Label>
-                    <Select name="category" value={selectedCategory} onValueChange={setSelectedCategory} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                        {categories?.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                            {cat.name}
-                            </SelectItem>
-                        ))}
-                        <SelectSeparator />
-                        <SelectItem value="new">Add New...</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                {selectedCategory === 'new' && (
-                <div className="grid grid-cols-2 items-center gap-4 pl-1">
-                    <div/>
-                    <Input
-                        name="newCategory"
-                        placeholder="New category name"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        className="col-span-1"
-                    />
-                </div>
-                )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="category" className="text-right">
+                Category
+              </Label>
+              <Select name="category" defaultValue={editingProduct?.categoryId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-
-            <div className="space-y-2">
-                 <div className="grid grid-cols-2 items-center gap-4">
-                    <Label htmlFor="supplier" className="text-right">
-                        Supplier
-                    </Label>
-                     <Select name="supplier" value={selectedSupplier} onValueChange={setSelectedSupplier} required>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a supplier" />
-                        </SelectTrigger>
-                        <SelectContent>
-                        {suppliers?.map((sup) => (
-                            <SelectItem key={sup.id} value={sup.id}>
-                            {sup.name}
-                            </SelectItem>
-                        ))}
-                        <SelectSeparator />
-                        <SelectItem value="new">Add New...</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                {selectedSupplier === 'new' && (
-                    <div className="grid grid-cols-2 items-center gap-4 pl-1">
-                        <div/>
-                        <Input
-                            name="newSupplier"
-                            placeholder="New supplier name"
-                            value={newSupplierName}
-                            onChange={(e) => setNewSupplierName(e.target.value)}
-                            className="col-span-1"
-                        />
-                    </div>
-                )}
+            <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="supplier" className="text-right">
+                Supplier
+              </Label>
+              <Select name="supplier" defaultValue={editingProduct?.supplierId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockSuppliers.map((sup) => (
+                    <SelectItem key={sup.id} value={sup.id}>
+                      {sup.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-
           </div>
 
           <DialogFooter>
@@ -555,3 +468,5 @@ export default function InventoryPage() {
     </Dialog>
   );
 }
+
+    

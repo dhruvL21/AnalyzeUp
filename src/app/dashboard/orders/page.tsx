@@ -50,50 +50,34 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import type { PurchaseOrder, Supplier, Product } from '@/lib/types';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { mockOrders } from '@/lib/mock-orders';
+import { mockSuppliers } from '@/lib/mock-suppliers';
+import { mockProducts } from '@/lib/mock-products';
+import type { PurchaseOrder } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { collection, doc, serverTimestamp, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
 export default function OrdersPage() {
-  const { user, firestore } = useFirebase();
-  const { toast } = useToast();
-  
-  const ordersQuery = useMemoFirebase(() => 
-    user ? collection(firestore, 'tenants', user.uid, 'purchaseOrders') : null
-  , [firestore, user]);
-  const { data: orders, isLoading: ordersLoading } = useCollection<PurchaseOrder>(ordersQuery);
-
-  const suppliersQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'suppliers') : null
-  , [firestore, user]);
-  const { data: suppliers, isLoading: suppliersLoading } = useCollection<Supplier>(suppliersQuery);
-
-  const productsQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'products') : null
-  , [firestore, user]);
-  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
-
+  const [orders, setOrders] = useState<PurchaseOrder[]>(mockOrders);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
-  
+  const { toast } = useToast();
+
   const handleMarkAsFulfilled = (orderId: string) => {
-    if(!user) return;
-    const docRef = doc(firestore, 'tenants', user.uid, 'purchaseOrders', orderId);
-    updateDoc(docRef, { status: "Fulfilled", updatedAt: serverTimestamp() });
+    setOrders(
+      orders.map((o) =>
+        o.id === orderId ? { ...o, status: 'Fulfilled' } : o
+      )
+    );
     toast({
       title: 'Order Status Updated',
-      description: `Order has been marked as Fulfilled.`,
+      description: `Order ${orderId} has been marked as Fulfilled.`,
     });
   };
 
   const handleDeleteOrder = (orderId: string) => {
-     if(!user) return;
-    const docRef = doc(firestore, 'tenants', user.uid, 'purchaseOrders', orderId);
-    deleteDoc(docRef);
+    setOrders(orders.filter((o) => o.id !== orderId));
     toast({
       title: 'Order Deleted',
       description: 'The purchase order has been successfully removed.',
@@ -102,8 +86,6 @@ export default function OrdersPage() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(!user) return;
-
     const formData = new FormData(e.currentTarget);
     const newOrderData = {
       supplierId: formData.get('supplierId') as string,
@@ -112,17 +94,21 @@ export default function OrdersPage() {
       expectedDeliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
       quantity: Number(formData.get('quantity')),
       productId: formData.get('productId') as string,
-      tenantId: user.uid,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
     };
     
-    const docRef = doc(collection(firestore, 'tenants', user.uid, 'purchaseOrders'));
-    setDoc(docRef, newOrderData);
+    const newOrder: PurchaseOrder = {
+      id: `PO-${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
+      tenantId: 'tenant-1',
+      ...newOrderData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    setOrders([newOrder, ...orders]);
 
     toast({
       title: 'Order Created',
-      description: `New purchase order has been created.`,
+      description: `New purchase order for supplier ${newOrder.supplierId} has been created.`,
     });
     setDialogOpen(false);
   };
@@ -180,10 +166,10 @@ export default function OrdersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders?.map((order) => (
+                {orders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id.slice(0, 8)}...</TableCell>
-                    <TableCell>{suppliers?.find(s => s.id === order.supplierId)?.name || order.supplierId}</TableCell> 
+                    <TableCell className="font-medium">{order.id}</TableCell>
+                    <TableCell>{mockSuppliers.find(s => s.id === order.supplierId)?.name || order.supplierId}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusVariant(order.status as OrderStatus)}>
                         {order.status}
@@ -277,7 +263,7 @@ export default function OrdersPage() {
                   <SelectValue placeholder="Select a supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  {suppliers?.map((sup) => (
+                  {mockSuppliers.map((sup) => (
                     <SelectItem key={sup.id} value={sup.id}>
                       {sup.name}
                     </SelectItem>
@@ -294,7 +280,7 @@ export default function OrdersPage() {
                   <SelectValue placeholder="Select a product" />
                 </SelectTrigger>
                 <SelectContent>
-                  {products?.map((prod) => (
+                  {mockProducts.map((prod) => (
                     <SelectItem key={prod.id} value={prod.id}>
                       {prod.name}
                     </SelectItem>
@@ -332,17 +318,17 @@ export default function OrdersPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>Order ID: {viewingOrder?.id.slice(0,8)}...</DialogDescription>
+            <DialogDescription>Order ID: {viewingOrder?.id}</DialogDescription>
           </DialogHeader>
           {viewingOrder && (
             <div className="space-y-4">
               <div>
                 <Label>Supplier</Label>
-                <p>{suppliers?.find(s => s.id === viewingOrder.supplierId)?.name || viewingOrder.supplierId}</p>
+                <p>{mockSuppliers.find(s => s.id === viewingOrder.supplierId)?.name || viewingOrder.supplierId}</p>
               </div>
                <div>
                 <Label>Product</Label>
-                <p>{products?.find(p => p.id === viewingOrder.productId)?.name || viewingOrder.productId}</p>
+                <p>{mockProducts.find(p => p.id === viewingOrder.productId)?.name || viewingOrder.productId}</p>
               </div>
               <div>
                 <Label>Date</Label>
@@ -374,3 +360,5 @@ export default function OrdersPage() {
     </>
   );
 }
+
+    

@@ -27,14 +27,14 @@ import {
 } from 'lucide-react';
 import { LowStockAlertItem } from '@/components/low-stock-alert-item';
 import { SalesChart } from '@/components/sales-chart';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
+import { mockProducts } from '@/lib/mock-products';
+import { mockTransactions } from '@/lib/mock-transactions';
 import type { Product } from '@/lib/types';
 import type { Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useEffect, useMemo } from 'react';
 import { salesData } from '@/lib/data';
 import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
-import { collection } from 'firebase/firestore';
 
 
 function DashboardLoading() {
@@ -168,43 +168,41 @@ function DashboardLoading() {
 }
 
 export default function DashboardPage() {
-  const { user, firestore } = useFirebase();
+  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(mockTransactions);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const productsQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'products') : null
-  , [firestore, user]);
-  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
+  useEffect(() => {
+    // Simulate data fetching
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  }, []);
 
-  const transactionsQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'inventoryTransactions') : null
-  , [firestore, user]);
-  const { data: transactions, isLoading: transactionsLoading } = useCollection<Transaction>(transactionsQuery);
-
-  const isLoading = productsLoading || transactionsLoading;
-
-  const lowStockProducts = products?.filter((p) => p.stock < 20);
+  const lowStockProducts = products.filter((p) => p.stock < 20);
 
   const totalInventoryValue =
-    products?.reduce((acc, product) => acc + product.stock * product.price, 0) ||
+    products.reduce((acc, product) => acc + product.stock * product.price, 0) ||
     0;
 
   const totalSales =
     transactions
-      ?.filter((t) => t.type === 'Sale')
+      .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
-        const product = products?.find((p) => p.id === t.productId);
+        const product = products.find((p) => p.id === t.productId);
         return acc + t.quantity * (product?.price || 0);
       }, 0) || 0;
 
   const topSellingProductMap = useMemo(() => 
     transactions
-      ?.filter((t) => t.type === 'Sale')
+      .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
         const productName =
-          products?.find((p) => p.id === t.productId)?.name || 'Unknown';
+          products.find((p) => p.id === t.productId)?.name || 'Unknown';
         acc[productName] = (acc[productName] || 0) + t.quantity;
         return acc;
-      }, {} as { [key: string]: number }) || {}
+      }, {} as { [key: string]: number })
   , [transactions, products]);
 
   const topSeller =
@@ -230,7 +228,7 @@ export default function DashboardPage() {
     return "Stable";
   }, []);
 
-  const recentTransactions = transactions?.slice(0, 5).reverse();
+  const recentTransactions = transactions.slice(0, 5).reverse();
 
   if (isLoading) {
     return <DashboardLoading />;
@@ -285,7 +283,7 @@ export default function DashboardPage() {
             <PackageX className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{lowStockProducts?.length}</div>
+            <div className="text-2xl font-bold">{lowStockProducts.length}</div>
             <p className="text-xs text-muted-foreground">
               Items needing reordering
             </p>
@@ -319,7 +317,7 @@ export default function DashboardPage() {
                 <BusinessStrategyAdvisor
                     totalInventoryValue={totalInventoryValue}
                     totalSales={totalSales}
-                    lowStockItemCount={lowStockProducts?.length || 0}
+                    lowStockItemCount={lowStockProducts.length}
                     topSellingProducts={topSellingProductsForAI}
                     salesTrend={salesTrend}
                 />
@@ -333,7 +331,7 @@ export default function DashboardPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 max-h-[400px] overflow-y-auto">
-                {lowStockProducts && lowStockProducts.length > 0 ? (
+                {lowStockProducts.length > 0 ? (
                 lowStockProducts.map((product) => (
                     <LowStockAlertItem key={product.id} product={product} />
                 ))
@@ -376,10 +374,10 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentTransactions?.map((transaction) => (
+                {recentTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell className="font-medium">
-                      {products?.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
+                      {products.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -402,7 +400,7 @@ export default function DashboardPage() {
                     </TableCell>
                     <TableCell>{transaction.quantity}</TableCell>
                     <TableCell className="text-right">
-                      {new Date((transaction.transactionDate as any).toDate()).toLocaleDateString()}
+                      {new Date(transaction.transactionDate as string).toLocaleDateString()}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -414,3 +412,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

@@ -26,8 +26,9 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Papa from 'papaparse';
-import { useFirebase, useCollection, useMemoFirebase } from '@/firebase';
-import type { Product, Transaction, Category } from '@/lib/types';
+import { mockProducts } from '@/lib/mock-products';
+import { mockTransactions } from '@/lib/mock-transactions';
+import type { Product, Transaction } from '@/lib/types';
 import {
   Select,
   SelectContent,
@@ -35,41 +36,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { subDays, toDate } from 'date-fns';
-import { collection } from 'firebase/firestore';
-
+import { subDays } from 'date-fns';
 
 type ReportType = 'inventory_summary' | 'sales_report' | 'transaction_log';
 type DateRange = '7' | '30' | '90' | 'all';
 
 export default function ReportsPage() {
-  const { user, firestore } = useFirebase();
-
   const [reportType, setReportType] = useState<ReportType>('inventory_summary');
   const [dateRange, setDateRange] = useState<DateRange>('30');
-  
-  const productsQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'products') : null
-  , [firestore, user]);
-  const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
-
-  const transactionsQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'inventoryTransactions') : null
-  , [firestore, user]);
-  const { data: transactions, isLoading: transactionsLoading } = useCollection<Transaction>(transactionsQuery);
-  
-  const categoriesQuery = useMemoFirebase(() =>
-    user ? collection(firestore, 'tenants', user.uid, 'categories') : null
-  , [firestore, user]);
-  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesQuery);
 
   const getFilteredTransactions = () => {
-    if (!transactions) return [];
-    if (dateRange === 'all') return transactions;
-
+    if (dateRange === 'all') return mockTransactions;
     const rangeStartDate = subDays(new Date(), parseInt(dateRange));
-    return transactions.filter((t) => {
-      const transactionDate = toDate(t.transactionDate as any);
+    return mockTransactions.filter((t) => {
+      const transactionDate = new Date(t.transactionDate as string);
       return transactionDate >= rangeStartDate;
     });
   };
@@ -78,33 +58,29 @@ export default function ReportsPage() {
 
   const totalRevenue =
     filteredTransactions
-      ?.filter((t) => t.type === 'Sale')
+      .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
-        const product = products?.find((p) => p.id === t.productId);
+        const product = mockProducts.find((p) => p.id === t.productId);
         return acc + t.quantity * (product?.price || 0);
       }, 0) || 0;
 
-  const topSellingProducts = products
-    ? [...products]
-        .map(product => {
-          const sales =
-            filteredTransactions
-              ?.filter((t) => t.productId === product.id && t.type === 'Sale')
-              .reduce((acc, t) => acc + t.quantity, 0) || 0;
-          const revenue = sales * product.price;
-          return { ...product, revenue };
-        })
-        .sort((a,b) => b.revenue - a.revenue)
-        .slice(0, 5)
-    : [];
+  const topSellingProducts = [...mockProducts]
+    .map(product => {
+      const sales =
+        filteredTransactions
+          .filter((t) => t.productId === product.id && t.type === 'Sale')
+          .reduce((acc, t) => acc + t.quantity, 0) || 0;
+      const revenue = sales * product.price;
+      return { ...product, revenue };
+    })
+    .sort((a,b) => b.revenue - a.revenue)
+    .slice(0, 5);
 
   const totalProductsInStock =
-    products?.reduce((acc, p) => acc + p.stock, 0) || 0;
-  const totalOrders = filteredTransactions?.filter((t) => t.type === 'Sale').length || 0;
+    mockProducts.reduce((acc, p) => acc + p.stock, 0) || 0;
+  const totalOrders = filteredTransactions.filter((t) => t.type === 'Sale').length || 0;
 
   const handleDownloadCsv = () => {
-    if (!products || !transactions) return;
-
     let dataToExport: any[] = [];
     let filename = 'report.csv';
 
@@ -112,14 +88,14 @@ export default function ReportsPage() {
 
     switch (reportType) {
       case 'inventory_summary':
-        dataToExport = products.map((p) => ({
+        dataToExport = mockProducts.map((p) => ({
           productId: p.id,
           productName: p.name,
           sku: p.sku,
           stock: p.stock,
           price: p.price.toFixed(2),
           inventoryValue: (p.stock * p.price).toFixed(2),
-          category: categories?.find(c => c.id === p.categoryId)?.name || 'N/A',
+          category: p.categoryId,
         }));
         filename = `inventory_summary_${new Date().toISOString().split('T')[0]}.csv`;
         break;
@@ -128,7 +104,7 @@ export default function ReportsPage() {
         dataToExport = localFilteredTransactions
           .filter((t) => t.type === 'Sale')
           .map((t) => {
-            const product = products.find((p) => p.id === t.productId);
+            const product = mockProducts.find((p) => p.id === t.productId);
             const revenue = product ? t.quantity * product.price : 0;
             return {
               transactionId: t.id,
@@ -145,7 +121,7 @@ export default function ReportsPage() {
 
       case 'transaction_log':
         dataToExport = localFilteredTransactions.map((t) => {
-           const product = products.find((p) => p.id === t.productId);
+           const product = mockProducts.find((p) => p.id === t.productId);
             return {
                 transactionId: t.id,
                 transactionDate: t.transactionDate,
@@ -301,3 +277,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    
