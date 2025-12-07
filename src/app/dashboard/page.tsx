@@ -293,7 +293,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
-        <Card className='flex flex-col'>
+        <Card className="flex flex-col">
             <CardHeader>
                 <CardTitle>AI Strategy Advisor</CardTitle>
                 <CardDescription>
@@ -310,14 +310,14 @@ export default function DashboardPage() {
                 />
             </CardContent>
         </Card>
-        <Card className='flex flex-col'>
+        <Card className="flex flex-col">
             <CardHeader>
                 <CardTitle>Low Stock Alerts</CardTitle>
                 <CardDescription>
                 Items nearing their reorder point. Use AI to get suggestions.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-h-[300px] overflow-y-auto flex-grow">
+            <CardContent className="flex-grow space-y-4 max-h-[300px] overflow-y-auto">
                 {lowStockProducts.length > 0 ? (
                 lowStockProducts.map((product) => (
                     <LowStockAlertItem key={product.id} product={product} />
