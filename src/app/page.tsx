@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BotIcon, ZapIcon, BarChartIcon } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { AnimatedHero } from '@/components/animated-hero';
 import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
 
@@ -28,7 +27,6 @@ export default function LandingPage() {
           <Link href="/dashboard">
             <Button>Sign Up</Button>
           </Link>
-          <ThemeToggle />
         </nav>
       </header>
       <main className="flex-1">
