@@ -38,7 +38,7 @@ interface DataContextProps {
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
   addSupplier: (supplier: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
   deleteSupplier: (supplierId: string) => Promise<void>;
-  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  addCategory: (category: Omit<Category, 'id' | 'userId'>) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -69,7 +69,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   const isLoading = productsLoading || ordersLoading || suppliersLoading || transactionsLoading || categoriesLoading;
 
-  const addCategory = async (categoryData: Omit<Category, 'id'>) => {
+  const addCategory = useCallback(async (categoryData: Omit<Category, 'id' | 'userId'>) => {
      if (!firestore || !user || !categoriesRef) {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not add category.' });
         throw new Error("Not authenticated");
@@ -85,10 +85,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             requestResourceData: newCategory,
         }));
     });
-  };
+  }, [firestore, user, categoriesRef, toast]);
 
 
-  const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!firestore || !user || !productsRef) return;
     const newProduct = {
       ...productData,
@@ -106,9 +106,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
     });
     toast({ title: 'Product Added', description: `${productData.name} has been added.` });
-  };
+  }, [firestore, user, productsRef, toast]);
 
-  const updateProduct = async (updatedProduct: Product) => {
+  const updateProduct = useCallback(async (updatedProduct: Product) => {
     if (!firestore || !user) return;
     const productRef = doc(firestore, 'users', user.uid, 'products', updatedProduct.id);
     const updateData = { ...updatedProduct, updatedAt: serverTimestamp() };
@@ -120,9 +120,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
     });
     toast({ title: 'Product Updated', description: `${updatedProduct.name} has been updated.` });
-  };
+  }, [firestore, user, toast]);
   
-  const deleteProduct = async (productId: string) => {
+  const deleteProduct = useCallback(async (productId: string) => {
     if (!firestore || !user) return;
     const productRef = doc(firestore, 'users', user.uid, 'products', productId);
     deleteDoc(productRef).catch((serverError) => {
@@ -132,9 +132,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
     });
     toast({ title: 'Product Deleted', description: 'The product has been removed.' });
-  };
+  }, [firestore, user, toast]);
 
-  const addOrder = async (orderData: Omit<PurchaseOrder, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const addOrder = useCallback(async (orderData: Omit<PurchaseOrder, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!firestore || !user || !ordersRef || !transactionsRef) return;
 
     const batch = writeBatch(firestore);
@@ -171,9 +171,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     });
     const supplierName = suppliers.find(s => s.id === newOrder.supplierId)?.name || 'the supplier';
     toast({ title: 'Order Created', description: `New purchase order for ${supplierName} has been created.` });
-  };
+  }, [firestore, user, ordersRef, transactionsRef, suppliers, toast]);
 
-  const deleteOrder = async (orderId: string) => {
+  const deleteOrder = useCallback(async (orderId: string) => {
     if (!firestore || !user) return;
     const orderRef = doc(firestore, 'users', user.uid, 'orders', orderId);
     deleteDoc(orderRef).catch((serverError) => {
@@ -183,9 +183,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
     });
     toast({ title: 'Order Deleted', description: 'The purchase order has been removed.' });
-  };
+  }, [firestore, user, toast]);
 
-  const updateOrderStatus = async (orderId: string, status: string) => {
+  const updateOrderStatus = useCallback(async (orderId: string, status: string) => {
     if (!firestore || !user) return;
     const orderRef = doc(firestore, 'users', user.uid, 'orders', orderId);
     const orderToUpdate = orders.find(o => o.id === orderId);
@@ -212,9 +212,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             operation: 'update',
         }));
     });
-  };
+  }, [firestore, user, orders, products, toast]);
 
-  const addSupplier = async (supplierData: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const addSupplier = useCallback(async (supplierData: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
      if (!firestore || !user || !suppliersRef) return;
      if (suppliers.find((s) => s.name === supplierData.name)) {
       toast({
@@ -238,9 +238,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
     });
     toast({ title: 'Supplier Added', description: `${supplierData.name} has been added.` });
-  };
+  }, [firestore, user, suppliers, suppliersRef, toast]);
 
-  const deleteSupplier = async (supplierId: string) => {
+  const deleteSupplier = useCallback(async (supplierId: string) => {
     if (!firestore || !user) return;
     const supplierRef = doc(firestore, 'users', user.uid, 'suppliers', supplierId);
     deleteDoc(supplierRef).catch((serverError) => {
@@ -250,7 +250,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
     });
     toast({ title: 'Supplier Deleted', description: 'The supplier has been removed.' });
-  };
+  }, [firestore, user, toast]);
   
   // Seed initial data for new users
   useEffect(() => {
@@ -267,23 +267,23 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
         mockProducts.forEach(product => {
             const prodRef = doc(collection(firestore, 'users', user.uid, 'products'));
-            batch.set(prodRef, { ...product, id: prodRef.id, userId: user.uid });
+            batch.set(prodRef, { ...product, userId: user.uid });
         });
         mockSuppliers.forEach(supplier => {
             const supRef = doc(collection(firestore, 'users', user.uid, 'suppliers'));
-            batch.set(supRef, { ...supplier, id: supRef.id, userId: user.uid });
+            batch.set(supRef, { ...supplier, userId: user.uid });
         });
         mockOrders.forEach(order => {
             const orderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
-            batch.set(orderRef, { ...order, id: orderRef.id, userId: user.uid });
+            batch.set(orderRef, { ...order, userId: user.uid });
         });
         mockTransactions.forEach(transaction => {
             const transRef = doc(collection(firestore, 'users', user.uid, 'transactions'));
-            batch.set(transRef, { ...transaction, id: transRef.id, userId: user.uid });
+            batch.set(transRef, { ...transaction, userId: user.uid });
         });
         mockCategories.forEach(category => {
             const catRef = doc(collection(firestore, 'users', user.uid, 'categories'));
-            batch.set(catRef, { ...category, id: catRef.id, userId: user.uid });
+            batch.set(catRef, { ...category, userId: user.uid });
         });
 
 
@@ -325,8 +325,15 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     transactions,
     categories,
     isLoading,
-    user, 
-    firestore
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    addOrder,
+    deleteOrder,
+    updateOrderStatus,
+    addSupplier,
+    deleteSupplier,
+    addCategory
   ]);
 
   return (
