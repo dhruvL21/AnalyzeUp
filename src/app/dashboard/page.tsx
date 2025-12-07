@@ -317,7 +317,7 @@ export default function DashboardPage() {
                 Items nearing their reorder point. Use AI to get suggestions.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow space-y-4 max-h-[300px] overflow-y-auto">
+            <CardContent className="flex-grow space-y-4">
                 {lowStockProducts.length > 0 ? (
                 lowStockProducts.map((product) => (
                     <LowStockAlertItem key={product.id} product={product} />
