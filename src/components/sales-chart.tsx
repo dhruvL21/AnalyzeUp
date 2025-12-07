@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -12,6 +13,36 @@ import {
 import { salesData } from "@/lib/data";
 
 export function SalesChart() {
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="rounded-lg border bg-background p-2 shadow-sm">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col space-y-1">
+              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                Month
+              </span>
+              <span className="font-bold text-muted-foreground">
+                {label}
+              </span>
+            </div>
+            <div className="flex flex-col space-y-1">
+              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                Sales
+              </span>
+              <span className="font-bold text-foreground">
+                ${payload[0].value}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  
+    return null;
+  };
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={salesData}>
@@ -32,13 +63,7 @@ export function SalesChart() {
         />
         <Tooltip
           cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-          contentStyle={{
-            backgroundColor: "hsl(var(--background))",
-            border: "1px solid hsl(var(--border))",
-            color: "hsl(var(--foreground))"
-          }}
-           itemStyle={{ color: 'hsl(var(--foreground))' }}
-           labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+          content={<CustomTooltip />}
         />
         <Bar
           dataKey="sales"

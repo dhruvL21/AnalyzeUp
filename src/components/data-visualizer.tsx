@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
@@ -107,20 +108,41 @@ export function DataVisualizer() {
     const commonProps = {
         data: salesData,
     };
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="rounded-lg border bg-background p-2 shadow-sm">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col space-y-1">
+                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                  Month
+                </span>
+                <span className="font-bold text-muted-foreground">
+                  {label}
+                </span>
+              </div>
+              <div className="flex flex-col space-y-1">
+                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                  Sales
+                </span>
+                <span className="font-bold text-foreground">
+                  ${payload[0].value}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    
+      return null;
+    };
     
     const commonChildren = [
       <CartesianGrid key="grid" strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />,
       <XAxis key="xaxis" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />,
       <YAxis key="yaxis" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value: number) => `$${value}`} />,
-      <Tooltip
-        key="tooltip"
-        cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-        contentStyle={{
-            backgroundColor: "hsl(var(--background))",
-            border: "1px solid hsl(var(--border))",
-            color: "hsl(var(--foreground))"
-        }}
-    />,
+      <Tooltip key="tooltip" content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }} />,
       <Legend key="legend" />,
     ];
     
@@ -133,14 +155,7 @@ export function DataVisualizer() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                 </Pie>
-                <Tooltip
-                    cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-                    contentStyle={{
-                        backgroundColor: "hsl(var(--background))",
-                        border: "1px solid hsl(var(--border))",
-                        color: "hsl(var(--foreground))"
-                    }}
-                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }} />
                 <Legend />
             </PieChart>
         );
@@ -152,14 +167,7 @@ export function DataVisualizer() {
                     <PolarAngleAxis dataKey="name" />
                     <PolarRadiusAxis />
                     <Radar name="Sales" dataKey="sales" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
-                     <Tooltip
-                        cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-                        contentStyle={{
-                            backgroundColor: "hsl(var(--background))",
-                            border: "1px solid hsl(var(--border))",
-                            color: "hsl(var(--foreground))"
-                        }}
-                    />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }} />
                     <Legend />
                 </RadarChart>
             )
@@ -187,14 +195,7 @@ export function DataVisualizer() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </RadialBar>
-                     <Tooltip
-                        cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }}
-                        contentStyle={{
-                            backgroundColor: "hsl(var(--background))",
-                            border: "1px solid hsl(var(--border))",
-                            color: "hsl(var(--foreground))"
-                        }}
-                    />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.5 }} />
                     <Legend iconSize={10} layout='vertical' verticalAlign='middle' align="right" />
                 </RadialBarChart>
             );
