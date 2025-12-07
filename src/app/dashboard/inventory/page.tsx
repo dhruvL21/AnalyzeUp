@@ -58,7 +58,6 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -68,18 +67,13 @@ import { useTasks } from '@/context/task-context';
 
 export default function InventoryPage() {
   const { toast } = useToast();
-  const { products, suppliers, categories, addProduct, updateProduct, deleteProduct, isLoading, addCategory, addSupplier: addSupplierToContext } = useData();
+  const { products, suppliers, categories, addProduct, updateProduct, deleteProduct, isLoading } = useData();
   const { runTask, tasks } = useTasks();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [description, setDescription] = useState('');
   
-  const [showNewCategoryDialog, setShowNewCategoryDialog] = useState(false);
-  const [showNewSupplierDialog, setShowNewSupplierDialog] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newSupplierName, setNewSupplierName] = useState('');
-  const [newSupplierEmail, setNewSupplierEmail] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [selectedSupplier, setSelectedSupplier] = useState<string | undefined>();
 
@@ -105,6 +99,15 @@ export default function InventoryPage() {
       description: description,
       sku: 'SKU-' + Date.now().toString(36),
     };
+
+    if (!productData.categoryId || !productData.supplierId) {
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please select a category and a supplier.",
+        });
+        return;
+    }
 
     if (editingProduct) {
       const updatedProduct = {
@@ -165,34 +168,6 @@ export default function InventoryPage() {
         () => generateDescription({ productName, category }),
         'Generating description...'
     );
-  };
-
-  const handleAddNewCategory = () => {
-    if (newCategoryName.trim()) {
-      const newCategory = addCategory({ name: newCategoryName, description: '' });
-      setSelectedCategory(newCategory.id);
-      setNewCategoryName('');
-      setShowNewCategoryDialog(false);
-      toast({ title: 'Category Added', description: `${newCategoryName} has been added.` });
-    }
-  };
-
-  const handleAddNewSupplier = () => {
-    if (newSupplierName.trim() && newSupplierEmail.trim()) {
-      const newSupplier = addSupplierToContext({
-        name: newSupplierName,
-        contactName: newSupplierName.split(' ')[0] || 'Contact',
-        email: newSupplierEmail,
-        phone: 'N/A',
-        address: 'N/A',
-      });
-      if (newSupplier) {
-        setSelectedSupplier(newSupplier.id);
-      }
-      setNewSupplierName('');
-      setNewSupplierEmail('');
-      setShowNewSupplierDialog(false);
-    }
   };
 
   return (
@@ -447,14 +422,7 @@ export default function InventoryPage() {
               <Label htmlFor="category" className="text-right">
                 Category
               </Label>
-              <Select name="category" value={selectedCategory} onValueChange={(value) => {
-                if (value === 'create-new') {
-                  setShowNewCategoryDialog(true);
-                  // Don't set selectedCategory to 'create-new' so it doesn't get stuck
-                } else {
-                  setSelectedCategory(value);
-                }
-              }} required>
+              <Select name="category" value={selectedCategory} onValueChange={setSelectedCategory} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -464,12 +432,6 @@ export default function InventoryPage() {
                       {cat.name}
                     </SelectItem>
                   ))}
-                  <SelectSeparator />
-                  <SelectItem value="create-new">
-                    <span className="flex items-center gap-2">
-                        <PlusCircle className="h-4 w-4" /> Create new...
-                    </span>
-                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -477,14 +439,7 @@ export default function InventoryPage() {
               <Label htmlFor="supplier" className="text-right">
                 Supplier
               </Label>
-              <Select name="supplier" value={selectedSupplier} onValueChange={(value) => {
-                 if (value === 'create-new') {
-                  setShowNewSupplierDialog(true);
-                  // Don't set selectedSupplier to 'create-new' so it doesn't get stuck
-                } else {
-                  setSelectedSupplier(value);
-                }
-              }} required>
+              <Select name="supplier" value={selectedSupplier} onValueChange={setSelectedSupplier} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a supplier" />
                 </SelectTrigger>
@@ -494,12 +449,6 @@ export default function InventoryPage() {
                       {sup.name}
                     </SelectItem>
                   ))}
-                  <SelectSeparator />
-                  <SelectItem value="create-new">
-                    <span className="flex items-center gap-2">
-                        <PlusCircle className="h-4 w-4" /> Create new...
-                    </span>
-                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -516,73 +465,8 @@ export default function InventoryPage() {
         </form>
       </DialogContent>
     </Dialog>
-
-    {/* New Category Dialog */}
-    <Dialog open={showNewCategoryDialog} onOpenChange={(isOpen) => {
-        setShowNewCategoryDialog(isOpen);
-        if (!isOpen) {
-            // When dialog closes, if no category was selected, reset dropdown
-            if (selectedCategory === undefined) {
-               const selectTrigger = document.querySelector('button[role="combobox"]');
-               if (selectTrigger) {
-                 // This is a bit of a hack to reset, ideally state drives this.
-               }
-            }
-        }
-    }}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Create New Category</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="new-category-name" className="text-right">Name</Label>
-                    <Input id="new-category-name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="col-span-3" />
-                </div>
-            </div>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => {
-                  setShowNewCategoryDialog(false);
-                  setSelectedCategory(undefined);
-                  }}>Cancel</Button>
-                <Button onClick={handleAddNewCategory}>Create</Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
-
-    {/* New Supplier Dialog */}
-    <Dialog open={showNewSupplierDialog} onOpenChange={(isOpen) => {
-        setShowNewSupplierDialog(isOpen);
-         if (!isOpen) {
-            // When dialog closes, if no supplier was selected, reset dropdown
-            if (selectedSupplier === undefined) {
-               // Similar to category, reset if needed
-            }
-        }
-    }}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Create New Supplier</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="new-supplier-name" className="text-right">Name</Label>
-                    <Input id="new-supplier-name" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} className="col-span-3" />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="new-supplier-email" className="text-right">Email</Label>
-                    <Input id="new-supplier-email" type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} className="col-span-3" />
-                </div>
-            </div>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => {
-                  setShowNewSupplierDialog(false);
-                  setSelectedSupplier(undefined);
-                  }}>Cancel</Button>
-                <Button onClick={handleAddNewSupplier}>Create</Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
     </>
   );
 }
+
+    
