@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { BotIcon, ZapIcon, BarChartIcon } from 'lucide-react';
+import { BotIcon, ZapIcon, BarChartIcon, TrendingUp, Package, Scale } from 'lucide-react';
 import { AnimatedHero } from '@/components/animated-hero';
 import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
 
@@ -30,7 +30,7 @@ export default function LandingPage() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="w-full pt-6 md:pt-12 lg:pt-16 pb-12 md:pb-24 lg:pb-32 xl:pb-48">
+        <section className="w-full pt-6 md:pt-12 lg:pt-16">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
@@ -61,6 +61,53 @@ export default function LandingPage() {
               </div>
               <div className="flex items-center justify-center lg:order-last min-h-[250px] lg:min-h-[300px]">
                   <AnimatedHero />
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-3">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Built for Ambitious Brands</h2>
+                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Stop juggling spreadsheets and start making intelligent decisions. AnalyzeUp is the all-in-one platform for e-commerce stores and growing businesses that need to move faster.
+                </p>
+              </div>
+            </div>
+            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:gap-16 mt-12">
+              <div className="grid gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center rounded-lg bg-primary/10 p-3 text-primary">
+                    <Package className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-bold">Streamline Operations</h3>
+                </div>
+                <p className="text-muted-foreground">
+                  Centralize your inventory, orders, and suppliers. Reduce manual errors and save hours of administrative work every week.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center rounded-lg bg-primary/10 p-3 text-primary">
+                    <TrendingUp className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-bold">Data-Driven Decisions</h3>
+                </div>
+                <p className="text-muted-foreground">
+                  Get real-time insights into your sales trends, best-performing products, and inventory value to capitalize on opportunities.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center rounded-lg bg-primary/10 p-3 text-primary">
+                    <Scale className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-bold">Scale with Confidence</h3>
+                </div>
+                <p className="text-muted-foreground">
+                  With AI-powered demand forecasting and strategic advice, you'll have the tools you need to grow your business sustainably.
+                </p>
               </div>
             </div>
           </div>
