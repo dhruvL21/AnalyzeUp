@@ -58,26 +58,27 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
 import { useData } from '@/context/data-context';
 
-// Mock categories and suppliers for the form dropdowns
-const mockCategories = [
-    { id: 'tops', name: 'Tops' },
-    { id: 'bottoms', name: 'Bottoms' },
-    { id: 'accessories', name: 'Accessories' },
-    { id: 'essentials', name: 'Essentials' },
-];
 
 export default function InventoryPage() {
   const { toast } = useToast();
-  const { products, suppliers, addProduct, updateProduct, deleteProduct, isLoading } = useData();
+  const { products, suppliers, categories, addProduct, updateProduct, deleteProduct, isLoading, addCategory, addSupplier: addSupplierToContext } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showNewCategoryDialog, setShowNewCategoryDialog] = useState(false);
+  const [showNewSupplierDialog, setShowNewSupplierDialog] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newSupplierName, setNewSupplierName] = useState('');
+  const [newSupplierEmail, setNewSupplierEmail] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const [selectedSupplier, setSelectedSupplier] = useState<string | undefined>();
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -86,8 +87,8 @@ export default function InventoryPage() {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: formData.get('category') as string,
-      supplierId: formData.get('supplier') as string,
+      categoryId: selectedCategory as string,
+      supplierId: selectedSupplier as string,
       imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Math.random()}/400/400`,
       description: description,
       sku: 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
@@ -108,17 +109,23 @@ export default function InventoryPage() {
     setEditingProduct(null);
     setDialogOpen(false);
     setDescription('');
+    setSelectedCategory(undefined);
+    setSelectedSupplier(undefined);
   };
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
     setDescription(product.description || '');
+    setSelectedCategory(product.categoryId);
+    setSelectedSupplier(product.supplierId);
     setDialogOpen(true);
   };
 
   const openAddDialog = () => {
     setEditingProduct(null);
     setDescription('');
+    setSelectedCategory(undefined);
+    setSelectedSupplier(undefined);
     setDialogOpen(true);
   };
 
@@ -128,9 +135,8 @@ export default function InventoryPage() {
 
     const formData = new FormData(form);
     const productName = formData.get('name') as string;
-    const categoryId = formData.get('category') as string;
     const category =
-      mockCategories.find((c) => c.id === categoryId)?.name || '';
+      categories.find((c) => c.id === selectedCategory)?.name || '';
 
     if (!productName || !category) {
       toast({
@@ -160,7 +166,32 @@ export default function InventoryPage() {
     setIsGenerating(false);
   };
 
+  const handleAddNewCategory = () => {
+    if (newCategoryName.trim()) {
+      addCategory({ name: newCategoryName, description: '' });
+      setNewCategoryName('');
+      setShowNewCategoryDialog(false);
+      toast({ title: 'Category Added', description: `${newCategoryName} has been added.` });
+    }
+  };
+
+  const handleAddNewSupplier = () => {
+    if (newSupplierName.trim() && newSupplierEmail.trim()) {
+      addSupplierToContext({
+        name: newSupplierName,
+        contactName: newSupplierName.split(' ')[0] || 'Contact',
+        email: newSupplierEmail,
+        phone: 'N/A',
+        address: 'N/A',
+      });
+      setNewSupplierName('');
+      setNewSupplierEmail('');
+      setShowNewSupplierDialog(false);
+    }
+  };
+
   return (
+    <>
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="flex flex-col gap-6">
         <div className="flex items-center">
@@ -411,16 +442,28 @@ export default function InventoryPage() {
               <Label htmlFor="category" className="text-right">
                 Category
               </Label>
-              <Select name="category" defaultValue={editingProduct?.categoryId} required>
+              <Select name="category" value={selectedCategory} onValueChange={(value) => {
+                if (value === 'create-new') {
+                  setShowNewCategoryDialog(true);
+                } else {
+                  setSelectedCategory(value);
+                }
+              }} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockCategories.map((cat) => (
+                  {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
                     </SelectItem>
                   ))}
+                  <SelectSeparator />
+                  <SelectItem value="create-new">
+                    <span className="flex items-center gap-2">
+                        <PlusCircle className="h-4 w-4" /> Create new...
+                    </span>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -428,7 +471,13 @@ export default function InventoryPage() {
               <Label htmlFor="supplier" className="text-right">
                 Supplier
               </Label>
-              <Select name="supplier" defaultValue={editingProduct?.supplierId} required>
+              <Select name="supplier" value={selectedSupplier} onValueChange={(value) => {
+                 if (value === 'create-new') {
+                  setShowNewSupplierDialog(true);
+                } else {
+                  setSelectedSupplier(value);
+                }
+              }} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a supplier" />
                 </SelectTrigger>
@@ -438,6 +487,12 @@ export default function InventoryPage() {
                       {sup.name}
                     </SelectItem>
                   ))}
+                  <SelectSeparator />
+                  <SelectItem value="create-new">
+                    <span className="flex items-center gap-2">
+                        <PlusCircle className="h-4 w-4" /> Create new...
+                    </span>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -454,5 +509,48 @@ export default function InventoryPage() {
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* New Category Dialog */}
+    <Dialog open={showNewCategoryDialog} onOpenChange={setShowNewCategoryDialog}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Create New Category</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="new-category-name" className="text-right">Name</Label>
+                    <Input id="new-category-name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="col-span-3" />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setShowNewCategoryDialog(false)}>Cancel</Button>
+                <Button onClick={handleAddNewCategory}>Create</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    {/* New Supplier Dialog */}
+    <Dialog open={showNewSupplierDialog} onOpenChange={setShowNewSupplierDialog}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Create New Supplier</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="new-supplier-name" className="text-right">Name</Label>
+                    <Input id="new-supplier-name" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="new-supplier-email" className="text-right">Email</Label>
+                    <Input id="new-supplier-email" type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} className="col-span-3" />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setShowNewSupplierDialog(false)}>Cancel</Button>
+                <Button onClick={handleAddNewSupplier}>Create</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }

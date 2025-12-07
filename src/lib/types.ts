@@ -85,5 +85,3 @@ export interface PurchaseOrder {
   createdAt: string;
   updatedAt: string;
 }
-
-    

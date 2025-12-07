@@ -1,18 +1,28 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { Product, PurchaseOrder, Supplier, Transaction } from '@/lib/types';
+import type { Product, PurchaseOrder, Supplier, Transaction, Category } from '@/lib/types';
 import { mockProducts } from '@/lib/mock-products';
 import { mockOrders } from '@/lib/mock-orders';
 import { mockSuppliers } from '@/lib/mock-suppliers';
 import { mockTransactions } from '@/lib/mock-transactions';
 import { useToast } from '@/hooks/use-toast';
 
+// Mock categories for the form dropdowns
+const mockCategories: Category[] = [
+    { id: 'tops', name: 'Tops', description: '' },
+    { id: 'bottoms', name: 'Bottoms', description: '' },
+    { id: 'accessories', name: 'Accessories', description: '' },
+    { id: 'essentials', name: 'Essentials', description: '' },
+];
+
+
 interface DataContextProps {
   products: Product[];
   orders: PurchaseOrder[];
   suppliers: Supplier[];
   transactions: Transaction[];
+  categories: Category[];
   addProduct: (product: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
@@ -21,6 +31,7 @@ interface DataContextProps {
   updateOrderStatus: (orderId: string, status: string) => void;
   addSupplier: (supplier: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => void;
   deleteSupplier: (supplierId: string) => void;
+  addCategory: (category: Omit<Category, 'id'>) => void;
   isLoading: boolean;
 }
 
@@ -62,6 +73,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [orders, setOrders] = useLocalStorage<PurchaseOrder[]>('orders', mockOrders);
   const [suppliers, setSuppliers] = useLocalStorage<Supplier[]>('suppliers', mockSuppliers);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', mockTransactions);
+  const [categories, setCategories] = useLocalStorage<Category[]>('categories', mockCategories);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -69,6 +81,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
   }, []);
+
+  const addCategory = (categoryData: Omit<Category, 'id'>) => {
+    const newCategory: Category = {
+      id: `CAT-${Date.now()}`,
+      ...categoryData,
+    };
+    setCategories(prev => [newCategory, ...prev]);
+  };
 
 
   const addProduct = (productData: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
@@ -182,6 +202,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     orders,
     suppliers,
     transactions,
+    categories,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -190,6 +211,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     updateOrderStatus,
     addSupplier,
     deleteSupplier,
+    addCategory,
     isLoading,
   };
 
