@@ -30,11 +30,11 @@ export function Header() {
       <div className="flex items-center gap-2 font-semibold">
         <Link href="/dashboard" className="flex items-center gap-2">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-          <span className="hidden md:inline-block text-2xl">AnalyzeUp</span>
+          <span className="text-3xl">AnalyzeUp</span>
         </Link>
       </div>
 
-      <div className="hidden md:flex flex-1 justify-center">
+      <div className="hidden flex-1 justify-center md:flex">
         <Nav />
       </div>
 
