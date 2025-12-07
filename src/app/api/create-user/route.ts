@@ -74,16 +74,16 @@ export async function POST(req: NextRequest) {
 
     // Add placeholder documents to create the subcollections
     const productCollectionRef = firestore.collection('tenants').doc(tenantId).collection('products');
-    batch.set(productCollectionRef.doc(), {});
+    batch.set(productCollectionRef.doc(), { __placeholder: true });
     
     const transactionCollectionRef = firestore.collection('tenants').doc(tenantId).collection('inventoryTransactions');
-    batch.set(transactionCollectionRef.doc(), {});
+    batch.set(transactionCollectionRef.doc(), { __placeholder: true });
 
     const suppliersCollectionRef = firestore.collection('tenants').doc(tenantId).collection('suppliers');
-    batch.set(suppliersCollectionRef.doc(), {});
+    batch.set(suppliersCollectionRef.doc(), { __placeholder: true });
 
     const purchaseOrdersCollectionRef = firestore.collection('tenants').doc(tenantId).collection('purchaseOrders');
-    batch.set(purchaseOrdersCollectionRef.doc(), {});
+    batch.set(purchaseOrdersCollectionRef.doc(), { __placeholder: true });
 
 
     await batch.commit();
