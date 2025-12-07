@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,15 +63,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useData } from '@/context/data-context';
+import { useTasks } from '@/context/task-context';
 
 
 export default function InventoryPage() {
   const { toast } = useToast();
   const { products, suppliers, categories, addProduct, updateProduct, deleteProduct, isLoading, addCategory, addSupplier: addSupplierToContext } = useData();
+  const { runTask, tasks } = useTasks();
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [description, setDescription] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  
   const [showNewCategoryDialog, setShowNewCategoryDialog] = useState(false);
   const [showNewSupplierDialog, setShowNewSupplierDialog] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -79,6 +82,15 @@ export default function InventoryPage() {
   const [newSupplierEmail, setNewSupplierEmail] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [selectedSupplier, setSelectedSupplier] = useState<string | undefined>();
+
+  const descriptionGenerationTaskId = `gen-desc-${editingProduct?.id || 'new'}`;
+  const descriptionGenerationTask = tasks[descriptionGenerationTaskId];
+
+  useEffect(() => {
+    if (descriptionGenerationTask?.status === 'success') {
+      setDescription(descriptionGenerationTask.result.description);
+    }
+  }, [descriptionGenerationTask]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -148,22 +160,11 @@ export default function InventoryPage() {
       return;
     }
 
-    setIsGenerating(true);
-    try {
-        const result = await generateDescription({
-            productName,
-            category,
-        });
-        setDescription(result.description);
-    } catch (error) {
-        console.error(error);
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to get AI description. Please try again.',
-        });
-    }
-    setIsGenerating(false);
+    runTask(
+        descriptionGenerationTaskId,
+        () => generateDescription({ productName, category }),
+        'Generating description...'
+    );
   };
 
   const handleAddNewCategory = () => {
@@ -388,9 +389,9 @@ export default function InventoryPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleGenerateDescription}
-                disabled={isGenerating}
+                disabled={descriptionGenerationTask?.status === 'running'}
               >
-                {isGenerating ? (
+                {descriptionGenerationTask?.status === 'running' ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Sparkles className="mr-2 h-4 w-4" />

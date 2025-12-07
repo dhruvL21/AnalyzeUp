@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
 import { DataProvider } from '@/context/data-context';
 import ClientOnly from '@/components/ClientOnly';
+import { TaskProvider } from '@/context/task-context';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -29,7 +30,9 @@ export default function RootLayout({
         >
           <ClientOnly>
             <DataProvider>
-              {children}
+              <TaskProvider>
+                {children}
+              </TaskProvider>
             </DataProvider>
           </ClientOnly>
           <Toaster />
