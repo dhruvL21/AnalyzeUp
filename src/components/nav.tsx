@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   Boxes,
   LayoutDashboard,
-  Settings,
   ShoppingCart,
   Truck,
   BarChart3,
@@ -45,11 +44,6 @@ const navItems = [
     href: "/dashboard/reports/visualizer",
     icon: PieChart,
     label: "Visualizer"
-  },
-  {
-    href: "/dashboard/settings",
-    icon: Settings,
-    label: "Settings",
   },
 ];
 

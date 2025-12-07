@@ -1,12 +1,4 @@
 'use client';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
@@ -34,7 +26,7 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-16 items-center gap-4 border-b bg-card px-4 lg:px-6 sticky top-0 z-20">
+    <header className="flex h-16 items-center gap-4 border-b bg-muted/40 px-4 lg:px-6 sticky top-0 z-20">
       <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
         <AnalyzeUpIcon className="h-6 w-6 text-primary" />
         <span className="hidden md:inline-block">AnalyzeUp</span>
@@ -74,29 +66,15 @@ export function Header() {
           </Tooltip>
         </TooltipProvider>
         <ThemeToggle />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-              <Avatar className="h-9 w-9">
-                <AvatarImage
-                  src={'https://github.com/shadcn.png'}
-                  alt="User avatar"
-                />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Demo User</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  user@example.com
-                </p>
-              </div>
-            </DropdownMenuLabel>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+          <Avatar className="h-9 w-9">
+            <AvatarImage
+              src={'https://github.com/shadcn.png'}
+              alt="User avatar"
+            />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+        </Button>
          <Sheet>
           <SheetTrigger asChild>
             <Button
