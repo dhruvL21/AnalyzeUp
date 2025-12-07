@@ -26,17 +26,14 @@ export function Header() {
   };
 
   return (
-    <header className="grid grid-cols-3 h-16 items-center gap-4 border-b bg-muted/40 px-4 lg:px-6 sticky top-0 z-20">
-      <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+    <header className="flex h-16 items-center gap-4 border-b bg-muted/40 px-4 lg:px-6 sticky top-0 z-20">
+      <Link href="/dashboard" className="flex items-center gap-2 font-semibold mr-auto">
         <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-        <span className="hidden md:inline-block text-2xl">AnalyzeUp</span>
+        <span className="hidden md:inline-block text-xl">AnalyzeUp</span>
       </Link>
       
-      <div className="flex justify-center">
+      <div className="flex items-center gap-2 justify-end">
         <Nav />
-      </div>
-
-      <div className='flex items-center gap-2 justify-end'>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
