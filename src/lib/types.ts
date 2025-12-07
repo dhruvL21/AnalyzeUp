@@ -1,3 +1,4 @@
+import { FieldValue } from "firebase/firestore";
 
 export interface User {
   id: string;
@@ -23,20 +24,22 @@ export interface Product {
   description: string;
   sku: string;
   categoryId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | FieldValue;
+  updatedAt: string | FieldValue;
   stock: number;
   price: number;
   imageUrl: string;
   supplierId: string;
   averageDailySales: number;
   leadTimeDays: number;
+  userId?: string;
 }
 
 export interface Category {
   id: string;
   name: string;
   description: string;
+  userId?: string;
 }
 
 export interface Location {
@@ -57,8 +60,9 @@ export interface Transaction {
   type: 'Sale' | 'Purchase';
   quantity: number;
   transactionDate: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | FieldValue;
+  updatedAt: string | FieldValue;
+  userId?: string;
 }
 
 export interface Supplier {
@@ -69,8 +73,9 @@ export interface Supplier {
   email: string;
   phone: string;
   address: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | FieldValue;
+  updatedAt: string | FieldValue;
+  userId?: string;
 }
 
 export interface PurchaseOrder {
@@ -82,6 +87,7 @@ export interface PurchaseOrder {
   status: string;
   productId: string;
   quantity: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | FieldValue;
+  updatedAt: string | FieldValue;
+  userId?: string;
 }

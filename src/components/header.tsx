@@ -15,15 +15,21 @@ import Nav from './nav';
 import Link from 'next/link';
 import { AnalyzeUpIcon } from './analyze-up-icon';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './ui/sheet';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from '@/firebase/auth/auth-service';
 
 
 export function Header() {
   const router = useRouter();
+  const { user } = useUser();
+  const auth = useAuth();
 
-  const handleLogout = () => {
-    // In a real app, this would sign the user out.
-    // For now, we just redirect to the landing page.
-    router.push('/');
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push('/');
+    }
   };
 
   return (
@@ -72,10 +78,10 @@ export function Header() {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage
-              src={'https://github.com/shadcn.png'}
+              src={user?.photoURL || ''}
               alt="User avatar"
             />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback>{user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
         </Button>
         <Sheet>

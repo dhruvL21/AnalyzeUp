@@ -6,6 +6,8 @@ import { Inter } from 'next/font/google';
 import { DataProvider } from '@/context/data-context';
 import ClientOnly from '@/components/ClientOnly';
 import { TaskProvider } from '@/context/task-context';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -29,11 +31,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClientOnly>
-            <DataProvider>
-              <TaskProvider>
-                {children}
-              </TaskProvider>
-            </DataProvider>
+            <FirebaseClientProvider>
+                <TaskProvider>
+                  <DataProvider>
+                    {children}
+                    <FirebaseErrorListener />
+                  </DataProvider>
+                </TaskProvider>
+            </FirebaseClientProvider>
           </ClientOnly>
           <Toaster />
         </ThemeProvider>
