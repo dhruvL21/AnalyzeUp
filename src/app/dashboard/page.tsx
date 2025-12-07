@@ -32,6 +32,7 @@ import { useMemo } from 'react';
 import { salesData } from '@/lib/data';
 import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
 import { useData } from '@/context/data-context';
+import type { Product } from '@/lib/types';
 
 
 function DashboardLoading() {
@@ -167,30 +168,39 @@ function DashboardLoading() {
 export default function DashboardPage() {
   const { products, transactions, isLoading } = useData();
 
-  const lowStockProducts = products.filter((p) => p.stock < 20);
+  const uniqueProducts = useMemo(() => {
+    const seen = new Set();
+    return (products || []).filter((product: Product) => {
+      const duplicate = seen.has(product.id);
+      seen.add(product.id);
+      return !duplicate;
+    });
+  }, [products]);
+
+  const lowStockProducts = uniqueProducts.filter((p) => p.stock < 20);
 
   const totalInventoryValue =
-    products.reduce((acc, product) => acc + product.stock * product.price, 0) ||
+    uniqueProducts.reduce((acc, product) => acc + product.stock * product.price, 0) ||
     0;
 
   const totalSales =
     transactions
       .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
-        const product = products.find((p) => p.id === t.productId);
+        const product = uniqueProducts.find((p) => p.id === t.productId);
         return acc + t.quantity * (product?.price || 0);
       }, 0) || 0;
 
   const topSellingProductMap = useMemo(() => 
-    transactions
+    (transactions || [])
       .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
         const productName =
-          products.find((p) => p.id === t.productId)?.name || 'Unknown';
+          uniqueProducts.find((p) => p.id === t.productId)?.name || 'Unknown';
         acc[productName] = (acc[productName] || 0) + t.quantity;
         return acc;
       }, {} as { [key: string]: number })
-  , [transactions, products]);
+  , [transactions, uniqueProducts]);
 
   const topSeller =
     Object.keys(topSellingProductMap).length > 0
@@ -215,7 +225,7 @@ export default function DashboardPage() {
     return "Stable";
   }, []);
 
-  const recentTransactions = transactions.slice(0, 5).reverse();
+  const recentTransactions = (transactions || []).slice(0, 5).reverse();
 
   if (isLoading) {
     return <DashboardLoading />;
@@ -364,7 +374,7 @@ export default function DashboardPage() {
                 {recentTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell className="font-medium">
-                      {products.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
+                      {uniqueProducts.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -398,6 +408,5 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-}
 
     
