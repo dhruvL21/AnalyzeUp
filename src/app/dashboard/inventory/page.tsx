@@ -93,21 +93,13 @@ export default function InventoryPage() {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: selectedCategory as string,
-      supplierId: selectedSupplier as string,
+      categoryId: editingProduct?.categoryId || 'tops', // Default or existing
+      supplierId: editingProduct?.supplierId || 'SUP001', // Default or existing
       imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Date.now()}/400/400`,
       description: description,
       sku: 'SKU-' + Date.now().toString(36),
     };
 
-    if (!productData.categoryId || !productData.supplierId) {
-        toast({
-            variant: "destructive",
-            title: "Missing Information",
-            description: "Please select a category and a supplier.",
-        });
-        return;
-    }
 
     if (editingProduct) {
       const updatedProduct = {
@@ -151,14 +143,14 @@ export default function InventoryPage() {
     const formData = new FormData(form);
     const productName = formData.get('name') as string;
     const category =
-      categories.find((c) => c.id === selectedCategory)?.name || '';
+      categories.find((c) => c.id === (editingProduct?.categoryId || 'tops'))?.name || 'Default';
 
-    if (!productName || !category) {
+    if (!productName) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
         description:
-          'Please enter a product name and select a category first.',
+          'Please enter a product name first.',
       });
       return;
     }
@@ -417,43 +409,6 @@ export default function InventoryPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid grid-cols-2 items-center gap-4">
-              <Label htmlFor="category" className="text-right">
-                Category
-              </Label>
-              <Select name="category" value={selectedCategory} onValueChange={setSelectedCategory} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 items-center gap-4">
-              <Label htmlFor="supplier" className="text-right">
-                Supplier
-              </Label>
-              <Select name="supplier" value={selectedSupplier} onValueChange={setSelectedSupplier} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers.map((sup) => (
-                    <SelectItem key={sup.id} value={sup.id}>
-                      {sup.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
@@ -468,3 +423,5 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
