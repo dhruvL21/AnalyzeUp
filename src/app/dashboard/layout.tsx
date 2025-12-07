@@ -11,27 +11,8 @@ import {
 import Nav from '@/components/nav';
 import { Header } from '@/components/header';
 import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
-import { useUser } from '@/firebase';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
-
-  if (isUserLoading || !user) {
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
-        </div>
-    )
-  }
 
   return (
     <SidebarProvider>
@@ -54,15 +35,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <div className="flex items-center gap-3 p-2">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={user?.photoURL || ''} />
-              <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarImage src={'https://github.com/shadcn.png'} />
+              <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
               <span className="text-sm font-medium text-sidebar-foreground">
-                {user?.displayName || 'User'}
+                Demo User
               </span>
               <span className="text-xs text-sidebar-foreground/70">
-                {user?.email}
+                user@example.com
               </span>
             </div>
           </div>

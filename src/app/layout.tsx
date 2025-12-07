@@ -4,7 +4,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
 import { DataProvider } from '@/context/data-context';
-import { FirebaseClientProvider } from '@/firebase';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -27,11 +26,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FirebaseClientProvider>
-            <DataProvider>
-                {children}
-            </DataProvider>
-          </FirebaseClientProvider>
+          <DataProvider>
+            {children}
+          </DataProvider>
           <Toaster />
         </ThemeProvider>
       </body>

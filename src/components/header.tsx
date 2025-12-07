@@ -11,18 +11,15 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
-import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
 export function Header() {
-    const { user } = useUser();
-    const auth = useAuth();
     const router = useRouter();
 
-
   const handleLogout = () => {
-    auth.signOut();
-    router.push('/login');
+    // In a real app, this would sign the user out.
+    // For now, we just redirect to the landing page.
+    router.push('/');
   };
 
   return (
@@ -38,10 +35,8 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={user?.photoURL || undefined} alt="User avatar" />
-              <AvatarFallback>
-                {user?.displayName?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
-              </AvatarFallback>
+              <AvatarImage src={'https://github.com/shadcn.png'} alt="User avatar" />
+              <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -49,10 +44,10 @@ export function Header() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user?.displayName || 'User'}
+                Demo User
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                {user?.email}
+                user@example.com
               </p>
             </div>
           </DropdownMenuLabel>

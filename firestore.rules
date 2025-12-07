@@ -1,139 +1,71 @@
-/**
- * This ruleset enforces a multi-tenant security model where data is strictly
- * segregated by a tenant ID. It is designed for rapid prototyping, meaning it
- * strictly enforces authorization (who can access what) but remains flexible on
- * data shapes (the exact content of documents).
- *
- * Core Philosophy:
- * The security model is tenant-centric. A user's access is scoped entirely
- * within their assigned tenant. They can read data about their tenant and fellow
- * users within that tenant, but have no visibility into other tenants. Write
- * permissions are generally restricted to a user's own data.
- *
- * Data Structure:
- * All user data is nested under a specific tenant collection, following the
- * path: /tenants/{tenantId}/users/{userId}. This hierarchical structure provides
- * a strong, natural boundary for security rules.
- *
- * Key Security Decisions:
- * - Tenant Isolation: The core rule `isUserInTenant()` ensures a user can only
- *   operate within the tenant they belong to. This check uses `exists()` for
- *   performance, verifying the requesting user's document exists within the
- *   target tenant's user subcollection.
- * - No Public Tenant Listing: The top-level `/tenants` collection cannot be
- *   listed to prevent enumeration of all customers on the platform.
- * - Self-Service User Profiles: Users can create, update, and delete their own
- *   user document, but cannot modify other users' documents, even within the
- *   same tenant.
- * - Server-Side Tenant Management: Creation and modification of tenant documents
- *   are disallowed from the client, assuming these are administrative,
- *   server-side operations.
- *
- * Denormalization for Authorization:
- * The `User` entity contains a denormalized `tenantId` field. Rules for user
- * documents enforce that this field matches the `tenantId` from the document path
- * upon creation, and that it is immutable upon update. This ensures data
- * integrity and allows for simpler, more performant queries on the client that
- * can filter by `tenantId`.
- *
- * Structural Segregation:
- * The primary method of segregation is by tenant. Each tenant's data, including
- * its users, is stored under a unique document path (/tenants/{tenantId}),
- * ensuring queries and security rules are naturally scoped and performant.
- */
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // ----------------------------------------------------------------------
-    // Helper Functions
-    // ----------------------------------------------------------------------
-
-    /**
-     * Checks if the user is authenticated.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * Checks if the authenticated user's UID matches the provided userId.
-     * This is the foundation for document ownership rules.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * For update/delete operations, verifies ownership AND that the document
-     * already exists. Prevents modifying a document that does not exist.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * The core of the multi-tenant model.
-     * Verifies that the requesting user is a member of the specified tenant by
-     * checking for the existence of their user document in that tenant's
-     * subcollection. This is more performant than a get().
-     */
-    function isUserInTenant(tenantId) {
-      return isSignedIn() && exists(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid));
-    }
-
-    /**
-     * On create, validates that the document's internal IDs match the path IDs.
-     * This enforces relational integrity from the client.
-     */
-    function hasCorrectIdsOnCreate(tenantId, userId) {
-      return request.resource.data.id == userId && request.resource.data.tenantId == tenantId;
-    }
-
-    /**
-     * On update, ensures that critical, path-defining IDs are immutable.
-     * This prevents a user document from being "moved" to another tenant or user.
-     */
-    function hasImmutableIds() {
-      return request.resource.data.id == resource.data.id
-          && request.resource.data.tenantId == resource.data.tenantId;
-    }
-
-    // ----------------------------------------------------------------------
-    // Collection Rules
-    // ----------------------------------------------------------------------
-
-    /**
-     * @description Governs access to a Tenant document. A tenant's own members
-     *              can read its details, but cannot list, create, or modify them.
-     * @path        /tenants/{tenantId}
-     */
-    match /tenants/{tenantId} {
-      allow get: if isUserInTenant(tenantId);
-      allow list, create, update, delete: if false;
-
-      /**
-       * @description Governs access to User documents within a Tenant. Users can manage
-       *              their own profile and view the profiles of other users in the
-       *              same tenant.
-       * @path        /tenants/{tenantId}/users/{userId}
-       */
-      match /users/{userId} {
-        allow get: if isUserInTenant(tenantId);
-        allow list: if isUserInTenant(tenantId);
-        allow create: if isOwner(userId) && hasCorrectIdsOnCreate(tenantId, userId);
-        allow update: if isExistingOwner(userId) && hasImmutableIds();
-        allow delete: if isExistingOwner(userId);
-      }
-      
-      /**
-       * @description Governs access to all other data collections within a tenant
-       *              (e.g., products, orders, transactions).
-       * @path        /tenants/{tenantId}/{collection}/{docId}
-       */
-      match /{collection}/{docId} {
-        allow list, read, write: if isUserInTenant(tenantId);
-      }
-    }
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 9002",
+    "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
+    "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
+    "build": "NODE_ENV=production next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@genkit-ai/google-genai": "^1.20.0",
+    "@genkit-ai/next": "^1.20.0",
+    "@hookform/resolvers": "^4.1.3",
+    "@radix-ui/react-accordion": "^1.2.3",
+    "@radix-ui/react-alert-dialog": "^1.1.6",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-checkbox": "^1.1.4",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-menubar": "^1.1.6",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slider": "^1.2.3",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.5.0",
+    "embla-carousel-react": "^8.6.0",
+    "genkit": "^1.20.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
+    "lucide-react": "^0.475.0",
+    "next": "15.3.3",
+    "next-themes": "^0.3.0",
+    "papaparse": "^5.4.1",
+    "patch-package": "^8.0.0",
+    "react": "^18.3.1",
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.54.2",
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/papaparse": "^5.3.14",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "genkit-cli": "^1.20.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }
