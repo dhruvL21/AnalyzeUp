@@ -44,6 +44,12 @@ interface DataContextProps {
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
 
+// Helper function to remove duplicates from an array of objects by a given key
+const uniqueById = <T extends { id: string }>(array: T[]): T[] => {
+  return Array.from(new Map(array.map(item => [item.id, item])).values());
+}
+
+
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const { user } = useUser();
@@ -61,11 +67,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { data: transactionsData, loading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
   const { data: categoriesData, loading: categoriesLoading } = useCollection<Category>(categoriesRef);
 
-  const products = productsData || [];
-  const orders = ordersData || [];
-  const suppliers = suppliersData || [];
-  const transactions = transactionsData || [];
-  const categories = categoriesData || [];
+  const products = useMemo(() => uniqueById(productsData || []), [productsData]);
+  const orders = useMemo(() => uniqueById(ordersData || []), [ordersData]);
+  const suppliers = useMemo(() => uniqueById(suppliersData || []), [suppliersData]);
+  const transactions = useMemo(() => uniqueById(transactionsData || []), [transactionsData]);
+  const categories = useMemo(() => uniqueById(categoriesData || []), [categoriesData]);
 
   const isLoading = productsLoading || ordersLoading || suppliersLoading || transactionsLoading || categoriesLoading;
 
@@ -254,6 +260,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   
   // Seed initial data for new users
   useEffect(() => {
+    // Only run if the user is loaded, firestore is available, and all data collections have finished their initial load.
     if (user && firestore && !isLoading) {
       if (
         products.length === 0 &&
