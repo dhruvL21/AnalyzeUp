@@ -55,11 +55,17 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const transactionsRef = useMemo(() => user && firestore ? collection(firestore, 'users', user.uid, 'transactions') : null, [user, firestore]);
   const categoriesRef = useMemo(() => user && firestore ? collection(firestore, 'users', user.uid, 'categories') : null, [user, firestore]);
 
-  const { data: products = [], loading: productsLoading } = useCollection<Product>(productsRef);
-  const { data: orders = [], loading: ordersLoading } = useCollection<PurchaseOrder>(ordersRef);
-  const { data: suppliers = [], loading: suppliersLoading } = useCollection<Supplier>(suppliersRef);
-  const { data: transactions = [], loading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
-  const { data: categories = [], loading: categoriesLoading } = useCollection<Category>(categoriesRef);
+  const { data: productsData, loading: productsLoading } = useCollection<Product>(productsRef);
+  const { data: ordersData, loading: ordersLoading } = useCollection<PurchaseOrder>(ordersRef);
+  const { data: suppliersData, loading: suppliersLoading } = useCollection<Supplier>(suppliersRef);
+  const { data: transactionsData, loading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
+  const { data: categoriesData, loading: categoriesLoading } = useCollection<Category>(categoriesRef);
+
+  const products = productsData || [];
+  const orders = ordersData || [];
+  const suppliers = suppliersData || [];
+  const transactions = transactionsData || [];
+  const categories = categoriesData || [];
 
   const isLoading = productsLoading || ordersLoading || suppliersLoading || transactionsLoading || categoriesLoading;
 
@@ -248,7 +254,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   
   // Seed initial data for new users
   useEffect(() => {
-    if (user && firestore && !productsLoading && products.length === 0) {
+    if (user && firestore && !productsLoading && products && products.length === 0) {
       console.log('Seeding initial data for new user...');
       const batch = writeBatch(firestore);
 
@@ -285,7 +291,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
       });
     }
-  }, [user, firestore, products.length, productsLoading]);
+  }, [user, firestore, products, productsLoading]);
 
 
   const value = useMemo(() => ({
