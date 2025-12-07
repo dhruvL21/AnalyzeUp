@@ -43,21 +43,33 @@ export default function LoginPage() {
     return () => unsubscribe();
   }, [auth, router, toast]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth) return;
     setIsLoading(true);
 
     try {
+      // Use the non-blocking sign-in function
       initiateEmailSignIn(auth, email, password);
+      // The onAuthStateChanged listener will handle redirection.
+      // We don't await here, and we don't need a .then() or .catch()
+      // because errors will be handled globally by the error emitter
+      // and auth state is managed by the listener.
     } catch (error: any) {
+      // This catch block is for immediate, synchronous errors from the SDK call itself,
+      // which are rare. Asynchronous errors (like wrong password) are not caught here.
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description: error.message || 'An unexpected error occurred during sign-in initiation.',
       });
       setIsLoading(false);
     }
+    // Note: We don't set isLoading to false here immediately. The onAuthStateChanged
+    // listener handles the UI transition upon successful login. If there's an error,
+    // the global error handler might need to reset state, or a timeout could be used.
+    // For now, we rely on the listener.
   };
 
   return (

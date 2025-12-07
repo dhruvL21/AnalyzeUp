@@ -132,7 +132,7 @@ service cloud.firestore {
        * @path        /tenants/{tenantId}/{collection}/{docId}
        */
       match /{collection}/{docId} {
-        allow read, write: if isUserInTenant(tenantId);
+        allow list, read, write: if isUserInTenant(tenantId);
       }
     }
   }
