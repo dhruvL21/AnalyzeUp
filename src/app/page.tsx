@@ -59,7 +59,7 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </div>
-              <div className="flex items-center justify-center lg:order-last min-h-[250px] lg:min-h-[300px]">
+              <div className="flex items-start justify-center lg:order-last min-h-[250px] lg:min-h-[300px] pt-8">
                   <AnimatedHero />
               </div>
             </div>
