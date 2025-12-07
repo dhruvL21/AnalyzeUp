@@ -12,9 +12,16 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
 import { useRouter } from 'next/navigation';
+import { LogOut, Settings } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function Header() {
-    const router = useRouter();
+  const router = useRouter();
 
   const handleLogout = () => {
     // In a real app, this would sign the user out.
@@ -30,12 +37,43 @@ export function Header() {
       <div className="w-full flex-1">
         {/* Can add a search bar here later */}
       </div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push('/dashboard/settings')}
+            >
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Settings</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Settings</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+              <span className="sr-only">Log out</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Log out</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-9 w-9 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={'https://github.com/shadcn.png'} alt="User avatar" />
+              <AvatarImage
+                src={'https://github.com/shadcn.png'}
+                alt="User avatar"
+              />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </Button>
@@ -43,18 +81,12 @@ export function Header() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">
-                Demo User
-              </p>
+              <p className="text-sm font-medium leading-none">Demo User</p>
               <p className="text-xs leading-none text-muted-foreground">
                 user@example.com
               </p>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>Settings</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
