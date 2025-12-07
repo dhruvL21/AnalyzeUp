@@ -118,6 +118,7 @@ export function DataVisualizer() {
         contentStyle={{
             backgroundColor: "hsl(var(--background))",
             border: "1px solid hsl(var(--border))",
+            color: "hsl(var(--foreground))"
         }}
     />,
       <Legend key="legend" />,
@@ -137,6 +138,7 @@ export function DataVisualizer() {
                     contentStyle={{
                         backgroundColor: "hsl(var(--background))",
                         border: "1px solid hsl(var(--border))",
+                        color: "hsl(var(--foreground))"
                     }}
                 />
                 <Legend />
@@ -155,6 +157,7 @@ export function DataVisualizer() {
                         contentStyle={{
                             backgroundColor: "hsl(var(--background))",
                             border: "1px solid hsl(var(--border))",
+                            color: "hsl(var(--foreground))"
                         }}
                     />
                     <Legend />
@@ -189,6 +192,7 @@ export function DataVisualizer() {
                         contentStyle={{
                             backgroundColor: "hsl(var(--background))",
                             border: "1px solid hsl(var(--border))",
+                            color: "hsl(var(--foreground))"
                         }}
                     />
                     <Legend iconSize={10} layout='vertical' verticalAlign='middle' align="right" />
