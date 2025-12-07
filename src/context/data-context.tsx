@@ -70,18 +70,30 @@ const useLocalStorage = <T,>(key: string, initialValue: T) => {
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
-  const [products, setProducts] = useLocalStorage<Product[]>('products', mockProducts);
-  const [orders, setOrders] = useLocalStorage<PurchaseOrder[]>('orders', mockOrders);
-  const [suppliers, setSuppliers] = useLocalStorage<Supplier[]>('suppliers', mockSuppliers);
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', mockTransactions);
-  const [categories, setCategories] = useLocalStorage<Category[]>('categories', mockCategories);
+  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
+  const [orders, setOrders] = useLocalStorage<PurchaseOrder[]>('orders', []);
+  const [suppliers, setSuppliers] = useLocalStorage<Supplier[]>('suppliers', []);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
+  const [categories, setCategories] = useLocalStorage<Category[]>('categories', []);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // We check if data is loaded, if not show loading, otherwise hide it quickly.
-    const hasData = products.length > 0 && suppliers.length > 0;
-    setIsLoading(!hasData);
-  }, [products, suppliers]);
+    // Check if data is already loaded in localStorage
+    const productsExist = localStorage.getItem('products');
+    const ordersExist = localStorage.getItem('orders');
+    const suppliersExist = localStorage.getItem('suppliers');
+    const transactionsExist = localStorage.getItem('transactions');
+    const categoriesExist = localStorage.getItem('categories');
+
+    if (!productsExist) setProducts(mockProducts);
+    if (!ordersExist) setOrders(mockOrders);
+    if (!suppliersExist) setSuppliers(mockSuppliers);
+    if (!transactionsExist) setTransactions(mockTransactions);
+    if (!categoriesExist) setCategories(mockCategories);
+    
+    setIsLoading(false);
+  }, [setProducts, setOrders, setSuppliers, setTransactions, setCategories]);
+
 
   const addCategory = (categoryData: Omit<Category, 'id'>) => {
     const newCategory: Category = {
