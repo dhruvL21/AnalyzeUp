@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback, useEffect } from 'react';
@@ -45,7 +44,8 @@ interface DataContextProps {
 const DataContext = createContext<DataContextProps | undefined>(undefined);
 
 // Helper function to remove duplicates from an array of objects by a given key
-const uniqueById = <T extends { id: string }>(array: T[]): T[] => {
+const uniqueById = <T extends { id: string }>(array: T[] | null): T[] => {
+  if (!array) return [];
   return Array.from(new Map(array.map(item => [item.id, item])).values());
 }
 
@@ -67,11 +67,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { data: transactionsData, loading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
   const { data: categoriesData, loading: categoriesLoading } = useCollection<Category>(categoriesRef);
 
-  const products = useMemo(() => uniqueById(productsData || []), [productsData]);
-  const orders = useMemo(() => uniqueById(ordersData || []), [ordersData]);
-  const suppliers = useMemo(() => uniqueById(suppliersData || []), [suppliersData]);
-  const transactions = useMemo(() => uniqueById(transactionsData || []), [transactionsData]);
-  const categories = useMemo(() => uniqueById(categoriesData || []), [categoriesData]);
+  const products = useMemo(() => uniqueById(productsData), [productsData]);
+  const orders = useMemo(() => uniqueById(ordersData), [ordersData]);
+  const suppliers = useMemo(() => uniqueById(suppliersData), [suppliersData]);
+  const transactions = useMemo(() => uniqueById(transactionsData), [transactionsData]);
+  const categories = useMemo(() => uniqueById(categoriesData), [categoriesData]);
 
   const isLoading = productsLoading || ordersLoading || suppliersLoading || transactionsLoading || categoriesLoading;
 
@@ -117,12 +117,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const updateProduct = useCallback(async (updatedProduct: Product) => {
     if (!firestore || !user) return;
     const productRef = doc(firestore, 'users', user.uid, 'products', updatedProduct.id);
-    const updateData = { ...updatedProduct, updatedAt: serverTimestamp() };
-    updateDoc(productRef, updateData).catch((serverError) => {
+    const { id, ...updateData } = updatedProduct;
+    const dataToUpdate = { ...updateData, updatedAt: serverTimestamp() };
+    updateDoc(productRef, dataToUpdate).catch((serverError) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: productRef.path,
             operation: 'update',
-            requestResourceData: updateData,
+            requestResourceData: dataToUpdate,
         }));
     });
     toast({ title: 'Product Updated', description: `${updatedProduct.name} has been updated.` });
@@ -260,37 +261,41 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   
   // Seed initial data for new users
   useEffect(() => {
-    // Only run if the user is loaded, firestore is available, and all data collections have finished their initial load.
     if (user && firestore && !isLoading) {
       if (
-        products.length === 0 &&
-        suppliers.length === 0 &&
-        orders.length === 0 &&
-        transactions.length === 0 &&
-        categories.length === 0
+        (productsData && productsData.length === 0) &&
+        (suppliersData && suppliersData.length === 0) &&
+        (ordersData && ordersData.length === 0) &&
+        (transactionsData && transactionsData.length === 0) &&
+        (categoriesData && categoriesData.length === 0)
       ) {
         console.log('Seeding initial data for new user...');
         const batch = writeBatch(firestore);
 
         mockProducts.forEach(product => {
+            const { id, ...rest } = product; // Exclude mock ID
             const prodRef = doc(collection(firestore, 'users', user.uid, 'products'));
-            batch.set(prodRef, { ...product, userId: user.uid });
+            batch.set(prodRef, { ...rest, userId: user.uid });
         });
         mockSuppliers.forEach(supplier => {
+            const { id, ...rest } = supplier;
             const supRef = doc(collection(firestore, 'users', user.uid, 'suppliers'));
-            batch.set(supRef, { ...supplier, userId: user.uid });
+            batch.set(supRef, { ...rest, userId: user.uid });
         });
         mockOrders.forEach(order => {
+            const { id, ...rest } = order;
             const orderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
-            batch.set(orderRef, { ...order, userId: user.uid });
+            batch.set(orderRef, { ...rest, userId: user.uid });
         });
         mockTransactions.forEach(transaction => {
+            const { id, ...rest } = transaction;
             const transRef = doc(collection(firestore, 'users', user.uid, 'transactions'));
-            batch.set(transRef, { ...transaction, userId: user.uid });
+            batch.set(transRef, { ...rest, userId: user.uid });
         });
         mockCategories.forEach(category => {
+            const { id, ...rest } = category;
             const catRef = doc(collection(firestore, 'users', user.uid, 'categories'));
-            batch.set(catRef, { ...category, userId: user.uid });
+            batch.set(catRef, { ...rest, name: category.name, userId: user.uid });
         });
 
 
@@ -306,7 +311,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     }
-  }, [user, firestore, isLoading, products, suppliers, orders, transactions, categories]);
+  }, [user, firestore, isLoading, productsData, suppliersData, ordersData, transactionsData, categoriesData]);
 
 
   const value = useMemo(() => ({

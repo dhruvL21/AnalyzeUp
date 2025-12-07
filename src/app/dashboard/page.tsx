@@ -168,26 +168,17 @@ function DashboardLoading() {
 export default function DashboardPage() {
   const { products, transactions, isLoading } = useData();
 
-  const uniqueProducts = useMemo(() => {
-    const seen = new Set();
-    return (products || []).filter((product: Product) => {
-      const duplicate = seen.has(product.id);
-      seen.add(product.id);
-      return !duplicate;
-    });
-  }, [products]);
-
-  const lowStockProducts = uniqueProducts.filter((p) => p.stock < 20);
+  const lowStockProducts = products.filter((p) => p.stock < 20);
 
   const totalInventoryValue =
-    uniqueProducts.reduce((acc, product) => acc + product.stock * product.price, 0) ||
+    products.reduce((acc, product) => acc + product.stock * product.price, 0) ||
     0;
 
   const totalSales =
     transactions
       .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
-        const product = uniqueProducts.find((p) => p.id === t.productId);
+        const product = products.find((p) => p.id === t.productId);
         return acc + t.quantity * (product?.price || 0);
       }, 0) || 0;
 
@@ -196,11 +187,11 @@ export default function DashboardPage() {
       .filter((t) => t.type === 'Sale')
       .reduce((acc, t) => {
         const productName =
-          uniqueProducts.find((p) => p.id === t.productId)?.name || 'Unknown';
+          products.find((p) => p.id === t.productId)?.name || 'Unknown';
         acc[productName] = (acc[productName] || 0) + t.quantity;
         return acc;
       }, {} as { [key: string]: number })
-  , [transactions, uniqueProducts]);
+  , [transactions, products]);
 
   const topSeller =
     Object.keys(topSellingProductMap).length > 0
@@ -374,7 +365,7 @@ export default function DashboardPage() {
                 {recentTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell className="font-medium">
-                      {uniqueProducts.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
+                      {products.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
                     </TableCell>
                     <TableCell>
                       <Badge
