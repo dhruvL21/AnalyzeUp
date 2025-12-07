@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
 import { DataProvider } from '@/context/data-context';
+import ClientOnly from '@/components/ClientOnly';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -26,9 +27,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <DataProvider>
-            {children}
-          </DataProvider>
+          <ClientOnly>
+            <DataProvider>
+              {children}
+            </DataProvider>
+          </ClientOnly>
           <Toaster />
         </ThemeProvider>
       </body>
