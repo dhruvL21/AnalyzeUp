@@ -77,13 +77,13 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
   }
 
   return (
-    <nav className="hidden md:flex items-center gap-6 text-sm font-medium ml-6">
+    <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
       {navItems.map((item) => (
         <Link 
             key={item.href}
             href={item.href}
-            className={cn("transition-colors hover:text-foreground",
-                pathname === item.href ? "text-foreground" : "text-muted-foreground"
+            className={cn("transition-colors hover:text-foreground px-3 py-1.5 rounded-full",
+                pathname === item.href ? "text-foreground border-2 border-primary/50 bg-primary/10" : "text-muted-foreground"
             )}
         >
           {item.label}
