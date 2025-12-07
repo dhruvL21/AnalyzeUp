@@ -284,18 +284,18 @@ export default function OrdersPage() {
             <DialogDescription>Order ID: {viewingOrder?.id}</DialogDescription>
           </DialogHeader>
           {viewingOrder && (
-            <div className="space-y-4">
+            <div className="space-y-4 py-4">
               <div>
                 <Label>Supplier</Label>
-                <p>{suppliers.find(s => s.id === viewingOrder.supplierId)?.name || viewingOrder.supplierId}</p>
+                <p className="text-sm text-muted-foreground">{suppliers.find(s => s.id === viewingOrder.supplierId)?.name || viewingOrder.supplierId}</p>
               </div>
                <div>
                 <Label>Product</Label>
-                <p>{products.find(p => p.id === viewingOrder.productId)?.name || viewingOrder.productId}</p>
+                <p className="text-sm text-muted-foreground">{products.find(p => p.id === viewingOrder.productId)?.name || viewingOrder.productId}</p>
               </div>
               <div>
                 <Label>Date</Label>
-                <p>{new Date(viewingOrder.orderDate).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground">{new Date(viewingOrder.orderDate).toLocaleDateString()}</p>
               </div>
               <div>
                 <Label>Status</Label>
@@ -307,7 +307,7 @@ export default function OrdersPage() {
               </div>
               <div>
                 <Label>Quantity</Label>
-                <p>{viewingOrder.quantity}</p>
+                <p className="text-sm text-muted-foreground">{viewingOrder.quantity}</p>
               </div>
             </div>
           )}
