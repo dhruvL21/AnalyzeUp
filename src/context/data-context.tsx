@@ -38,7 +38,7 @@ interface DataContextProps {
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
   addSupplier: (supplier: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
   deleteSupplier: (supplierId: string) => Promise<void>;
-  addCategory: (category: Omit<Category, 'id'>) => Category;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -63,14 +63,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   const isLoading = productsLoading || ordersLoading || suppliersLoading || transactionsLoading || categoriesLoading;
 
-  const addCategory = (categoryData: Omit<Category, 'id'>): Category => {
+  const addCategory = async (categoryData: Omit<Category, 'id'>) => {
      if (!firestore || !user || !categoriesRef) {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not add category.' });
         throw new Error("Not authenticated");
     }
-    const newCategory: Category = {
-      id: `CAT-${Date.now()}`,
+    const newCategory = {
       ...categoryData,
+      userId: user.uid,
     };
     addDoc(categoriesRef, newCategory).catch((serverError) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -79,7 +79,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             requestResourceData: newCategory,
         }));
     });
-    return newCategory;
   };
 
 
@@ -88,7 +87,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const newProduct = {
       ...productData,
       userId: user.uid,
-      tenantId: 'local-tenant',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       averageDailySales: Math.floor(Math.random() * 10) + 1,
@@ -140,7 +138,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         ...orderData,
         id: newOrderRef.id,
         userId: user.uid,
-        tenantId: 'local-tenant',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     };
@@ -148,12 +145,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
     const newTransactionRef = doc(transactionsRef);
     const newTransaction = {
-        id: newTransactionRef.id,
         userId: user.uid,
-        tenantId: 'local-tenant',
         productId: newOrder.productId,
         locationId: 'MAIN-WAREHOUSE',
-        type: 'Purchase',
+        type: 'Purchase' as const,
         quantity: newOrder.quantity,
         transactionDate: newOrder.orderDate,
         createdAt: serverTimestamp(),
@@ -226,7 +221,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const newSupplier = {
       ...supplierData,
       userId: user.uid,
-      tenantId: 'local-tenant',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -291,7 +285,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }));
       });
     }
-  }, [user, firestore, products, productsLoading]);
+  }, [user, firestore, products.length, productsLoading]);
 
 
   const value = useMemo(() => ({
@@ -316,8 +310,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     suppliers,
     transactions,
     categories,
-    // Functions are now wrapped in useCallback and don't need to be in the dependency array
-    isLoading
+    isLoading,
+    user, 
+    firestore
   ]);
 
   return (

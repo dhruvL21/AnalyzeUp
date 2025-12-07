@@ -65,7 +65,7 @@ export default function OrdersPage() {
     const formData = new FormData(e.currentTarget);
     const newOrderData = {
       supplierId: formData.get('supplierId') as string,
-      status: 'Pending',
+      status: 'Pending' as OrderStatus,
       orderDate: new Date().toISOString(),
       expectedDeliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
       quantity: Number(formData.get('quantity')),
@@ -131,7 +131,7 @@ export default function OrdersPage() {
               <TableBody>
                 {orders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id}</TableCell>
+                    <TableCell className="font-medium">{order.id.substring(0,8)}...</TableCell>
                     <TableCell>{suppliers.find(s => s.id === order.supplierId)?.name || order.supplierId}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusVariant(order.status as OrderStatus)}>

@@ -19,7 +19,6 @@ export interface Tenant {
 
 export interface Product {
   id: string;
-  tenantId: string;
   name: string;
   description: string;
   sku: string;
@@ -53,8 +52,7 @@ export interface Location {
 }
 
 export interface Transaction {
-  id: string;
-  tenantId: string;
+  id?: string;
   productId: string;
   locationId: string;
   type: 'Sale' | 'Purchase';
@@ -67,7 +65,6 @@ export interface Transaction {
 
 export interface Supplier {
   id: string;
-  tenantId: string;
   name: string;
   contactName: string;
   email: string;
@@ -80,11 +77,10 @@ export interface Supplier {
 
 export interface PurchaseOrder {
   id: string;
-  tenantId: string;
   supplierId: string;
   orderDate: string;
   expectedDeliveryDate: string;
-  status: string;
+  status: 'Pending' | 'Fulfilled' | 'Cancelled';
   productId: string;
   quantity: number;
   createdAt: string | FieldValue;
