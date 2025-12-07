@@ -89,9 +89,9 @@ export default function InventoryPage() {
       price: Number(formData.get('price')),
       categoryId: selectedCategory as string,
       supplierId: selectedSupplier as string,
-      imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Math.random()}/400/400`,
+      imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Date.now()}/400/400`,
       description: description,
-      sku: 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+      sku: 'SKU-' + Date.now().toString(36),
     };
 
     if (editingProduct) {
