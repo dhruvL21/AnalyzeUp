@@ -48,8 +48,8 @@ export function LowStockAlertItem({ product }: LowStockAlertItemProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="font-medium">{product.name}</p>
+        <div className="flex-1">
+          <p className="font-medium truncate">{product.name}</p>
           <p className="text-sm text-muted-foreground">
             Current stock: <span className="font-bold">{product.stock}</span>
           </p>
@@ -59,6 +59,7 @@ export function LowStockAlertItem({ product }: LowStockAlertItemProps) {
           disabled={isLoading}
           size="sm"
           variant="outline"
+          className="ml-4"
         >
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
