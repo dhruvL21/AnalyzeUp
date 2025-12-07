@@ -38,61 +38,14 @@ interface DataContextProps {
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
 
-const useLocalStorage = <T,>(key: string, initialValue: T) => {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.error(error);
-      return initialValue;
-    }
-  });
-
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  return [storedValue, setValue] as const;
-};
-
-
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
-  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
-  const [orders, setOrders] = useLocalStorage<PurchaseOrder[]>('orders', []);
-  const [suppliers, setSuppliers] = useLocalStorage<Supplier[]>('suppliers', []);
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
-  const [categories, setCategories] = useLocalStorage<Category[]>('categories', []);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if data is already loaded in localStorage
-    const productsExist = localStorage.getItem('products');
-    const ordersExist = localStorage.getItem('orders');
-    const suppliersExist = localStorage.getItem('suppliers');
-    const transactionsExist = localStorage.getItem('transactions');
-    const categoriesExist = localStorage.getItem('categories');
-
-    if (!productsExist) setProducts(mockProducts);
-    if (!ordersExist) setOrders(mockOrders);
-    if (!suppliersExist) setSuppliers(mockSuppliers);
-    if (!transactionsExist) setTransactions(mockTransactions);
-    if (!categoriesExist) setCategories(mockCategories);
-    
-    setIsLoading(false);
-  }, [setProducts, setOrders, setSuppliers, setTransactions, setCategories]);
+  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [orders, setOrders] = useState<PurchaseOrder[]>(mockOrders);
+  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
+  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const addCategory = (categoryData: Omit<Category, 'id'>) => {
