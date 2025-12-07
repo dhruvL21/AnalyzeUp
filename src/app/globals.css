@@ -7,7 +7,7 @@
   :root {
     --background: 40 40% 97%;
     --foreground: 40 10% 20%;
-    --card: 40 30% 95%;
+    --card: 40 35% 96%;
     --card-foreground: 40 10% 20%;
     --popover: 40 30% 99%;
     --popover-foreground: 40 10% 20%;
@@ -24,6 +24,7 @@
     --border: 40 20% 88%;
     --input: 40 20% 88%;
     --ring: 35 50% 55%;
+    --radius: 0.5rem;
     --chart-1: 35 50% 55%;
     --chart-2: 30 55% 65%;
     --chart-3: 25 50% 75%;
@@ -59,6 +60,7 @@
     --border: 40 10% 25%;
     --input: 40 10% 25%;
     --ring: 35 50% 55%;
+    --radius: 0.5rem;
     --chart-1: 35 50% 55%;
     --chart-2: 30 55% 65%;
     --chart-3: 25 50% 75%;
@@ -140,6 +142,7 @@
   justify-content: center;
   color: hsl(var(--primary));
   box-shadow: 0 0 120px -20px hsl(var(--primary) / 0.5);
+  border-radius: var(--radius);
 }
 
 .front { transform: translateZ(125px); }
