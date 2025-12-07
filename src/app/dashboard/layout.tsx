@@ -1,3 +1,4 @@
+
 'use client';
 import { Header } from '@/components/header';
 import { useUser } from '@/firebase';
@@ -29,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.push('/');
     }
   }, [user, loading, router]);
 
