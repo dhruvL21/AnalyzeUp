@@ -168,7 +168,8 @@ export default function InventoryPage() {
 
   const handleAddNewCategory = () => {
     if (newCategoryName.trim()) {
-      addCategory({ name: newCategoryName, description: '' });
+      const newCategory = addCategory({ name: newCategoryName, description: '' });
+      setSelectedCategory(newCategory.id);
       setNewCategoryName('');
       setShowNewCategoryDialog(false);
       toast({ title: 'Category Added', description: `${newCategoryName} has been added.` });
@@ -177,13 +178,16 @@ export default function InventoryPage() {
 
   const handleAddNewSupplier = () => {
     if (newSupplierName.trim() && newSupplierEmail.trim()) {
-      addSupplierToContext({
+      const newSupplier = addSupplierToContext({
         name: newSupplierName,
         contactName: newSupplierName.split(' ')[0] || 'Contact',
         email: newSupplierEmail,
         phone: 'N/A',
         address: 'N/A',
       });
+      if (newSupplier) {
+        setSelectedSupplier(newSupplier.id);
+      }
       setNewSupplierName('');
       setNewSupplierEmail('');
       setShowNewSupplierDialog(false);
@@ -511,7 +515,12 @@ export default function InventoryPage() {
     </Dialog>
 
     {/* New Category Dialog */}
-    <Dialog open={showNewCategoryDialog} onOpenChange={setShowNewCategoryDialog}>
+    <Dialog open={showNewCategoryDialog} onOpenChange={(isOpen) => {
+        setShowNewCategoryDialog(isOpen);
+        if (!isOpen) {
+            setSelectedCategory(undefined);
+        }
+    }}>
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Create New Category</DialogTitle>
@@ -530,7 +539,12 @@ export default function InventoryPage() {
     </Dialog>
 
     {/* New Supplier Dialog */}
-    <Dialog open={showNewSupplierDialog} onOpenChange={setShowNewSupplierDialog}>
+    <Dialog open={showNewSupplierDialog} onOpenChange={(isOpen) => {
+        setShowNewSupplierDialog(isOpen);
+        if (!isOpen) {
+            setSelectedSupplier(undefined);
+        }
+    }}>
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Create New Supplier</DialogTitle>
@@ -554,5 +568,3 @@ export default function InventoryPage() {
     </>
   );
 }
-
-    

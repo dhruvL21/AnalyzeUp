@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -29,9 +30,9 @@ interface DataContextProps {
   addOrder: (order: Omit<PurchaseOrder, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => void;
   deleteOrder: (orderId: string) => void;
   updateOrderStatus: (orderId: string, status: string) => void;
-  addSupplier: (supplier: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => void;
+  addSupplier: (supplier: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => Supplier | undefined;
   deleteSupplier: (supplierId: string) => void;
-  addCategory: (category: Omit<Category, 'id'>) => void;
+  addCategory: (category: Omit<Category, 'id'>) => Category;
   isLoading: boolean;
 }
 
@@ -88,12 +89,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       ...categoryData,
     };
     setCategories(prev => [newCategory, ...prev]);
+    return newCategory;
   };
 
 
   const addProduct = (productData: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
     const newProduct: Product = {
-      id: `PROD${Date.now()}`,
+      id: `PROD-${Date.now()}`,
       tenantId: 'local-tenant',
       ...productData,
       createdAt: new Date().toISOString(),
@@ -190,6 +192,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     };
     setSuppliers(prev => [newSupplier, ...prev]);
     toast({ title: 'Supplier Added', description: `${newSupplier.name} has been added.` });
+    return newSupplier;
   };
 
   const deleteSupplier = (supplierId: string) => {
