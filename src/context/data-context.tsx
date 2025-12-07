@@ -78,10 +78,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading for a bit to avoid flash of empty content
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+    // We check if data is loaded, if not show loading, otherwise hide it quickly.
+    const hasData = products.length > 0 && suppliers.length > 0;
+    setIsLoading(!hasData);
+  }, [products, suppliers]);
 
   const addCategory = (categoryData: Omit<Category, 'id'>) => {
     const newCategory: Category = {
