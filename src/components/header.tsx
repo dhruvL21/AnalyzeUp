@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -26,11 +27,11 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between gap-4 border-b bg-muted/40 px-4 lg:px-6">
-      <div className="flex items-center gap-2 font-semibold">
+    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between gap-4 border-b bg-muted/40 px-4 backdrop-blur-sm lg:px-6">
+      <div className="flex flex-shrink-0 items-center gap-2 font-semibold">
         <Link href="/dashboard" className="flex items-center gap-2">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-          <span className="text-3xl">AnalyzeUp</span>
+          <span className="hidden text-xl font-bold sm:inline-block">AnalyzeUp</span>
         </Link>
       </div>
 
@@ -38,7 +39,7 @@ export function Header() {
         <Nav />
       </div>
 
-      <div className="flex items-center gap-2 justify-end">
+      <div className="flex flex-shrink-0 items-center justify-end gap-2">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
