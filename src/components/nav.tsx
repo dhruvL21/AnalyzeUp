@@ -82,7 +82,7 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
         <Link 
             key={item.href}
             href={item.href}
-            className={cn("transition-colors hover:text-foreground px-3 py-1.5 rounded-full",
+            className={cn("transition-colors hover:text-foreground px-3 py-1.5 rounded-full cursor-pointer",
                 pathname === item.href ? "text-foreground border-2 border-primary/50 bg-primary/10" : "text-muted-foreground"
             )}
         >
