@@ -7,7 +7,7 @@ import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-background animated-grid-background">
+    <div className="flex flex-col min-h-[100dvh] bg-background text-foreground">
       <header className="px-4 lg:px-6 h-14 flex items-center sticky top-0 z-50 backdrop-blur-sm bg-background/60 border-b">
         <Link href="/" className="flex items-center justify-center">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
@@ -31,7 +31,7 @@ export default function LandingPage() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="w-full py-12 md:py-16 lg:py-20">
+        <section className="w-full py-20 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
@@ -60,13 +60,13 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </div>
-              <div className="flex items-start justify-center lg:order-last min-h-[250px] lg:min-h-[300px] pt-8">
+              <div className="flex items-center justify-center lg:order-last min-h-[250px] lg:min-h-[300px] pt-8">
                   <AnimatedHero />
               </div>
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-muted/30 dark:animated-grid-background">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-3">
@@ -115,7 +115,7 @@ export default function LandingPage() {
         </section>
         <section
           id="features"
-          className="w-full py-12 md:py-24 lg:py-32 bg-muted/50"
+          className="w-full py-12 md:py-24 lg:py-32"
         >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -175,7 +175,7 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-background">
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-muted-foreground">
           &copy; 2024 AnalyzeUp. All rights reserved.
         </p>
