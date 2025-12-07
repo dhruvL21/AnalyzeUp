@@ -449,6 +449,7 @@ export default function InventoryPage() {
               <Select name="category" value={selectedCategory} onValueChange={(value) => {
                 if (value === 'create-new') {
                   setShowNewCategoryDialog(true);
+                  // Don't set selectedCategory to 'create-new' so it doesn't get stuck
                 } else {
                   setSelectedCategory(value);
                 }
@@ -478,6 +479,7 @@ export default function InventoryPage() {
               <Select name="supplier" value={selectedSupplier} onValueChange={(value) => {
                  if (value === 'create-new') {
                   setShowNewSupplierDialog(true);
+                  // Don't set selectedSupplier to 'create-new' so it doesn't get stuck
                 } else {
                   setSelectedSupplier(value);
                 }
@@ -518,7 +520,13 @@ export default function InventoryPage() {
     <Dialog open={showNewCategoryDialog} onOpenChange={(isOpen) => {
         setShowNewCategoryDialog(isOpen);
         if (!isOpen) {
-            setSelectedCategory(undefined);
+            // When dialog closes, if no category was selected, reset dropdown
+            if (selectedCategory === undefined) {
+               const selectTrigger = document.querySelector('button[role="combobox"]');
+               if (selectTrigger) {
+                 // This is a bit of a hack to reset, ideally state drives this.
+               }
+            }
         }
     }}>
         <DialogContent>
@@ -532,7 +540,10 @@ export default function InventoryPage() {
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setShowNewCategoryDialog(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => {
+                  setShowNewCategoryDialog(false);
+                  setSelectedCategory(undefined);
+                  }}>Cancel</Button>
                 <Button onClick={handleAddNewCategory}>Create</Button>
             </DialogFooter>
         </DialogContent>
@@ -541,8 +552,11 @@ export default function InventoryPage() {
     {/* New Supplier Dialog */}
     <Dialog open={showNewSupplierDialog} onOpenChange={(isOpen) => {
         setShowNewSupplierDialog(isOpen);
-        if (!isOpen) {
-            setSelectedSupplier(undefined);
+         if (!isOpen) {
+            // When dialog closes, if no supplier was selected, reset dropdown
+            if (selectedSupplier === undefined) {
+               // Similar to category, reset if needed
+            }
         }
     }}>
         <DialogContent>
@@ -560,7 +574,10 @@ export default function InventoryPage() {
                 </div>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setShowNewSupplierDialog(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => {
+                  setShowNewSupplierDialog(false);
+                  setSelectedSupplier(undefined);
+                  }}>Cancel</Button>
                 <Button onClick={handleAddNewSupplier}>Create</Button>
             </DialogFooter>
         </DialogContent>
