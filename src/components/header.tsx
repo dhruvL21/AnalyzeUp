@@ -29,7 +29,7 @@ export function Header() {
     <header className="flex h-16 items-center gap-4 border-b bg-muted/40 px-4 lg:px-6 sticky top-0 z-20">
       <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
         <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-        <span className="hidden md:inline-block text-lg">AnalyzeUp</span>
+        <span className="hidden md:inline-block text-xl">AnalyzeUp</span>
       </Link>
       
       <div className="flex-1 md:flex-none">
