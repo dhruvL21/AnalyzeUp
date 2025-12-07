@@ -3,11 +3,6 @@
 
 import { usePathname } from "next/navigation";
 import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar";
-import {
   Boxes,
   LayoutDashboard,
   Settings,
@@ -17,6 +12,7 @@ import {
   PieChart,
 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   {
@@ -60,20 +56,18 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <SidebarMenu>
+    <nav className="hidden md:flex items-center gap-6 text-sm font-medium ml-6">
       {navItems.map((item) => (
-        <SidebarMenuItem key={item.href}>
-          <Link href={item.href}>
-            <SidebarMenuButton
-              isActive={pathname === item.href}
-              tooltip={item.label}
-            >
-              <item.icon />
-              <span>{item.label}</span>
-            </SidebarMenuButton>
-          </Link>
-        </SidebarMenuItem>
+        <Link 
+            key={item.href}
+            href={item.href}
+            className={cn("transition-colors hover:text-foreground",
+                pathname === item.href ? "text-foreground" : "text-muted-foreground"
+            )}
+        >
+          {item.label}
+        </Link>
       ))}
-    </SidebarMenu>
+    </nav>
   );
 }
