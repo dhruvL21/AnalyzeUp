@@ -82,7 +82,7 @@ function DashboardLoading() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
             <CardTitle>AI Strategy Advisor</CardTitle>
@@ -109,7 +109,7 @@ function DashboardLoading() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
@@ -292,15 +292,15 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
+        <Card className='flex flex-col'>
             <CardHeader>
                 <CardTitle>AI Strategy Advisor</CardTitle>
                 <CardDescription>
                 Get AI-powered suggestions based on your current business data to help you grow.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-grow">
                 <BusinessStrategyAdvisor
                     totalInventoryValue={totalInventoryValue}
                     totalSales={totalSales}
@@ -310,14 +310,14 @@ export default function DashboardPage() {
                 />
             </CardContent>
         </Card>
-        <Card>
+        <Card className='flex flex-col'>
             <CardHeader>
                 <CardTitle>Low Stock Alerts</CardTitle>
                 <CardDescription>
                 Items nearing their reorder point. Use AI to get suggestions.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-h-[300px] overflow-y-auto">
+            <CardContent className="space-y-4 max-h-[300px] overflow-y-auto flex-grow">
                 {lowStockProducts.length > 0 ? (
                 lowStockProducts.map((product) => (
                     <LowStockAlertItem key={product.id} product={product} />
@@ -331,7 +331,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>

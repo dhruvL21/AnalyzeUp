@@ -227,7 +227,7 @@ export default function ReportsPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
             <CardTitle>Sales Overview</CardTitle>
