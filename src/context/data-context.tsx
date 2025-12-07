@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import type { Product, PurchaseOrder, Supplier, Transaction, Category } from '@/lib/types';
 import { mockProducts } from '@/lib/mock-products';
 import { mockOrders } from '@/lib/mock-orders';
@@ -45,20 +45,20 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const [categories, setCategories] = useState<Category[]>(mockCategories);
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = false;
 
 
-  const addCategory = (categoryData: Omit<Category, 'id'>) => {
+  const addCategory = useCallback((categoryData: Omit<Category, 'id'>) => {
     const newCategory: Category = {
       id: `CAT-${Date.now()}`,
       ...categoryData,
     };
     setCategories(prev => [newCategory, ...prev]);
     return newCategory;
-  };
+  }, []);
 
 
-  const addProduct = (productData: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+  const addProduct = useCallback((productData: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
     const newProduct: Product = {
       id: `PROD-${Date.now()}`,
       tenantId: 'local-tenant',
@@ -70,19 +70,19 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     };
     setProducts(prev => [newProduct, ...prev]);
     toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-  };
+  }, [toast]);
 
-  const updateProduct = (updatedProduct: Product) => {
+  const updateProduct = useCallback((updatedProduct: Product) => {
     setProducts(prev => prev.map(p => p.id === updatedProduct.id ? { ...updatedProduct, updatedAt: new Date().toISOString()} : p));
     toast({ title: 'Product Updated', description: `${updatedProduct.name} has been updated.` });
-  };
+  }, [toast]);
   
-  const deleteProduct = (productId: string) => {
+  const deleteProduct = useCallback((productId: string) => {
     setProducts(prev => prev.filter(p => p.id !== productId));
     toast({ title: 'Product Deleted', description: 'The product has been removed.' });
-  };
+  }, [toast]);
 
-  const addOrder = (orderData: Omit<PurchaseOrder, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+  const addOrder = useCallback((orderData: Omit<PurchaseOrder, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
     const newOrder: PurchaseOrder = {
         id: `PO-${Date.now()}`,
         tenantId: 'local-tenant',
@@ -107,14 +107,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     
     const supplierName = suppliers.find(s => s.id === newOrder.supplierId)?.name || 'the supplier';
     toast({ title: 'Order Created', description: `New purchase order for ${supplierName} has been created.` });
-  };
+  }, [toast, suppliers]);
 
-  const deleteOrder = (orderId: string) => {
+  const deleteOrder = useCallback((orderId: string) => {
     setOrders(prev => prev.filter(o => o.id !== orderId));
     toast({ title: 'Order Deleted', description: 'The purchase order has been removed.' });
-  };
+  }, [toast]);
 
-  const updateOrderStatus = (orderId: string, status: string) => {
+  const updateOrderStatus = useCallback((orderId: string, status: string) => {
      setOrders(prevOrders => {
         const orderToUpdate = prevOrders.find(o => o.id === orderId);
         if (!orderToUpdate) return prevOrders;
@@ -137,9 +137,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         
         return updatedOrders;
     });
-  };
+  }, [toast]);
 
-  const addSupplier = (supplierData: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
+  const addSupplier = useCallback((supplierData: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>) => {
      if (suppliers.find((s) => s.name === supplierData.name)) {
       toast({
         variant: 'destructive',
@@ -158,14 +158,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setSuppliers(prev => [newSupplier, ...prev]);
     toast({ title: 'Supplier Added', description: `${newSupplier.name} has been added.` });
     return newSupplier;
-  };
+  }, [toast, suppliers]);
 
-  const deleteSupplier = (supplierId: string) => {
+  const deleteSupplier = useCallback((supplierId: string) => {
     setSuppliers(prev => prev.filter(s => s.id !== supplierId));
     toast({ title: 'Supplier Deleted', description: 'The supplier has been removed.' });
-  };
+  }, [toast]);
 
-  const value = {
+  const value = useMemo(() => ({
     products,
     orders,
     suppliers,
@@ -181,7 +181,23 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     deleteSupplier,
     addCategory,
     isLoading,
-  };
+  }), [
+    products,
+    orders,
+    suppliers,
+    transactions,
+    categories,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    addOrder,
+    deleteOrder,
+    updateOrderStatus,
+    addSupplier,
+    deleteSupplier,
+    addCategory,
+    isLoading
+  ]);
 
   return (
     <DataContext.Provider value={value}>
@@ -197,5 +213,3 @@ export const useData = () => {
   }
   return context;
 };
-
-    
