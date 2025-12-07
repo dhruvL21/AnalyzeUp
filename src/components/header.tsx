@@ -26,18 +26,18 @@ export function Header() {
   };
 
   return (
-    <header className="grid h-16 w-full grid-cols-3 items-center gap-4 border-b bg-muted/40 px-4 lg:px-6 sticky top-0 z-20">
+    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between gap-4 border-b bg-muted/40 px-4 lg:px-6">
       <div className="flex items-center gap-2 font-semibold">
         <Link href="/dashboard" className="flex items-center gap-2">
-            <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-            <span className="hidden md:inline-block text-2xl">AnalyzeUp</span>
+          <AnalyzeUpIcon className="h-6 w-6 text-primary" />
+          <span className="hidden md:inline-block text-2xl">AnalyzeUp</span>
         </Link>
       </div>
-      
-      <div className="flex justify-center">
+
+      <div className="hidden md:flex flex-1 justify-center">
         <Nav />
       </div>
-      
+
       <div className="flex items-center gap-2 justify-end">
         <TooltipProvider>
           <Tooltip>
@@ -77,7 +77,7 @@ export function Header() {
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
         </Button>
-         <Sheet>
+        <Sheet>
           <SheetTrigger asChild>
             <Button
               variant="outline"
@@ -90,7 +90,7 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="left">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <Nav isMobile={true}/>
+            <Nav isMobile={true} />
           </SheetContent>
         </Sheet>
       </div>
