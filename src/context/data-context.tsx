@@ -30,13 +30,13 @@ interface DataContextProps {
   suppliers: Supplier[];
   transactions: Transaction[];
   categories: Category[];
-  addProduct: (product: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
-  addOrder: (order: Omit<PurchaseOrder, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
+  addOrder: (order: Omit<PurchaseOrder, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
   deleteOrder: (orderId: string) => Promise<void>;
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
-  addSupplier: (supplier: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
+  addSupplier: (supplier: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
   deleteSupplier: (supplierId: string) => Promise<void>;
   addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
   isLoading: boolean;
@@ -88,7 +88,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   };
 
 
-  const addProduct = async (productData: Omit<Product, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!firestore || !user || !productsRef) return;
     const newProduct = {
       ...productData,
@@ -134,7 +134,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     toast({ title: 'Product Deleted', description: 'The product has been removed.' });
   };
 
-  const addOrder = async (orderData: Omit<PurchaseOrder, 'id' | 'tenantId'| 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const addOrder = async (orderData: Omit<PurchaseOrder, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!firestore || !user || !ordersRef || !transactionsRef) return;
 
     const batch = writeBatch(firestore);
@@ -214,7 +214,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const addSupplier = async (supplierData: Omit<Supplier, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const addSupplier = async (supplierData: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
      if (!firestore || !user || !suppliersRef) return;
      if (suppliers.find((s) => s.name === supplierData.name)) {
       toast({
@@ -254,44 +254,52 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   
   // Seed initial data for new users
   useEffect(() => {
-    if (user && firestore && !productsLoading && products && products.length === 0) {
-      console.log('Seeding initial data for new user...');
-      const batch = writeBatch(firestore);
+    if (user && firestore && !isLoading) {
+      if (
+        products.length === 0 &&
+        suppliers.length === 0 &&
+        orders.length === 0 &&
+        transactions.length === 0 &&
+        categories.length === 0
+      ) {
+        console.log('Seeding initial data for new user...');
+        const batch = writeBatch(firestore);
 
-      mockProducts.forEach(product => {
-        const prodRef = doc(collection(firestore, 'users', user.uid, 'products'));
-        batch.set(prodRef, { ...product, id: prodRef.id, userId: user.uid });
-      });
-      mockSuppliers.forEach(supplier => {
-        const supRef = doc(collection(firestore, 'users', user.uid, 'suppliers'));
-        batch.set(supRef, { ...supplier, id: supRef.id, userId: user.uid });
-      });
-      mockOrders.forEach(order => {
-        const orderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
-        batch.set(orderRef, { ...order, id: orderRef.id, userId: user.uid });
-      });
-       mockTransactions.forEach(transaction => {
-        const transRef = doc(collection(firestore, 'users', user.uid, 'transactions'));
-        batch.set(transRef, { ...transaction, id: transRef.id, userId: user.uid });
-      });
-       mockCategories.forEach(category => {
-        const catRef = doc(collection(firestore, 'users', user.uid, 'categories'));
-        batch.set(catRef, { ...category, id: catRef.id, userId: user.uid });
-      });
+        mockProducts.forEach(product => {
+            const prodRef = doc(collection(firestore, 'users', user.uid, 'products'));
+            batch.set(prodRef, { ...product, id: prodRef.id, userId: user.uid });
+        });
+        mockSuppliers.forEach(supplier => {
+            const supRef = doc(collection(firestore, 'users', user.uid, 'suppliers'));
+            batch.set(supRef, { ...supplier, id: supRef.id, userId: user.uid });
+        });
+        mockOrders.forEach(order => {
+            const orderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
+            batch.set(orderRef, { ...order, id: orderRef.id, userId: user.uid });
+        });
+        mockTransactions.forEach(transaction => {
+            const transRef = doc(collection(firestore, 'users', user.uid, 'transactions'));
+            batch.set(transRef, { ...transaction, id: transRef.id, userId: user.uid });
+        });
+        mockCategories.forEach(category => {
+            const catRef = doc(collection(firestore, 'users', user.uid, 'categories'));
+            batch.set(catRef, { ...category, id: catRef.id, userId: user.uid });
+        });
 
 
-      batch.commit().then(() => {
-        console.log('Initial data seeded successfully.');
-      }).catch(error => {
-        console.error("Error seeding data: ", error);
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `users/${user.uid}`,
-            operation: 'create',
-            requestResourceData: 'Initial Seed Data Batch'
-        }));
-      });
+        batch.commit().then(() => {
+            console.log('Initial data seeded successfully.');
+        }).catch(error => {
+            console.error("Error seeding data: ", error);
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: `users/${user.uid}`,
+                operation: 'create',
+                requestResourceData: 'Initial Seed Data Batch'
+            }));
+        });
+      }
     }
-  }, [user, firestore, products, productsLoading]);
+  }, [user, firestore, isLoading, products, suppliers, orders, transactions, categories]);
 
 
   const value = useMemo(() => ({
