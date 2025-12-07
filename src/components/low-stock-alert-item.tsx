@@ -48,7 +48,7 @@ export function LowStockAlertItem({ product }: LowStockAlertItemProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex-1">
+        <div>
           <p className="font-medium truncate">{product.name}</p>
           <p className="text-sm text-muted-foreground">
             Current stock: <span className="font-bold">{product.stock}</span>

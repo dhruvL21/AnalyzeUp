@@ -82,8 +82,8 @@ function DashboardLoading() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <Card>
           <CardHeader>
             <CardTitle>AI Strategy Advisor</CardTitle>
             <CardDescription>
@@ -292,8 +292,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
             <CardHeader>
                 <CardTitle>AI Strategy Advisor</CardTitle>
                 <CardDescription>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                 Items nearing their reorder point. Use AI to get suggestions.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-h-[400px] overflow-y-auto">
+            <CardContent className="space-y-4 max-h-[300px] overflow-y-auto">
                 {lowStockProducts.length > 0 ? (
                 lowStockProducts.map((product) => (
                     <LowStockAlertItem key={product.id} product={product} />
