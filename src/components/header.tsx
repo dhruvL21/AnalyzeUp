@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
 import { useRouter } from 'next/navigation';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Menu } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -21,6 +21,8 @@ import {
 import Nav from './nav';
 import Link from 'next/link';
 import { AnalyzeUpIcon } from './analyze-up-icon';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+
 
 export function Header() {
   const router = useRouter();
@@ -35,14 +37,14 @@ export function Header() {
     <header className="flex h-16 items-center gap-4 border-b bg-card px-4 lg:px-6 sticky top-0 z-20">
       <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
         <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-        <span className="">AnalyzeUp</span>
+        <span className="hidden md:inline-block">AnalyzeUp</span>
       </Link>
       
-      <div className="flex-1">
+      <div className="flex-1 md:flex-none">
         <Nav />
       </div>
 
-      <div className='flex items-center gap-2'>
+      <div className='flex items-center gap-2 ml-auto'>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -95,6 +97,21 @@ export function Header() {
             </DropdownMenuLabel>
           </DropdownMenuContent>
         </DropdownMenu>
+         <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0 md:hidden"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle navigation menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left">
+            <Nav isMobile={true}/>
+          </SheetContent>
+        </Sheet>
       </div>
     </header>
   );
