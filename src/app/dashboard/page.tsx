@@ -37,7 +37,7 @@ import { useData } from '@/context/data-context';
 function DashboardLoading() {
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -223,7 +223,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -292,7 +292,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="flex flex-col">
             <CardHeader>
                 <CardTitle>AI Strategy Advisor</CardTitle>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                 Items nearing their reorder point. Use AI to get suggestions.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow space-y-4">
+            <CardContent className="flex-grow space-y-4 overflow-y-auto">
                 {lowStockProducts.length > 0 ? (
                 lowStockProducts.map((product) => (
                     <LowStockAlertItem key={product.id} product={product} />
@@ -399,3 +399,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
