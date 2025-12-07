@@ -21,7 +21,7 @@ import {
 import Nav from './nav';
 import Link from 'next/link';
 import { AnalyzeUpIcon } from './analyze-up-icon';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './ui/sheet';
 
 
 export function Header() {
@@ -109,6 +109,7 @@ export function Header() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <Nav isMobile={true}/>
           </SheetContent>
         </Sheet>
