@@ -49,7 +49,7 @@ export async function getRestockSuggestion(
 
 const lowStockAlertsPrompt = ai.definePrompt({
   name: 'lowStockAlertsPrompt',
-  model: googleAI.model('gemini-1.5-flash-latest'),
+  model: googleAI.model('gemini-pro'),
   input: {schema: LowStockAlertInputSchema},
   output: {schema: LowStockAlertOutputSchema},
   prompt: `
