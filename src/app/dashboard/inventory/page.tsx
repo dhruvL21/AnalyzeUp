@@ -54,7 +54,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/context/data-context';
-import { LowStockAlertItem } from '@/components/low-stock-alert-item';
 
 export default function InventoryPage() {
   const { toast } = useToast();
@@ -116,22 +115,6 @@ export default function InventoryPage() {
   return (
     <>
       <div className="flex flex-col gap-6">
-        {lowStockProducts.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Low Stock Alerts</CardTitle>
-              <CardDescription>
-                These items are running low. Get AI-powered restock suggestions.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {lowStockProducts.map(product => (
-                <LowStockAlertItem key={product.id} product={product} />
-              ))}
-            </CardContent>
-          </Card>
-        )}
-
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl">Inventory</h1>
           <div className="ml-auto flex items-center gap-2">
