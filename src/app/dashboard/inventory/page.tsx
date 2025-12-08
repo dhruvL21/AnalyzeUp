@@ -2,8 +2,8 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState, useEffect } from 'react';
-import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -53,7 +53,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { generateDescription } from '@/ai/flows/generate-product-description';
 import {
   Select,
   SelectContent,
@@ -62,13 +61,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useData } from '@/context/data-context';
-import { useTasks } from '@/context/task-context';
 
 
 export default function InventoryPage() {
   const { toast } = useToast();
   const { products, suppliers, categories, addProduct, updateProduct, deleteProduct, addCategory, addSupplier, isLoading } = useData();
-  const { runTask, tasks } = useTasks();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -82,15 +79,6 @@ export default function InventoryPage() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSupplierName, setNewSupplierName] = useState('');
   const [newSupplierEmail, setNewSupplierEmail] = useState('');
-
-  const descriptionGenerationTaskId = `gen-desc-${editingProduct?.id || 'new'}`;
-  const descriptionGenerationTask = tasks[descriptionGenerationTaskId];
-
-  useEffect(() => {
-    if (descriptionGenerationTask?.status === 'success') {
-      setDescription(descriptionGenerationTask.result.description);
-    }
-  }, [descriptionGenerationTask]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -149,31 +137,6 @@ export default function InventoryPage() {
     setSelectedCategory(undefined);
     setSelectedSupplier(undefined);
     setDialogOpen(true);
-  };
-
-  const handleGenerateDescription = async () => {
-    const form = document.getElementById('product-form') as HTMLFormElement;
-    if (!form) return;
-
-    const formData = new FormData(form);
-    const productName = formData.get('name') as string;
-    const categoryName = categories.find((c) => c.id === selectedCategory)?.name || 'Default';
-
-    if (!productName) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description:
-          'Please enter a product name first.',
-      });
-      return;
-    }
-
-    runTask(
-        descriptionGenerationTaskId,
-        () => generateDescription({ productName, category: categoryName }),
-        'Generating description...'
-    );
   };
 
   const handleAddCategory = async () => {
@@ -393,20 +356,6 @@ export default function InventoryPage() {
                 className="col-span-3"
                 required
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateDescription}
-                disabled={descriptionGenerationTask?.status === 'running'}
-              >
-                {descriptionGenerationTask?.status === 'running' ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="mr-2 h-4 w-4" />
-                )}
-                Suggest Description
-              </Button>
             </div>
           </div>
 
@@ -593,3 +542,5 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    

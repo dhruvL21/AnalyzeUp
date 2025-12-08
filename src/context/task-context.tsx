@@ -30,19 +30,22 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const runTask = useCallback(async <T,>(taskId: string, taskFn: () => Promise<T>, toastMessage?: string) => {
     setTask({ id: taskId, status: 'running' });
+    let toastId: string | undefined;
     if (toastMessage) {
-        toast({ title: 'Processing...', description: toastMessage });
+        const { id } = toast({ title: 'Processing...', description: toastMessage });
+        toastId = id;
     }
 
     try {
       const result = await taskFn();
       setTask({ id: taskId, status: 'success', result });
-       toast({ title: 'Success!', description: 'Your request has been completed.' });
+       toast({ id: toastId, title: 'Success!', description: 'Your request has been completed.' });
     } catch (error: any) {
       console.error(`Task ${taskId} failed:`, error);
       const errorMessage = error.message || 'An unknown error occurred.';
       setTask({ id: taskId, status: 'error', error: errorMessage });
       toast({
+        id: toastId,
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
         description: errorMessage,
@@ -69,3 +72,5 @@ export const useTasks = () => {
   }
   return context;
 };
+
+    

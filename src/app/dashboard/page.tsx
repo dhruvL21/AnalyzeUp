@@ -25,14 +25,12 @@ import {
   ArrowDownRight,
   Shirt,
 } from 'lucide-react';
-import { LowStockAlertItem } from '@/components/low-stock-alert-item';
-import { SalesChart } from '@/components/sales-chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
 import { salesData } from '@/lib/data';
-import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
 import { useData } from '@/context/data-context';
 import type { Product } from '@/lib/types';
+import { SalesChart } from '@/components/sales-chart';
 
 
 function DashboardLoading() {
@@ -83,33 +81,6 @@ function DashboardLoading() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
-        <Card>
-          <CardHeader>
-            <CardTitle>AI Strategy Advisor</CardTitle>
-            <CardDescription>
-              Click the button to get AI-powered suggestions to grow your business.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-24 w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Low Stock Alerts</CardTitle>
-            <CardDescription>
-              Items nearing their reorder point. Use AI to get suggestions.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 max-h-[400px] overflow-y-auto">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-          </CardContent>
-        </Card>
-      </div>
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
@@ -198,24 +169,6 @@ export default function DashboardPage() {
       ? Object.entries(topSellingProductMap).sort((a, b) => b[1] - a[1])[0]
       : ['N/A', 0];
       
-  const topSellingProductsForAI = useMemo(() => 
-    Object.entries(topSellingProductMap)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([name, unitsSold]) => ({ name, unitsSold }))
-  , [topSellingProductMap]);
-
-  const salesTrend = useMemo(() => {
-    const lastSixMonths = salesData.slice(-6);
-    const firstHalfSales = lastSixMonths.slice(0, 3).reduce((sum, item) => sum + item.sales, 0);
-    const secondHalfSales = lastSixMonths.slice(3, 6).reduce((sum, item) => sum + item.sales, 0);
-    if (secondHalfSales > firstHalfSales * 1.1) return "Strongly Upward";
-    if (secondHalfSales > firstHalfSales) return "Upward";
-    if (secondHalfSales < firstHalfSales * 0.9) return "Strongly Downward";
-    if (secondHalfSales < firstHalfSales) return "Downward";
-    return "Stable";
-  }, []);
-
   const recentTransactions = (transactions || []).slice(0, 5).reverse();
 
   if (isLoading) {
@@ -293,45 +246,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card className="flex flex-col">
-            <CardHeader>
-                <CardTitle>AI Strategy Advisor</CardTitle>
-                <CardDescription>
-                Get AI-powered suggestions based on your current business data to help you grow.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                <BusinessStrategyAdvisor
-                    totalInventoryValue={totalInventoryValue}
-                    totalSales={totalSales}
-                    lowStockItemCount={lowStockProducts.length}
-                    topSellingProducts={topSellingProductsForAI}
-                    salesTrend={salesTrend}
-                />
-            </CardContent>
-        </Card>
-        <Card className="flex flex-col">
-            <CardHeader>
-                <CardTitle>Low Stock Alerts</CardTitle>
-                <CardDescription>
-                Items nearing their reorder point. Use AI to get suggestions.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow space-y-4 overflow-y-auto">
-                {lowStockProducts.length > 0 ? (
-                lowStockProducts.map((product) => (
-                    <LowStockAlertItem key={product.id} product={product} />
-                ))
-                ) : (
-                <p className="text-sm text-muted-foreground">
-                    No items with low stock. Well done!
-                </p>
-                )}
-            </CardContent>
-        </Card>
-      </div>
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
@@ -399,5 +313,7 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+
+    
 
     
