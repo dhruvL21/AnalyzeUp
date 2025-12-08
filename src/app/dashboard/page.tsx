@@ -27,10 +27,9 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
-import { salesData } from '@/lib/data';
 import { useData } from '@/context/data-context';
-import type { Product } from '@/lib/types';
 import { SalesChart } from '@/components/sales-chart';
+import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
 
 
 function DashboardLoading() {
@@ -81,6 +80,8 @@ function DashboardLoading() {
         </Card>
       </div>
       
+      <BusinessStrategyAdvisor />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
@@ -246,6 +247,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      <BusinessStrategyAdvisor />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
           <CardHeader>
@@ -313,7 +316,3 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-
-    
-
-    
