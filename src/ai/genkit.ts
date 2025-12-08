@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview This file initializes the Genkit AI instance with the Google AI plugin.
  * It exports a single `ai` object that is used throughout the application to
