@@ -4,19 +4,17 @@
  * @fileOverview This file defines the AI flow for the Smart Restock Assistant.
  *
  * - getRestockSuggestion - A server action that analyzes a product's performance and suggests a reorder quantity.
- * - LowStockAlertInput - The Zod schema for the input data provided to the flow.
- * - LowStockAlertOutput - The Zod schema for the JSON output from the flow.
  */
 import {z} from 'zod';
 import {ai} from '@/ai/genkit';
 import {ProductSchema, TransactionSchema} from '@/lib/types.zod';
 
-export const LowStockAlertInputSchema = z.object({
+const LowStockAlertInputSchema = z.object({
   product: ProductSchema,
   transactions: z.array(TransactionSchema),
 });
 
-export const LowStockAlertOutputSchema = z.object({
+const LowStockAlertOutputSchema = z.object({
   products: z.array(
     z.object({
       productId: z.string().describe('The ID of the product.'),
@@ -39,8 +37,8 @@ export const LowStockAlertOutputSchema = z.object({
   ),
 });
 
-export type LowStockAlertInput = z.infer<typeof LowStockAlertInputSchema>;
-export type LowStockAlertOutput = z.infer<typeof LowStockAlertOutputSchema>;
+type LowStockAlertInput = z.infer<typeof LowStockAlertInputSchema>;
+type LowStockAlertOutput = z.infer<typeof LowStockAlertOutputSchema>;
 
 export async function getRestockSuggestion(
   input: LowStockAlertInput

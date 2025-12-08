@@ -4,7 +4,6 @@
  * @fileOverview This file defines the AI flow for generating business strategy suggestions.
  *
  * - suggestBusinessStrategy - A server action that analyzes store data and returns strategic advice.
- * - BusinessStrategyInput - The Zod schema for the input data provided to the flow.
  */
 import {z} from 'zod';
 import {ai} from '@/ai/genkit';
@@ -16,7 +15,7 @@ import {
   CategorySchema,
 } from '@/lib/types.zod';
 
-export const BusinessStrategyInputSchema = z.object({
+const BusinessStrategyInputSchema = z.object({
   products: z.array(ProductSchema),
   transactions: z.array(TransactionSchema),
   orders: z.array(PurchaseOrderSchema),
@@ -24,7 +23,7 @@ export const BusinessStrategyInputSchema = z.object({
   categories: z.array(CategorySchema),
 });
 
-export type BusinessStrategyInput = z.infer<typeof BusinessStrategyInputSchema>;
+type BusinessStrategyInput = z.infer<typeof BusinessStrategyInputSchema>;
 
 export async function suggestBusinessStrategy(
   input: BusinessStrategyInput
