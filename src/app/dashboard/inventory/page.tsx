@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,18 +67,36 @@ export default function InventoryPage() {
   const { toast } = useToast();
   const { products, suppliers, categories, addProduct, updateProduct, deleteProduct, addCategory, addSupplier, isLoading } = useData();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [description, setDescription] = useState('');
   
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [selectedSupplier, setSelectedSupplier] = useState<string | undefined>();
+  const [description, setDescription] = useState('');
 
-  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
-  const [showAddSupplierDialog, setShowAddSupplierDialog] = useState(false);
+  const [isAddCategoryDialogOpen, setIsAddCategoryDialogOpen] = useState(false);
+  const [isAddSupplierDialogOpen, setIsAddSupplierDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSupplierName, setNewSupplierName] = useState('');
   const [newSupplierEmail, setNewSupplierEmail] = useState('');
+
+  const sortedCategories = useMemo(() => 
+    [...categories].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+  , [categories]);
+
+  const sortedSuppliers = useMemo(() =>
+    [...suppliers].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+  , [suppliers]);
+
+  const resetFormState = () => {
+    setEditingProduct(null);
+    setDescription('');
+    setSelectedCategory(undefined);
+    setSelectedSupplier(undefined);
+    setNewCategoryName('');
+    setNewSupplierName('');
+    setNewSupplierEmail('');
+  };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -103,12 +121,11 @@ export default function InventoryPage() {
       return;
     }
 
-
     if (editingProduct) {
       const updatedProduct = {
         ...editingProduct,
         ...productData,
-        description: description, // ensure description from state is used
+        description: description,
         updatedAt: new Date().toISOString(),
       };
       updateProduct(updatedProduct);
@@ -116,53 +133,73 @@ export default function InventoryPage() {
       addProduct(productData);
     }
 
-    setEditingProduct(null);
-    setDialogOpen(false);
-    setDescription('');
-    setSelectedCategory(undefined);
-    setSelectedSupplier(undefined);
+    setIsFormDialogOpen(false);
   };
 
   const openEditDialog = (product: Product) => {
+    resetFormState();
     setEditingProduct(product);
     setDescription(product.description || '');
     setSelectedCategory(product.categoryId);
     setSelectedSupplier(product.supplierId);
-    setDialogOpen(true);
+    setIsFormDialogOpen(true);
   };
 
   const openAddDialog = () => {
-    setEditingProduct(null);
-    setDescription('');
-    setSelectedCategory(undefined);
-    setSelectedSupplier(undefined);
-    setDialogOpen(true);
+    resetFormState();
+    setIsFormDialogOpen(true);
   };
 
   const handleAddCategory = async () => {
-    if (!newCategoryName) return;
-    await addCategory({ name: newCategoryName, description: '' });
-    // The useCollection hook will update the categories list. We can find the new one.
-    // This is a bit of a hack, assumes names are unique for now.
-    const newCat = categories.find(c => c.name === newCategoryName) || { id: newCategoryName };
+    if (!newCategoryName.trim() || newCategoryName.trim().length < 2) {
+        toast({ variant: 'destructive', title: 'Invalid Name', description: 'Category name must be at least 2 characters.' });
+        return;
+    }
+
+    const existingCategory = categories.find(c => c.name.toLowerCase() === newCategoryName.trim().toLowerCase());
+    if (existingCategory) {
+        setSelectedCategory(existingCategory.id);
+        setIsAddCategoryDialogOpen(false);
+        setNewCategoryName('');
+        toast({ title: 'Category exists', description: `Selected existing category: ${existingCategory.name}` });
+        return;
+    }
+
+    await addCategory({ name: newCategoryName.trim(), description: '' });
+    // The useCollection hook will update the categories list. We find the new one.
+    const newCat = categories.find(c => c.name === newCategoryName.trim()) || { id: newCategoryName.trim() };
     setSelectedCategory(newCat.id);
-    setShowAddCategoryDialog(false);
+    setIsAddCategoryDialogOpen(false);
     setNewCategoryName('');
   };
 
   const handleAddSupplier = async () => {
-    if (!newSupplierName || !newSupplierEmail) return;
+    if (!newSupplierName.trim() || newSupplierName.trim().length < 2 || !newSupplierEmail.trim()) {
+        toast({ variant: 'destructive', title: 'Invalid Input', description: 'Supplier name must be at least 2 characters and email must be provided.' });
+        return;
+    }
+
+    const existingSupplier = suppliers.find(s => s.name.toLowerCase() === newSupplierName.trim().toLowerCase());
+    if (existingSupplier) {
+        setSelectedSupplier(existingSupplier.id);
+        setIsAddSupplierDialogOpen(false);
+        setNewSupplierName('');
+        setNewSupplierEmail('');
+        toast({ title: 'Supplier exists', description: `Selected existing supplier: ${existingSupplier.name}` });
+        return;
+    }
+
     await addSupplier({
-      name: newSupplierName,
-      email: newSupplierEmail,
-      contactName: newSupplierName,
+      name: newSupplierName.trim(),
+      email: newSupplierEmail.trim(),
+      contactName: newSupplierName.trim(),
       phone: '',
       address: '',
     });
     // This is a bit of a hack, assumes names are unique for now.
-    const newSup = suppliers.find(s => s.name === newSupplierName) || { id: newSupplierName };
+    const newSup = suppliers.find(s => s.name === newSupplierName.trim()) || { id: newSupplierName.trim() };
     setSelectedSupplier(newSup.id);
-    setShowAddSupplierDialog(false);
+    setIsAddSupplierDialogOpen(false);
     setNewSupplierName('');
     setNewSupplierEmail('');
   };
@@ -313,7 +350,11 @@ export default function InventoryPage() {
         </Card>
       </div>
 
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    {/* Add/Edit Product Dialog */}
+    <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => {
+        setIsFormDialogOpen(isOpen);
+        if (!isOpen) resetFormState();
+    }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
@@ -367,7 +408,7 @@ export default function InventoryPage() {
                 value={selectedCategory}
                 onValueChange={(value) => {
                   if (value === 'create-new') {
-                    setShowAddCategoryDialog(true);
+                    setIsAddCategoryDialogOpen(true);
                   } else {
                     setSelectedCategory(value);
                   }
@@ -377,7 +418,7 @@ export default function InventoryPage() {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
+                  {sortedCategories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
                     </SelectItem>
@@ -397,7 +438,7 @@ export default function InventoryPage() {
                 value={selectedSupplier}
                 onValueChange={(value) => {
                   if (value === 'create-new') {
-                    setShowAddSupplierDialog(true);
+                    setIsAddSupplierDialogOpen(true);
                   } else {
                     setSelectedSupplier(value);
                   }
@@ -407,7 +448,7 @@ export default function InventoryPage() {
                   <SelectValue placeholder="Select a supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  {suppliers.map((sup) => (
+                  {sortedSuppliers.map((sup) => (
                     <SelectItem key={sup.id} value={sup.id}>
                       {sup.name}
                     </SelectItem>
@@ -473,7 +514,7 @@ export default function InventoryPage() {
     </Dialog>
 
     {/* Add Category Dialog */}
-    <Dialog open={showAddCategoryDialog} onOpenChange={setShowAddCategoryDialog}>
+    <Dialog open={isAddCategoryDialogOpen} onOpenChange={setIsAddCategoryDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Category</DialogTitle>
@@ -492,16 +533,14 @@ export default function InventoryPage() {
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
-            </DialogClose>
+            <Button type="button" variant="outline" onClick={() => setIsAddCategoryDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleAddCategory}>Create</Button>
           </DialogFooter>
         </DialogContent>
     </Dialog>
 
     {/* Add Supplier Dialog */}
-    <Dialog open={showAddSupplierDialog} onOpenChange={setShowAddSupplierDialog}>
+    <Dialog open={isAddSupplierDialogOpen} onOpenChange={setIsAddSupplierDialogOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Supplier</DialogTitle>
@@ -532,9 +571,7 @@ export default function InventoryPage() {
           </div>
         </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="outline">Cancel</Button>
-          </DialogClose>
+          <Button type="button" variant="outline" onClick={() => setIsAddSupplierDialogOpen(false)}>Cancel</Button>
           <Button onClick={handleAddSupplier}>Create</Button>
         </DialogFooter>
       </DialogContent>
