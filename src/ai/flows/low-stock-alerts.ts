@@ -38,12 +38,9 @@ const LowStockAlertOutputSchema = z.object({
   ),
 });
 
-type LowStockAlertInput = z.infer<typeof LowStockAlertInputSchema>;
-type LowStockAlertOutput = z.infer<typeof LowStockAlertOutputSchema>;
-
 export async function getRestockSuggestion(
-  input: LowStockAlertInput
-): Promise<LowStockAlertOutput> {
+  input: any
+): Promise<any> {
   return lowStockAlertsFlow(input);
 }
 
