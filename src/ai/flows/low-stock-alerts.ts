@@ -8,6 +8,7 @@
 import {z} from 'zod';
 import {ai} from '@/ai/genkit';
 import {ProductSchema, TransactionSchema} from '@/lib/types.zod';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const LowStockAlertInputSchema = z.object({
   product: ProductSchema,
@@ -48,6 +49,7 @@ export async function getRestockSuggestion(
 
 const lowStockAlertsPrompt = ai.definePrompt({
   name: 'lowStockAlertsPrompt',
+  model: googleAI.model('gemini-1.5-flash-latest'),
   input: {schema: LowStockAlertInputSchema},
   output: {schema: LowStockAlertOutputSchema},
   prompt: `
