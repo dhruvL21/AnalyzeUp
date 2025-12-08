@@ -1,9 +1,8 @@
-
 'use server';
 /**
  * @fileOverview This file defines the AI flow for generating business strategy suggestions.
  *
- * - suggestBusinessStrategy - A server action that analyzes store data and returns strategic advice.
+ * - suggestBusinessStrategy - a server action that analyzes store data and returns strategic advice.
  */
 import {z} from 'zod';
 import {ai} from '@/ai/genkit';
@@ -38,7 +37,7 @@ export async function suggestBusinessStrategy(
 
 const suggestStrategiesPrompt = ai.definePrompt({
   name: 'suggestStrategiesPrompt',
-  model: googleAI.model('gemini-pro'),
+  model: googleAI.model('gemini-1.5-flash-latest'),
   input: {schema: BusinessStrategyInputSchema},
   prompt: `
 You are an expert business analyst and e-commerce strategist. Your task is to analyze the provided store data and generate a practical, actionable business strategy.

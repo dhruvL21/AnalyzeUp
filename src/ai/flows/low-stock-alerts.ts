@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview This file defines the AI flow for the Smart Restock Assistant.
@@ -38,6 +37,7 @@ const LowStockAlertOutputSchema = z.object({
   ),
 });
 
+
 export async function getRestockSuggestion(
   input: any
 ): Promise<any> {
@@ -46,7 +46,7 @@ export async function getRestockSuggestion(
 
 const lowStockAlertsPrompt = ai.definePrompt({
   name: 'lowStockAlertsPrompt',
-  model: googleAI.model('gemini-pro'),
+  model: googleAI.model('gemini-1.5-flash-latest'),
   input: {schema: LowStockAlertInputSchema},
   output: {schema: LowStockAlertOutputSchema},
   prompt: `
