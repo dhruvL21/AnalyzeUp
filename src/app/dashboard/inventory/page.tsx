@@ -64,28 +64,16 @@ import { useData } from '@/context/data-context';
 
 export default function InventoryPage() {
   const { toast } = useToast();
-  const { products, suppliers, categories, addProduct, updateProduct, deleteProduct, isLoading } = useData();
+  const { products, addProduct, updateProduct, deleteProduct, isLoading } = useData();
 
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
-  const [selectedSupplier, setSelectedSupplier] = useState<string | undefined>();
   const [description, setDescription] = useState('');
-
-  const sortedCategories = useMemo(() => 
-    [...categories].sort((a, b) => a.name.localeCompare(b, undefined, { sensitivity: 'base' }))
-  , [categories]);
-
-  const sortedSuppliers = useMemo(() =>
-    [...suppliers].sort((a, b) => a.name.localeCompare(b, undefined, { sensitivity: 'base' }))
-  , [suppliers]);
 
   const resetFormState = () => {
     setEditingProduct(null);
     setDescription('');
-    setSelectedCategory(undefined);
-    setSelectedSupplier(undefined);
   };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,21 +83,12 @@ export default function InventoryPage() {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: selectedCategory || '',
-      supplierId: selectedSupplier || '',
+      categoryId: '',
+      supplierId: '',
       imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Date.now()}/400/400`,
       description: description,
       sku: 'SKU-' + Date.now().toString(36),
     };
-
-    if (!productData.categoryId || !productData.supplierId) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please select a category and a supplier.',
-      });
-      return;
-    }
 
     if (editingProduct) {
       const updatedProduct = {
@@ -130,8 +109,6 @@ export default function InventoryPage() {
     resetFormState();
     setEditingProduct(product);
     setDescription(product.description || '');
-    setSelectedCategory(product.categoryId);
-    setSelectedSupplier(product.supplierId);
     setIsFormDialogOpen(true);
   };
 
@@ -335,48 +312,6 @@ export default function InventoryPage() {
               />
             </div>
           </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right">
-                Category
-              </Label>
-              <Select
-                value={selectedCategory}
-                onValueChange={setSelectedCategory}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortedCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="supplier" className="text-right">
-                Supplier
-              </Label>
-              <Select
-                value={selectedSupplier}
-                onValueChange={setSelectedSupplier}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select a supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortedSuppliers.map((sup) => (
-                    <SelectItem key={sup.id} value={sup.id}>
-                      {sup.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="imageUrl" className="text-right">
