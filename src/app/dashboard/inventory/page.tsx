@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import React, { useState, useMemo, useRef } from 'react';
-import { PlusCircle, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -55,10 +55,13 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/context/data-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { generateProductDescription } from '@/ai/flows/generate-product-description';
+import { useTasks } from '@/context/task-context';
 
 export default function InventoryPage() {
   const { toast } = useToast();
   const { products, addProduct, updateProduct, deleteProduct, isLoading, categories, suppliers, addCategory, addSupplier } = useData();
+  const { tasks, runTask } = useTasks();
 
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -73,6 +76,27 @@ export default function InventoryPage() {
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | undefined>(undefined);
 
   const productFormRef = useRef<HTMLFormElement>(null);
+  const isGeneratingDescription = tasks['generate-description']?.status === 'running';
+
+  const handleGenerateDescription = async () => {
+    if (!productFormRef.current) return;
+    const formData = new FormData(productFormRef.current);
+    const productName = formData.get('name') as string;
+
+    if (!productName) {
+      toast({
+        variant: 'destructive',
+        title: 'Product Name Required',
+        description: 'Please enter a product name before generating a description.',
+      });
+      return;
+    }
+
+    await runTask('generate-description', async () => {
+        const result = await generateProductDescription({ productName });
+        setDescription(result.description);
+    }, 'Generating AI description...');
+  };
 
   const resetFormState = () => {
     setEditingProduct(null);
@@ -377,6 +401,20 @@ export default function InventoryPage() {
                 className="col-span-3"
                 required
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateDescription}
+                disabled={isGeneratingDescription}
+              >
+                {isGeneratingDescription ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                Generate with AI
+              </Button>
             </div>
           </div>
           
