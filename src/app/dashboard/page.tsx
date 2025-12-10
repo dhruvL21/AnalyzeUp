@@ -26,6 +26,7 @@ import {
   Shirt,
   Lightbulb,
   Loader2,
+  PackageCheck,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useEffect, useState } from 'react';
@@ -340,7 +341,8 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center text-muted-foreground py-8">
+                <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-8 space-y-2">
+                  <PackageCheck className="h-10 w-10 text-muted-foreground/50" />
                   <p>No low stock items to show right now.</p>
                 </div>
               )}
@@ -403,5 +405,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
