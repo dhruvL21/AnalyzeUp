@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -211,7 +212,7 @@ export default function OrdersPage() {
 
       {/* Create Order Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] ios-glass">
+        <DialogContent className="sm:max-w-[425px] ios-glass sm:rounded-3xl">
           <DialogHeader>
             <DialogTitle>Create New Order</DialogTitle>
           </DialogHeader>
@@ -277,7 +278,7 @@ export default function OrdersPage() {
 
       {/* View Order Details Dialog */}
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
-        <DialogContent className="ios-glass">
+        <DialogContent className="ios-glass sm:rounded-3xl">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
             <DialogDescription>Order ID: {viewingOrder?.id}</DialogDescription>

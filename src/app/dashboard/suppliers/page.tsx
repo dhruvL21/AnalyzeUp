@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -156,7 +157,7 @@ export default function SuppliersPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] ios-glass">
+        <DialogContent className="sm:max-w-[425px] ios-glass sm:rounded-3xl">
           <DialogHeader>
             <DialogTitle>Add New Supplier</DialogTitle>
           </DialogHeader>
