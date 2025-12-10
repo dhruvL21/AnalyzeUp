@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,7 +58,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export default function InventoryPage() {
   const { toast } = useToast();
-  const { products, addProduct, updateProduct, deleteProduct, isLoading, categories, suppliers } = useData();
+  const { products, addProduct, updateProduct, deleteProduct, isLoading, categories, suppliers, addCategory } = useData();
 
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -66,10 +66,17 @@ export default function InventoryPage() {
   const [description, setDescription] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
+
+  // Ref to store the product form data temporarily
+  const productFormRef = useRef<HTMLFormElement>(null);
+
   const resetFormState = () => {
     setEditingProduct(null);
     setDescription('');
     setImagePreview(null);
+    setSelectedCategoryId(undefined);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +103,7 @@ export default function InventoryPage() {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: formData.get('categoryId') as string,
+      categoryId: selectedCategoryId || formData.get('categoryId') as string,
       supplierId: formData.get('supplierId') as string,
       imageUrl: imageUrl,
       description: description,
@@ -117,12 +124,32 @@ export default function InventoryPage() {
 
     setIsFormDialogOpen(false);
   };
+  
+  const handleCategorySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newCategory = {
+      name: formData.get('name') as string,
+      description: formData.get('description') as string,
+    };
+    await addCategory(newCategory);
+    
+    // Find the newly created category to set it as selected
+    // Note: This relies on the name being unique and the data context updating.
+    const createdCategory = categories.find(c => c.name === newCategory.name);
+    if(createdCategory) {
+      setSelectedCategoryId(createdCategory.id);
+    }
+    
+    setIsCategoryDialogOpen(false);
+  };
 
   const openEditDialog = (product: Product) => {
     resetFormState();
     setEditingProduct(product);
     setDescription(product.description || '');
     setImagePreview(product.imageUrl || null);
+    setSelectedCategoryId(product.categoryId);
     setIsFormDialogOpen(true);
   };
 
@@ -130,8 +157,6 @@ export default function InventoryPage() {
     resetFormState();
     setIsFormDialogOpen(true);
   };
-
-  const lowStockProducts = products.filter((p) => p.stock <= 20);
 
   return (
     <>
@@ -296,6 +321,7 @@ export default function InventoryPage() {
           </DialogDescription>
         </DialogHeader>
         <form
+          ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
           className="grid gap-4 py-4"
@@ -359,7 +385,17 @@ export default function InventoryPage() {
               <Label htmlFor="categoryId" className="text-right">
                 Category
               </Label>
-              <Select name="categoryId" defaultValue={editingProduct?.categoryId}>
+              <Select 
+                name="categoryId" 
+                value={selectedCategoryId}
+                onValueChange={(value) => {
+                  if (value === 'create-new') {
+                    setIsCategoryDialogOpen(true);
+                  } else {
+                    setSelectedCategoryId(value);
+                  }
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -369,6 +405,9 @@ export default function InventoryPage() {
                       {category.name}
                     </SelectItem>
                   ))}
+                  <SelectItem value="create-new" className='italic text-primary'>
+                    Create new category...
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -430,8 +469,32 @@ export default function InventoryPage() {
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Add Category Dialog */}
+    <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Add New Category</DialogTitle>
+                <DialogDescription>Create a new category for your products.</DialogDescription>
+            </DialogHeader>
+            <form id="category-form" onSubmit={handleCategorySubmit} className="grid gap-4 py-4">
+                 <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">Name</Label>
+                    <Input id="name" name="name" className="col-span-3" required />
+                </div>
+                 <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="description" className="text-right pt-2">Description</Label>
+                    <Textarea id="description" name="description" className="col-span-3" />
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit">Save Category</Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
     </>
   );
 }
-
-    
