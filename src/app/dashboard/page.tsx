@@ -24,16 +24,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Shirt,
-  Lightbulb,
-  Loader2,
   PackageCheck,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useData } from '@/context/data-context';
 import { SalesChart } from '@/components/sales-chart';
-import { useTasks } from '@/context/task-context';
-import { getLowStockSuggestions, type LowStockSuggestion } from '@/ai/flows/low-stock-alerts';
 
 
 function DashboardLoading() {
@@ -84,8 +80,8 @@ function DashboardLoading() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-         <Card className="xl:col-span-2">
+      <div className="grid grid-cols-1 gap-6">
+         <Card>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
             <CardDescription>
@@ -95,29 +91,6 @@ function DashboardLoading() {
           <CardContent>
             <SalesChart />
           </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-primary" />
-                <span>AI Stock Advisor</span>
-              </CardTitle>
-              <CardDescription>
-                AI-powered suggestions for items that need reordering.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 p-2 rounded-lg bg-muted/50 animate-pulse">
-                      <div className="space-y-1">
-                          <Skeleton className='h-5 w-32' />
-                          <Skeleton className='h-4 w-48' />
-                      </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
         </Card>
       </div>
 
@@ -165,24 +138,6 @@ function DashboardLoading() {
 
 export default function DashboardPage() {
   const { products, transactions, isLoading } = useData();
-  const { tasks, runTask } = useTasks();
-  const [suggestions, setSuggestions] = useState<LowStockSuggestion[]>([]);
-
-  const isCheckingStock = tasks['check-stock']?.status === 'running';
-
-  useEffect(() => {
-    if (products && products.length > 0) {
-      const lowStockProducts = products.filter(p => p.stock < 20);
-      if (lowStockProducts.length > 0) {
-        runTask('check-stock', async () => {
-          const result = await getLowStockSuggestions({ products: lowStockProducts });
-          setSuggestions(result.suggestions);
-        });
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products]);
-
 
   const lowStockProducts = products.filter((p) => p.stock < 20);
 
@@ -291,8 +246,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-         <Card className="xl:col-span-2">
+       <div className="grid grid-cols-1 gap-6">
+         <Card>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
             <CardDescription>
@@ -302,51 +257,6 @@ export default function DashboardPage() {
           <CardContent>
             <SalesChart />
           </CardContent>
-        </Card>
-
-        <Card>
-           <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-primary" />
-                <span>AI Stock Advisor</span>
-              </CardTitle>
-              <CardDescription>
-                AI-powered suggestions for items that need reordering.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isCheckingStock && suggestions.length === 0 ? (
-                 <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-4 p-2 rounded-lg bg-muted/50 animate-pulse">
-                        <div className="space-y-1">
-                            <Skeleton className='h-5 w-32' />
-                            <Skeleton className='h-4 w-48' />
-                        </div>
-                    </div>
-                  ))}
-              </div>
-              ) : suggestions.length > 0 ? (
-                <div className="space-y-4">
-                  {suggestions.map((suggestion) => (
-                    <div key={suggestion.productId} className="flex items-center gap-4 p-2 rounded-lg bg-muted/50">
-                        <div className="flex-shrink-0 bg-primary/10 text-primary rounded-full h-10 w-10 flex items-center justify-center">
-                          <span className='text-lg font-bold'>{suggestion.currentStock}</span>
-                        </div>
-                        <div>
-                            <p className="font-semibold">{suggestion.productName}</p>
-                            <p className="text-sm text-muted-foreground">{suggestion.suggestion}</p>
-                        </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-8 space-y-2">
-                  <PackageCheck className="h-10 w-10 text-muted-foreground/50" />
-                  <p>No low stock items to show right now.</p>
-                </div>
-              )}
-            </CardContent>
         </Card>
       </div>
 

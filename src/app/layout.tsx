@@ -5,7 +5,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
 import { DataProvider } from '@/context/data-context';
 import ClientOnly from '@/components/ClientOnly';
-import { TaskProvider } from '@/context/task-context';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
@@ -32,12 +31,10 @@ export default function RootLayout({
         >
           <ClientOnly>
             <FirebaseClientProvider>
-                <TaskProvider>
-                  <DataProvider>
-                    {children}
-                    <FirebaseErrorListener />
-                  </DataProvider>
-                </TaskProvider>
+                <DataProvider>
+                  {children}
+                  <FirebaseErrorListener />
+                </DataProvider>
             </FirebaseClientProvider>
           </ClientOnly>
           <Toaster />
