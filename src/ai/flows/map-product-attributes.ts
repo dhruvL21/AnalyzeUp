@@ -81,11 +81,7 @@ const attributeMappingFlow = ai.defineFlow(
     outputSchema: MappingOutputSchema,
   },
   async (input) => {
-    // For this task, we want the AI to be highly structured and deterministic.
-    // A lower temperature reduces randomness.
-    const { output } = await mappingAgentPrompt(input, {
-        config: { temperature: 0.1 }
-    });
+    const { output } = await mappingAgentPrompt(input);
     
     if (!output) {
       throw new Error('Attribute mapping agent failed to return a result.');

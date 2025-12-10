@@ -7,7 +7,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 
 // Simplified product schema for the flow input
@@ -83,7 +82,6 @@ const lowStockPrompt = ai.definePrompt(
       
       Generate a list of suggestions based on this data.
     `,
-    model: googleAI.model('gemini-1.5-flash'),
   },
 );
 

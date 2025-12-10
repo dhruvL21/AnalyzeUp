@@ -7,7 +7,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { googleAI } from '@genkit-ai/google-genai';
 
 // Define the schema for the input, which is just the product name.
 const GenerateProductDescriptionInputSchema = z.object({
@@ -44,7 +43,6 @@ const generateDescriptionPrompt = ai.definePrompt(
       
       Focus on the key benefits and unique selling points. Use an engaging and persuasive tone.
       Do not use markdown or special formatting. Just return the description text.`,
-    model: googleAI.model('gemini-1.5-flash'),
   },
 );
 
