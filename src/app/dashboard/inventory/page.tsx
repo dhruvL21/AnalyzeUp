@@ -358,7 +358,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl bg-card/80 backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle>
             {editingProduct ? 'Edit Product' : 'Add Product'}
