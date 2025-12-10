@@ -54,10 +54,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/context/data-context';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function InventoryPage() {
   const { toast } = useToast();
-  const { products, addProduct, updateProduct, deleteProduct, isLoading } = useData();
+  const { products, addProduct, updateProduct, deleteProduct, isLoading, categories, suppliers } = useData();
 
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -76,8 +77,8 @@ export default function InventoryPage() {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
-      categoryId: '',
-      supplierId: '',
+      categoryId: formData.get('categoryId') as string,
+      supplierId: formData.get('supplierId') as string,
       imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Date.now()}/400/400`,
       description: description,
       sku: 'SKU-' + Date.now().toString(36),
@@ -263,7 +264,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -307,8 +308,8 @@ export default function InventoryPage() {
               />
             </div>
           </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
+          
+           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="imageUrl" className="text-right">
               Image URL
             </Label>
@@ -319,6 +320,43 @@ export default function InventoryPage() {
               className="col-span-3"
               placeholder="https://your-image-url.com/image.png"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="categoryId" className="text-right">
+                Category
+              </Label>
+              <Select name="categoryId" defaultValue={editingProduct?.categoryId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+             <div className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor="supplierId" className="text-right">
+                Supplier
+              </Label>
+              <Select name="supplierId" defaultValue={editingProduct?.supplierId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
