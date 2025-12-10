@@ -38,6 +38,9 @@ const generateDescriptionPrompt = ai.definePrompt(
     name: 'generateProductDescriptionPrompt',
     input: { schema: GenerateProductDescriptionInputSchema },
     output: { schema: GenerateProductDescriptionOutputSchema },
+    config: {
+      model: 'gemini-1.5-flash',
+    },
     prompt: `You are an expert e-commerce copywriter.
       Generate a compelling, short (2-3 sentences) product description for the following product: {{{productName}}}.
       

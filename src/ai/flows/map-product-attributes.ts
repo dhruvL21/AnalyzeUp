@@ -49,6 +49,9 @@ const mappingAgentPrompt = ai.definePrompt({
   name: 'attributeMappingAgentPrompt',
   input: { schema: MappingInputSchema },
   output: { schema: MappingOutputSchema },
+  config: {
+    model: 'gemini-1.5-flash',
+  },
   prompt: `You are an expert attribute-mapping agent. Your task is to take a list of source attributes from a user's dataset and map them to the closest matching attributes in the application's canonical dataset schema.
 
 RULES:

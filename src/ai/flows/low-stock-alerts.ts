@@ -57,6 +57,9 @@ const lowStockPrompt = ai.definePrompt(
     name: 'lowStockAlertPrompt',
     input: { schema: LowStockInputSchema },
     output: { schema: LowStockOutputSchema },
+    config: {
+        model: 'gemini-1.5-flash',
+    },
     prompt: `
       You are an expert inventory management AI. Your task is to analyze a list of products that are low in stock
       and provide a reorder suggestion for each one.
