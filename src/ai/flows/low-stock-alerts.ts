@@ -57,9 +57,6 @@ const lowStockPrompt = ai.definePrompt(
     name: 'lowStockAlertPrompt',
     input: { schema: LowStockInputSchema },
     output: { schema: LowStockOutputSchema },
-    config: {
-        model: 'gemini-1.5-flash',
-    },
     prompt: `
       You are an expert inventory management AI. Your task is to analyze a list of products that are low in stock
       and provide a reorder suggestion for each one.
@@ -103,7 +100,12 @@ const lowStockAlertsFlow = ai.defineFlow(
       return { suggestions: [] };
     }
     
-    const { output } = await lowStockPrompt({ products: lowStockProducts });
+    const { output } = await ai.generate({
+      prompt: lowStockPrompt,
+      model: 'gemini-1.5-flash',
+      input: { products: lowStockProducts },
+    });
+
     if (!output) {
       throw new Error('Failed to generate low stock suggestions.');
     }
