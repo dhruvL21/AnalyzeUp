@@ -358,7 +358,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-xl ios-glass">
+      <DialogContent className="sm:max-w-lg ios-glass">
         <form
           ref={productFormRef}
           id="product-form"
@@ -593,5 +593,3 @@ export default function InventoryPage() {
     </>
   );
 }
-
-    
