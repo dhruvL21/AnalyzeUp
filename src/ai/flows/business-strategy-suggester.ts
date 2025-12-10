@@ -3,7 +3,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-// Define input schema
 const BusinessStrategyInputSchema = z.object({
   products: z.array(z.any()),
   transactions: z.array(z.any()),
@@ -12,7 +11,6 @@ const BusinessStrategyInputSchema = z.object({
 type BusinessStrategyInput = z.infer<typeof BusinessStrategyInputSchema>;
 
 
-// Define the main exported function
 export async function suggestBusinessStrategy(
   input: BusinessStrategyInput
 ): Promise<string> {
@@ -24,10 +22,9 @@ export async function suggestBusinessStrategy(
 }
 
 
-// Define the prompt for the AI model
 const suggestStrategiesPrompt = ai.definePrompt({
   name: 'suggestStrategiesPrompt',
-  model: 'gemini-pro',
+  model: 'gemini-1.0-pro',
   input: { schema: BusinessStrategyInputSchema },
   output: { format: 'text' },
   prompt: `
@@ -54,7 +51,6 @@ const suggestStrategiesPrompt = ai.definePrompt({
   `,
 });
 
-// Define the Genkit flow
 const suggestStrategiesFlow = ai.defineFlow(
   {
     name: 'suggestStrategiesFlow',
