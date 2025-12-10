@@ -83,7 +83,7 @@ const lowStockPrompt = ai.definePrompt(
       
       Generate a list of suggestions based on this data.
     `,
-    model: 'gemini-1.5-flash',
+    model: googleAI.model('gemini-1.5-flash'),
   },
 );
 
