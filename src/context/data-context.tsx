@@ -45,9 +45,9 @@ interface DataContextProps {
 const DataContext = createContext<DataContextProps | undefined>(undefined);
 
 // Helper function to remove duplicates from an array of objects by a given key
-const uniqueById = <T extends { id: string }>(array: T[] | null): T[] => {
+const uniqueBy = <T extends Record<string, any>>(array: T[] | null, key: keyof T): T[] => {
   if (!array) return [];
-  return Array.from(new Map(array.map(item => [item.id, item])).values());
+  return Array.from(new Map(array.map(item => [item[key], item])).values());
 }
 
 
@@ -68,11 +68,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { data: transactionsData, loading: transactionsLoading } = useCollection<Transaction>(transactionsRef);
   const { data: categoriesData, loading: categoriesLoading } = useCollection<Category>(categoriesRef);
 
-  const products = useMemo(() => uniqueById(productsData), [productsData]);
-  const orders = useMemo(() => uniqueById(ordersData), [ordersData]);
-  const suppliers = useMemo(() => uniqueById(suppliersData), [suppliersData]);
-  const transactions = useMemo(() => uniqueById(transactionsData), [transactionsData]);
-  const categories = useMemo(() => uniqueById(categoriesData), [categoriesData]);
+  const products = useMemo(() => uniqueBy(productsData, 'id'), [productsData]);
+  const orders = useMemo(() => uniqueBy(ordersData, 'id'), [ordersData]);
+  const suppliers = useMemo(() => uniqueBy(suppliersData, 'id'), [suppliersData]);
+  const transactions = useMemo(() => uniqueBy(transactionsData, 'id'), [transactionsData]);
+  const categories = useMemo(() => uniqueBy(categoriesData, 'id'), [categoriesData]);
 
   const isLoading = productsLoading || ordersLoading || suppliersLoading || transactionsLoading || categoriesLoading;
 
@@ -327,13 +327,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   }, [user, firestore, productsLoading, suppliersLoading, ordersLoading, transactionsLoading, categoriesLoading, productsRef, suppliersRef, ordersRef, transactionsRef, categoriesRef]);
 
+  const uniqueCategories = useMemo(() => uniqueBy(categoriesData, 'name'), [categoriesData]);
 
   const value = useMemo(() => ({
     products,
     orders,
     suppliers,
     transactions,
-    categories,
+    categories: uniqueCategories,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -349,7 +350,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     orders,
     suppliers,
     transactions,
-    categories,
+    uniqueCategories,
     isLoading,
     addProduct,
     updateProduct,
@@ -376,5 +377,7 @@ export const useData = () => {
   }
   return context;
 };
+
+    
 
     
