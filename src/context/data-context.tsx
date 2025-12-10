@@ -70,9 +70,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   const products = useMemo(() => uniqueBy(productsData, 'id'), [productsData]);
   const orders = useMemo(() => uniqueBy(ordersData, 'id'), [ordersData]);
-  const suppliers = useMemo(() => uniqueBy(suppliersData, 'id'), [suppliersData]);
+  const suppliers = useMemo(() => uniqueBy(suppliersData, 'name'), [suppliersData]);
   const transactions = useMemo(() => uniqueBy(transactionsData, 'id'), [transactionsData]);
-  const categories = useMemo(() => uniqueBy(categoriesData, 'id'), [categoriesData]);
+  const categories = useMemo(() => uniqueBy(categoriesData, 'name'), [categoriesData]);
 
   const isLoading = productsLoading || ordersLoading || suppliersLoading || transactionsLoading || categoriesLoading;
 
@@ -327,14 +327,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   }, [user, firestore, productsLoading, suppliersLoading, ordersLoading, transactionsLoading, categoriesLoading, productsRef, suppliersRef, ordersRef, transactionsRef, categoriesRef]);
 
-  const uniqueCategories = useMemo(() => uniqueBy(categoriesData, 'name'), [categoriesData]);
-
   const value = useMemo(() => ({
     products,
     orders,
     suppliers,
     transactions,
-    categories: uniqueCategories,
+    categories,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -350,7 +348,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     orders,
     suppliers,
     transactions,
-    uniqueCategories,
+    categories,
     isLoading,
     addProduct,
     updateProduct,
