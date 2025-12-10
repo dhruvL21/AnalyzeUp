@@ -2,7 +2,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { ThemeToggle } from './theme-toggle';
 import { useRouter } from 'next/navigation';
 import { LogOut, Settings, Menu } from 'lucide-react';
 import {
@@ -74,7 +73,6 @@ export function Header() {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <ThemeToggle />
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage
