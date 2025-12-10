@@ -6,6 +6,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 
 // Define the schema for the input, which is just the product name.
@@ -43,6 +44,7 @@ const generateDescriptionPrompt = ai.definePrompt(
       
       Focus on the key benefits and unique selling points. Use an engaging and persuasive tone.
       Do not use markdown or special formatting. Just return the description text.`,
+    model: googleAI('gemini-1.5-flash-latest'),
   },
 );
 
