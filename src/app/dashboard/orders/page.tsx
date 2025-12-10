@@ -212,7 +212,7 @@ export default function OrdersPage() {
 
       {/* Create Order Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-card/60 backdrop-blur-sm">
           <DialogHeader>
             <DialogTitle>Create New Order</DialogTitle>
           </DialogHeader>
@@ -278,7 +278,7 @@ export default function OrdersPage() {
 
       {/* View Order Details Dialog */}
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
-        <DialogContent>
+        <DialogContent className="bg-card/60 backdrop-blur-sm">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
             <DialogDescription>Order ID: {viewingOrder?.id}</DialogDescription>

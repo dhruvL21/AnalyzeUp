@@ -549,7 +549,7 @@ export default function InventoryPage() {
 
     {/* Add Category Dialog */}
     <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card/60 backdrop-blur-sm">
             <DialogHeader>
                 <DialogTitle>Add New Category</DialogTitle>
                 <DialogDescription>Create a new category for your products.</DialogDescription>
@@ -575,7 +575,7 @@ export default function InventoryPage() {
 
     {/* Add Supplier Dialog */}
     <Dialog open={isSupplierDialogOpen} onOpenChange={setIsSupplierDialogOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-card/60 backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle>Add New Supplier</DialogTitle>
         </DialogHeader>
