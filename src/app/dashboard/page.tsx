@@ -29,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
 import { useData } from '@/context/data-context';
 import { SalesChart } from '@/components/sales-chart';
+import { BusinessStrategyAdvisor } from '@/components/business-strategy-advisor';
 
 
 function DashboardLoading() {
@@ -79,6 +80,21 @@ function DashboardLoading() {
         </Card>
       </div>
       
+      <Card>
+        <CardHeader>
+          <CardTitle>AI Business Strategy Advisor</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-4'>
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-6 w-1/4 mt-4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
@@ -244,6 +260,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <BusinessStrategyAdvisor />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <Card>
