@@ -44,9 +44,15 @@ export function AIStockAdvisor() {
         const salesData = transactions.filter(t => t.type === 'Sale').map(t => ({
             productId: t.productId,
             quantity: t.quantity,
-            transactionDate: t.transactionDate,
+            transactionDate: t.transactionDate as string,
         }));
-        const result = await generateBusinessStrategy({ sales: salesData, products });
+        const productData = products.map(p => ({
+          id: p.id,
+          name: p.name,
+          stock: p.stock,
+          price: p.price,
+        }));
+        const result = await generateBusinessStrategy({ sales: salesData, products: productData });
         setStrategy(result);
     });
   }

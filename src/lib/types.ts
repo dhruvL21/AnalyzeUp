@@ -33,8 +33,6 @@ export interface Product {
   averageDailySales: number;
   leadTimeDays: number;
   userId?: string;
-  // Make zod schema available at runtime
-  [key: string]: any;
 }
 
 export interface Category {
@@ -42,8 +40,6 @@ export interface Category {
   name: string;
   description: string;
   userId?: string;
-  // Make zod schema available at runtime
-  [key: string]: any;
 }
 
 export interface Location {
@@ -62,12 +58,10 @@ export interface Transaction {
   locationId: string;
   type: 'Sale' | 'Purchase';
   quantity: number;
-  transactionDate: string;
+  transactionDate: string | FieldValue;
   createdAt: string | FieldValue;
   updatedAt: string | FieldValue;
   userId?: string;
-  // Make zod schema available at runtime
-  [key: string]: any;
 }
 
 export interface Supplier {
@@ -80,8 +74,6 @@ export interface Supplier {
   createdAt: string | FieldValue;
   updatedAt: string | FieldValue;
   userId?: string;
-    // Make zod schema available at runtime
-  [key: string]: any;
 }
 
 export interface PurchaseOrder {
@@ -95,6 +87,4 @@ export interface PurchaseOrder {
   createdAt: string | FieldValue;
   updatedAt: string | FieldValue;
   userId?: string;
-  // Make zod schema available at runtime
-  [key: string]: any;
 }

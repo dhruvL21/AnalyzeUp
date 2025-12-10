@@ -61,3 +61,44 @@ export const PurchaseOrderSchema = z.object({
   quantity: z.number().positive({ message: "Quantity must be positive." }),
   userId: z.string().optional(),
 });
+
+
+// AI Related Schemas
+
+const SalesDataSchema = z.array(TransactionSchema.pick({ productId: true, quantity: true, transactionDate: true }));
+const ProductDataSchema = z.array(ProductSchema.pick({ id: true, name: true, stock: true, price: true }));
+
+export const BusinessStrategyInputSchema = z.object({
+  sales: SalesDataSchema,
+  products: ProductDataSchema,
+});
+
+export const BusinessStrategySchema = z.object({
+  title: z.string().describe('A catchy title for the business strategy.'),
+  keyRecommendations: z.array(z.string()).describe('A list of 3-5 actionable key recommendations for business growth.'),
+  riskFactors: z.array(z.string()).describe('A list of potential risks or challenges associated with the strategy.'),
+  expectedOutcomes: z.array(z.string()).describe('A list of expected positive outcomes if the strategy is implemented successfully.'),
+});
+
+
+const ProductInfoSchema = z.object({
+  name: z.string(),
+  stock: z.number(),
+  averageDailySales: z.number(),
+  leadTimeDays: z.number(),
+});
+
+export const LowStockInputSchema = z.object({
+  products: z.array(ProductInfoSchema),
+});
+
+export const LowStockProductSchema = z.object({
+    productName: z.string(),
+    currentStock: z.number(),
+    predictedDemand: z.string().describe("Predicted weekly demand for the product."),
+    reorderSuggestion: z.number().describe("The suggested quantity to reorder."),
+});
+
+export const LowStockOutputSchema = z.object({
+    lowStockProducts: z.array(LowStockProductSchema),
+});

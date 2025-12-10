@@ -3,31 +3,9 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { LowStockInputSchema, LowStockOutputSchema } from '@/lib/types.zod';
 
-const ProductInfoSchema = z.object({
-  name: z.string(),
-  stock: z.number(),
-  averageDailySales: z.number(),
-  leadTimeDays: z.number(),
-});
-
-export const LowStockInputSchema = z.object({
-  products: z.array(ProductInfoSchema),
-});
-
-const LowStockProductSchema = z.object({
-    productName: z.string(),
-    currentStock: z.number(),
-    predictedDemand: z.string().describe("Predicted weekly demand for the product."),
-    reorderSuggestion: z.number().describe("The suggested quantity to reorder."),
-});
-
-export type lowStockProduct = z.infer<typeof LowStockProductSchema>;
-
-const LowStockOutputSchema = z.object({
-    lowStockProducts: z.array(LowStockProductSchema),
-});
-
+export type lowStockProduct = z.infer<typeof import('@/lib/types.zod').LowStockProductSchema>;
 
 const lowStockPrompt = ai.definePrompt({
     name: 'lowStockPrompt',
