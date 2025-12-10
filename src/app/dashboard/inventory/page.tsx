@@ -461,7 +461,7 @@ export default function InventoryPage() {
                       {supplier.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="create-new-supplier" className='font-semibold text-accent-foreground/80'>
+                  <SelectItem value="create-new-supplier" className='italic text-primary'>
                     Create new supplier...
                   </SelectItem>
                 </SelectContent>
