@@ -21,8 +21,8 @@ export async function suggestBusinessStrategy(
 const suggestStrategiesPrompt = ai.definePrompt({
   name: 'suggestStrategiesPrompt',
   model: 'gemini-1.5-flash',
-  input: { schema: BusinessStrategyInputSchema },
   output: { format: 'text' },
+  input: { schema: BusinessStrategyInputSchema },
   prompt: `
     You are an expert business analyst and strategist for a growing e-commerce brand.
     Analyze the provided store data and generate a practical, actionable business strategy.
