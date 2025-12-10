@@ -2,7 +2,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import type { Product, Transaction, Supplier } from '@/lib/types';
 
 // Define input schema
 const BusinessStrategyInputSchema = z.object({
@@ -28,7 +27,7 @@ export async function suggestBusinessStrategy(
 // Define the prompt for the AI model
 const suggestStrategiesPrompt = ai.definePrompt({
   name: 'suggestStrategiesPrompt',
-  model: 'gemini-1.5-flash',
+  model: 'gemini-pro',
   input: { schema: BusinessStrategyInputSchema },
   output: { format: 'text' },
   prompt: `
