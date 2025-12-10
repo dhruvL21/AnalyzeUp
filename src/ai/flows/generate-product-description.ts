@@ -6,6 +6,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 
 // Define the schema for the input, which is just the product name.
@@ -56,7 +57,7 @@ const generateProductDescriptionFlow = ai.defineFlow(
   async (input) => {
     const { output } = await ai.generate({
       prompt: generateDescriptionPrompt,
-      model: 'gemini-1.5-flash',
+      model: googleAI.model('gemini-1.5-flash'),
       input,
     });
     

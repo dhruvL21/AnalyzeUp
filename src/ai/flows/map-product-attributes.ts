@@ -5,6 +5,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 import { ProductSchema } from '@/lib/types.zod';
 
@@ -83,7 +84,7 @@ const attributeMappingFlow = ai.defineFlow(
   async (input) => {
     const { output } = await ai.generate({
       prompt: mappingAgentPrompt,
-      model: 'gemini-1.5-flash',
+      model: googleAI.model('gemini-1.5-flash'),
       input,
     });
     

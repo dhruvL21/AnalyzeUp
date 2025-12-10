@@ -7,6 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
 
 // Simplified product schema for the flow input
@@ -102,7 +103,7 @@ const lowStockAlertsFlow = ai.defineFlow(
     
     const { output } = await ai.generate({
       prompt: lowStockPrompt,
-      model: 'gemini-1.5-flash',
+      model: googleAI.model('gemini-1.5-flash'),
       input: { products: lowStockProducts },
     });
 
