@@ -9,16 +9,16 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
 // Define the schema for the input, which is just the product name.
-export const GenerateProductDescriptionInputSchema = z.object({
+const GenerateProductDescriptionInputSchema = z.object({
   productName: z.string().describe('The name of the product for which to generate a description.'),
 });
-export type GenerateProductDescriptionInput = z.infer<typeof GenerateProductDescriptionInputSchema>;
+type GenerateProductDescriptionInput = z.infer<typeof GenerateProductDescriptionInputSchema>;
 
 // Define the schema for the output, which is the generated description.
-export const GenerateProductDescriptionOutputSchema = z.object({
+const GenerateProductDescriptionOutputSchema = z.object({
     description: z.string().describe('The generated product description.'),
 });
-export type GenerateProductDescriptionOutput = z.infer<typeof GenerateProductDescriptionOutputSchema>;
+type GenerateProductDescriptionOutput = z.infer<typeof GenerateProductDescriptionOutputSchema>;
 
 
 /**
