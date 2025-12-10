@@ -20,7 +20,7 @@ export async function suggestBusinessStrategy(
 
 const suggestStrategiesPrompt = ai.definePrompt({
   name: 'suggestStrategiesPrompt',
-  model: 'gemini-1.0-pro',
+  model: 'gemini-1.5-flash',
   input: { schema: BusinessStrategyInputSchema },
   output: { format: 'text' },
   prompt: `
@@ -36,12 +36,12 @@ const suggestStrategiesPrompt = ai.definePrompt({
     **Your Task:**
     Generate a business strategy with the following structure. Be specific, data-driven, and avoid generic advice.
 
-    - **📌 Executive Summary:** A short, clear overview of the current business state and key recommendations.
-    - **📈 Sales & Marketing Strategy (Short-Term):** Immediate actions to boost sales.
-    - **🚀 Sales & Growth Strategy (Long-Term):** Sustainable growth plans.
-    - **💰 Pricing & Profit Suggestions:** Ideas for price adjustments, bundles, or promotions to improve margins.
-    - **📦 Inventory Insights & Forecast:** Guidance on stock management, including items to reorder, discontinue, or promote, and a future forecast if trends are clear.
-    - **🔍 Category-wise or Supplier-wise Notes:** Specific observations about product categories or supplier performance.
+    - 📌 **Executive Summary:** A short, clear overview of the current business state and key recommendations.
+    - 📈 **Sales & Marketing Strategy (Short-Term):** Immediate actions to boost sales.
+    - 🚀 **Sales & Growth Strategy (Long-Term):** Sustainable growth plans.
+    - 💰 **Pricing & Profit Suggestions:** Ideas for price adjustments, bundles, or promotions to improve margins.
+    - 📦 **Inventory Insights & Forecast:** Guidance on stock management, including items to reorder, discontinue, or promote, and a future forecast if trends are clear.
+    - 🔍 **Category-wise or Supplier-wise Notes:** Specific observations about product categories or supplier performance.
 
     Base all your insights directly on the data provided. If there is not enough data to provide a meaningful insight for a section, state that and explain what data you would need.
   `,
