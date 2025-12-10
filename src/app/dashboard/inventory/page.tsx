@@ -359,198 +359,170 @@ export default function InventoryPage() {
         if (!isOpen) resetFormState();
     }}>
       <DialogContent className="sm:max-w-xl ios-glass">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">
+              {editingProduct ? 'Edit Product' : 'Add Product'}
+          </DialogTitle>
+          <DialogDescription>
+              {editingProduct
+              ? 'Update the details of your product.'
+              : 'Add a new product to your inventory.'}
+          </DialogDescription>
+        </DialogHeader>
         <form
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid gap-4 py-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4"
         >
-          
-          <div className="col-span-1 md:col-span-2">
-            <DialogHeader className="text-left">
-                <DialogTitle className="text-2xl">
-                    {editingProduct ? 'Edit Product' : 'Add Product'}
-                </DialogTitle>
-                <DialogDescription>
-                    {editingProduct
-                    ? 'Update the details of your product.'
-                    : 'Add a new product to your inventory.'}
-                </DialogDescription>
-            </DialogHeader>
-          </div>
-          
-          <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                defaultValue={editingProduct?.name}
-                className="col-span-3"
-                required
-              />
+          <div className="md:col-span-2 space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              name="name"
+              defaultValue={editingProduct?.name}
+              required
+            />
           </div>
 
-          <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right pt-2">
-                Description
-              </Label>
-              <div className="col-span-3 space-y-2">
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGenerateDescription}
-                  disabled={isGeneratingDescription}
-                >
-                  {isGeneratingDescription ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-2 h-4 w-4" />
-                  )}
-                  Generate with AI
-                </Button>
-              </div>
+          <div className="md:col-span-2 space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateDescription}
+              disabled={isGeneratingDescription}
+            >
+              {isGeneratingDescription ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Generate with AI
+            </Button>
           </div>
           
-           <div className="grid grid-cols-4 items-center gap-4">
-               <Label htmlFor="image" className="text-right">
-                Image
-               </Label>
-               <div className="col-span-3 flex items-center gap-4">
-                  {imagePreview && (
-                    <Image
-                        src={imagePreview}
-                        alt="Product preview"
-                        width={64}
-                        height={64}
-                        className="aspect-square rounded-md object-cover"
-                    />
-                  )}
-                  <Input
-                    id="image"
-                    name="image"
-                    type="file"
-                    className="file:text-foreground"
-                    onChange={handleFileChange}
-                    accept="image/*"
+          <div className="md:col-span-2 space-y-2">
+             <Label htmlFor="image">Image</Label>
+             <div className="flex items-center gap-4">
+                {imagePreview && (
+                  <Image
+                      src={imagePreview}
+                      alt="Product preview"
+                      width={64}
+                      height={64}
+                      className="aspect-square rounded-md object-cover"
                   />
-                </div>
-            </div>
-          
-          <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="categoryId" className="text-right">
-                Category
-              </Label>
-              <div className="col-span-3">
-                <Select 
-                  name="categoryId" 
-                  value={selectedCategoryId}
-                  onValueChange={(value) => {
-                    if (value === 'create-new') {
-                      setIsCategoryDialogOpen(true);
-                    } else {
-                      setSelectedCategoryId(value);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="create-new" className='italic text-primary'>
-                      Create new category...
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                )}
+                <Input
+                  id="image"
+                  name="image"
+                  type="file"
+                  className="file:text-foreground"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                />
               </div>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="supplierId" className="text-right">
-                Supplier
-              </Label>
-              <div className="col-span-3">
-                <Select 
-                  name="supplierId" 
-                  value={selectedSupplierId}
-                  onValueChange={(value) => {
-                    if (value === 'create-new-supplier') {
-                      setIsSupplierDialogOpen(true);
-                    } else {
-                      setSelectedSupplierId(value);
-                    }
-                  }}
-                  defaultValue={editingProduct?.supplierId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="create-new-supplier" className='italic text-primary'>
-                      Create new supplier...
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="price">Price</Label>
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              step="0.01"
+              defaultValue={editingProduct?.price}
+              required
+            />
           </div>
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
-                Price
-              </Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                step="0.01"
-                defaultValue={editingProduct?.price}
-                required
-                className="col-span-3"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="stock" className="text-right">
-                Stock
-              </Label>
-              <Input
-                id="stock"
-                name="stock"
-                type="number"
-                defaultValue={editingProduct?.stock}
-                required
-                className="col-span-3"
-              />
-            </div>
-            
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
+          <div className="space-y-2">
+            <Label htmlFor="stock">Stock</Label>
+            <Input
+              id="stock"
+              name="stock"
+              type="number"
+              defaultValue={editingProduct?.stock}
+              required
+            />
+          </div>
           
+          <div className="space-y-2">
+              <Label htmlFor="categoryId">Category</Label>
+              <Select 
+                name="categoryId" 
+                value={selectedCategoryId}
+                onValueChange={(value) => {
+                  if (value === 'create-new') {
+                    setIsCategoryDialogOpen(true);
+                  } else {
+                    setSelectedCategoryId(value);
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="create-new" className='italic text-primary'>
+                    Create new category...
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+          </div>
+
+          <div className="space-y-2">
+              <Label htmlFor="supplierId">Supplier</Label>
+              <Select 
+                name="supplierId" 
+                value={selectedSupplierId}
+                onValueChange={(value) => {
+                  if (value === 'create-new-supplier') {
+                    setIsSupplierDialogOpen(true);
+                  } else {
+                    setSelectedSupplierId(value);
+                  }
+                }}
+                defaultValue={editingProduct?.supplierId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="create-new-supplier" className='italic text-primary'>
+                    Create new supplier...
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+          </div>
+
+          <DialogFooter className="md:col-span-2">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit">Save changes</Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
@@ -620,3 +592,5 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
