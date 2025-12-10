@@ -365,19 +365,17 @@ export default function InventoryPage() {
           onSubmit={handleFormSubmit}
           className="grid gap-4 py-4"
         >
-          <div className="grid grid-cols-4 items-center gap-4 -mb-2">
-             <div className="col-span-3 col-start-2">
-                <DialogHeader>
-                    <DialogTitle>
-                        {editingProduct ? 'Edit Product' : 'Add Product'}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {editingProduct
-                        ? 'Update the details of your product.'
-                        : 'Add a new product to your inventory.'}
-                    </DialogDescription>
-                </DialogHeader>
-             </div>
+          <div className="space-y-2">
+            <DialogHeader>
+                <DialogTitle>
+                    {editingProduct ? 'Edit Product' : 'Add Product'}
+                </DialogTitle>
+                <DialogDescription>
+                    {editingProduct
+                    ? 'Update the details of your product.'
+                    : 'Add a new product to your inventory.'}
+                </DialogDescription>
+            </DialogHeader>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
