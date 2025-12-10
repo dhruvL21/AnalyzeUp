@@ -63,7 +63,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background dark:animated-grid-background">
-      <Card className="w-full max-w-sm bg-card/60 backdrop-blur-sm">
+      <Card className="w-full max-w-sm bg-card/30 backdrop-blur-md">
         <CardHeader className="text-center">
             <div className='flex justify-center items-center mb-4'>
                 <AnalyzeUpIcon className="h-8 w-8 text-primary" />

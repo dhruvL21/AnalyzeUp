@@ -358,7 +358,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-xl bg-card/60 backdrop-blur-sm">
+      <DialogContent className="sm:max-w-xl bg-card/30 backdrop-blur-md">
         <DialogHeader>
           <DialogTitle>
             {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -549,7 +549,7 @@ export default function InventoryPage() {
 
     {/* Add Category Dialog */}
     <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent className="bg-card/60 backdrop-blur-sm">
+        <DialogContent className="bg-card/30 backdrop-blur-md">
             <DialogHeader>
                 <DialogTitle>Add New Category</DialogTitle>
                 <DialogDescription>Create a new category for your products.</DialogDescription>
@@ -575,7 +575,7 @@ export default function InventoryPage() {
 
     {/* Add Supplier Dialog */}
     <Dialog open={isSupplierDialogOpen} onOpenChange={setIsSupplierDialogOpen}>
-      <DialogContent className="sm:max-w-[425px] bg-card/60 backdrop-blur-sm">
+      <DialogContent className="sm:max-w-[425px] bg-card/30 backdrop-blur-md">
         <DialogHeader>
           <DialogTitle>Add New Supplier</DialogTitle>
         </DialogHeader>
