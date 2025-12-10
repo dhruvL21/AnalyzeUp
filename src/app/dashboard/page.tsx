@@ -30,6 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
 import { useData } from '@/context/data-context';
 import { SalesChart } from '@/components/sales-chart';
+import { AIStockAdvisor } from '@/components/ai-stock-advisor';
 
 
 function DashboardLoading() {
@@ -244,6 +245,10 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+       <div className="grid grid-cols-1 gap-6">
+         <AIStockAdvisor />
       </div>
 
        <div className="grid grid-cols-1 gap-6">
