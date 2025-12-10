@@ -35,6 +35,7 @@ const suggestStrategiesFlow = ai.defineFlow(
 
     for (const modelName of MODEL_CANDIDATES) {
       try {
+        console.log(`Attempting to generate strategy with model: ${modelName}`);
         const suggestStrategiesPrompt = ai.definePrompt({
             name: `suggestStrategiesPrompt-${modelName.replace(/[^a-zA-Z0-9]/g, '_')}`,
             output: { format: 'text' },
