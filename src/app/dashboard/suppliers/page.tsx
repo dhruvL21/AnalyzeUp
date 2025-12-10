@@ -156,7 +156,7 @@ export default function SuppliersPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card/10 backdrop-blur-xl">
+        <DialogContent className="sm:max-w-[425px] backdrop-blur-xl">
           <DialogHeader>
             <DialogTitle>Add New Supplier</DialogTitle>
           </DialogHeader>

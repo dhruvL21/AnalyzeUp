@@ -357,7 +357,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-xl bg-card/10 backdrop-blur-xl">
+      <DialogContent className="sm:max-w-xl backdrop-blur-xl">
         <DialogHeader>
           <DialogTitle>
             {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -574,7 +574,7 @@ export default function InventoryPage() {
 
     {/* Add Supplier Dialog */}
     <Dialog open={isSupplierDialogOpen} onOpenChange={setIsSupplierDialogOpen}>
-      <DialogContent className="sm:max-w-[425px] bg-card/10 backdrop-blur-xl">
+      <DialogContent className="sm:max-w-[425px] backdrop-blur-xl">
         <DialogHeader>
           <DialogTitle>Add New Supplier</DialogTitle>
         </DialogHeader>
