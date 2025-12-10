@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background dark:animated-grid-background">
-      <Card className="w-full max-w-sm bg-card/20 backdrop-blur-lg">
+      <Card className="w-full max-w-sm bg-card/10 backdrop-blur-xl">
         <CardHeader className="text-center">
             <div className='flex justify-center items-center mb-4'>
                  <AnalyzeUpIcon className="h-8 w-8 text-primary" />
