@@ -64,22 +64,41 @@ export default function InventoryPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
   const [description, setDescription] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const resetFormState = () => {
     setEditingProduct(null);
     setDescription('');
+    setImagePreview(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
+    let imageUrl = editingProduct?.imageUrl || `https://picsum.photos/seed/${Date.now()}/400/400`;
+    if (imagePreview) {
+        imageUrl = imagePreview;
+    }
+
     const productData = {
       name: formData.get('name') as string,
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
       categoryId: formData.get('categoryId') as string,
       supplierId: formData.get('supplierId') as string,
-      imageUrl: formData.get('imageUrl') as string || `https://picsum.photos/seed/${Date.now()}/400/400`,
+      imageUrl: imageUrl,
       description: description,
       sku: 'SKU-' + Date.now().toString(36),
     };
@@ -103,6 +122,7 @@ export default function InventoryPage() {
     resetFormState();
     setEditingProduct(product);
     setDescription(product.description || '');
+    setImagePreview(product.imageUrl || null);
     setIsFormDialogOpen(true);
   };
 
@@ -310,16 +330,28 @@ export default function InventoryPage() {
           </div>
           
            <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="imageUrl" className="text-right">
-              Image URL
+            <Label htmlFor="image" className="text-right">
+              Image
             </Label>
-            <Input
-              id="imageUrl"
-              name="imageUrl"
-              defaultValue={editingProduct?.imageUrl}
-              className="col-span-3"
-              placeholder="https://your-image-url.com/image.png"
-            />
+            <div className="col-span-3 flex items-center gap-4">
+              {imagePreview && (
+                <Image
+                    src={imagePreview}
+                    alt="Product preview"
+                    width={64}
+                    height={64}
+                    className="aspect-square rounded-md object-cover"
+                />
+              )}
+              <Input
+                id="image"
+                name="image"
+                type="file"
+                className="col-span-2 file:text-foreground"
+                onChange={handleFileChange}
+                accept="image/*"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -401,3 +433,5 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
