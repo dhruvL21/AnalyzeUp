@@ -2,8 +2,8 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState, useMemo, useRef } from 'react';
-import { PlusCircle, MoreHorizontal, Sparkles, Loader2 } from 'lucide-react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
+import { PlusCircle, MoreHorizontal, Sparkles, Loader2, Upload, FileCheck2, Wand2, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -57,6 +57,13 @@ import { useData } from '@/context/data-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { generateProductDescription } from '@/ai/flows/generate-product-description';
 import { useTasks } from '@/context/task-context';
+import { ProductSchema } from '@/lib/types.zod';
+import Papa from 'papaparse';
+import { mapProductAttributes, MappingResult } from '@/ai/flows/map-product-attributes';
+import { Progress } from '@/components/ui/progress';
+
+type ImportStep = 'upload' | 'mapping' | 'importing' | 'complete';
+
 
 export default function InventoryPage() {
   const { toast } = useToast();
@@ -77,6 +84,18 @@ export default function InventoryPage() {
 
   const productFormRef = useRef<HTMLFormElement>(null);
   const isGeneratingDescription = tasks['generate-description']?.status === 'running';
+
+  // Import state
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importStep, setImportStep] = useState<ImportStep>('upload');
+  const [parsedData, setParsedData] = useState<any[]>([]);
+  const [fileHeaders, setFileHeaders] = useState<string[]>([]);
+  const [mappings, setMappings] = useState<MappingResult[]>([]);
+  const [importProgress, setImportProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const isMappingAttributes = tasks['map-attributes']?.status === 'running';
+
 
   const handleGenerateDescription = async () => {
     if (!productFormRef.current) return;
@@ -105,6 +124,17 @@ export default function InventoryPage() {
     setSelectedCategoryId(undefined);
     setSelectedSupplierId(undefined);
   };
+  
+  const resetImportState = () => {
+    setImportStep('upload');
+    setParsedData([]);
+    setFileHeaders([]);
+    setMappings([]);
+    setImportProgress(0);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -161,7 +191,6 @@ export default function InventoryPage() {
     };
     await addCategory(newCategory);
     
-    // This logic relies on the data context updating quickly.
     const createdCategory = categories.find(c => c.name === newCategory.name);
     if(createdCategory) {
       setSelectedCategoryId(createdCategory.id);
@@ -182,7 +211,6 @@ export default function InventoryPage() {
     };
     await addSupplier(newSupplier);
 
-    // This logic relies on the data context updating quickly.
     const createdSupplier = suppliers.find(s => s.name === newSupplier.name);
     if (createdSupplier) {
       setSelectedSupplierId(createdSupplier.id);
@@ -191,6 +219,85 @@ export default function InventoryPage() {
     setIsSupplierDialogOpen(false);
   };
 
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      toast({ variant: 'destructive', title: 'No file selected.' });
+      return;
+    }
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const headers = results.meta.fields || [];
+        setFileHeaders(headers);
+        setParsedData(results.data);
+
+        await runTask('map-attributes', async () => {
+          const schemaString = JSON.stringify(ProductSchema.shape, null, 2);
+          const response = await mapProductAttributes({
+            sourceAttributes: headers,
+            targetSchema: schemaString,
+          });
+          setMappings(response.mappings);
+          setImportStep('mapping');
+        }, 'Analyzing CSV attributes with AI...');
+      },
+      error: (error) => {
+        toast({ variant: 'destructive', title: 'Error parsing file', description: error.message });
+      }
+    });
+  };
+
+  const handleMappingChange = (source: string, newTarget: string | null) => {
+    setMappings(prev =>
+      prev.map(m =>
+        m.source_attribute === source ? { ...m, mapped_attribute: newTarget } : m
+      )
+    );
+  };
+
+  const handleStartImport = async () => {
+    setImportStep('importing');
+
+    const total = parsedData.length;
+    for (let i = 0; i < total; i++) {
+        const row = parsedData[i];
+        const productData: Partial<Omit<Product, 'id' | 'userId'>> = {};
+
+        mappings.forEach(map => {
+            if (map.mapped_attribute && map.source_attribute in row) {
+                let value = row[map.source_attribute];
+                // Basic type casting
+                if (map.mapped_attribute === 'price' || map.mapped_attribute === 'stock') {
+                    value = Number(value.replace(/[^0-9.-]+/g,"")) || 0;
+                }
+                (productData as any)[map.mapped_attribute] = value;
+            }
+        });
+
+        // Add defaults for required fields if they are missing
+        const finalProductData = {
+          name: productData.name || 'Unnamed Product',
+          description: productData.description || '',
+          sku: productData.sku || 'SKU-' + Date.now().toString(36) + i,
+          categoryId: productData.categoryId || 'uncategorized',
+          stock: productData.stock || 0,
+          price: productData.price || 0,
+          imageUrl: productData.imageUrl || `https://picsum.photos/seed/${Date.now() + i}/400/400`,
+          supplierId: productData.supplierId || '',
+        };
+        
+        await addProduct(finalProductData);
+
+        // Update progress
+        setImportProgress(((i + 1) / total) * 100);
+    }
+    
+    setImportStep('complete');
+    toast({ title: "Import Complete!", description: `${total} products have been added to your inventory.`})
+  };
 
   const openEditDialog = (product: Product) => {
     resetFormState();
@@ -207,12 +314,20 @@ export default function InventoryPage() {
     setIsFormDialogOpen(true);
   };
 
+  const targetAttributes = useMemo(() => Object.keys(ProductSchema.shape), []);
+
   return (
     <>
       <div className="flex flex-col gap-6">
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl">Inventory</h1>
           <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => setIsImportDialogOpen(true)}>
+              <Upload className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                Import
+              </span>
+            </Button>
             <Button size="sm" className="h-8 gap-1" onClick={openAddDialog}>
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -358,7 +473,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="ios-glass">
+      <DialogContent className="sm:max-w-lg ios-glass">
         <form
           ref={productFormRef}
           id="product-form"
@@ -527,6 +642,118 @@ export default function InventoryPage() {
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Import Products Dialog */}
+    <Dialog open={isImportDialogOpen} onOpenChange={(isOpen) => {
+        setIsImportDialogOpen(isOpen);
+        if(!isOpen) setTimeout(resetImportState, 300);
+    }}>
+        <DialogContent className="max-w-3xl h-[80vh] flex flex-col ios-glass">
+            <DialogHeader>
+                <DialogTitle>Import Products</DialogTitle>
+                <DialogDescription>
+                {importStep === 'upload' && "Upload a CSV file to import products into your inventory."}
+                {importStep === 'mapping' && "Confirm the attribute mappings for your data."}
+                {importStep === 'importing' && "Your products are being imported. Please wait."}
+                {importStep === 'complete' && "Import finished! Review the results."}
+                </DialogDescription>
+            </DialogHeader>
+
+            {importStep === 'upload' && (
+                <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-muted-foreground/30 p-8 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Upload className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Drag and drop your file here</h3>
+                    <p className="text-muted-foreground">or click to browse</p>
+                    <Button asChild variant="outline" className="relative">
+                        <label htmlFor="csv-upload">
+                            Browse File
+                            <input ref={fileInputRef} id="csv-upload" type="file" accept=".csv" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFileImport} />
+                        </label>
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-4">Only .csv files are supported.</p>
+                </div>
+            )}
+            
+            {importStep === 'mapping' && (
+                <div className='flex-1 overflow-y-auto pr-4 -mr-4'>
+                    {isMappingAttributes ? (
+                        <div className="flex flex-col items-center justify-center h-full gap-4">
+                            <Wand2 className="h-10 w-10 text-primary animate-pulse" />
+                            <p className="text-muted-foreground">AI is mapping your attributes...</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {mappings.map((mapping, index) => (
+                                <Card key={index} className="bg-muted/30">
+                                    <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                        <div className='space-y-1'>
+                                            <Label>CSV Column</Label>
+                                            <p className='font-mono text-sm p-2 bg-background rounded-md border'>{mapping.source_attribute}</p>
+                                        </div>
+                                         <div className='space-y-1'>
+                                            <Label>Application Field</Label>
+                                            <Select value={mapping.mapped_attribute || 'skip'} onValueChange={(val) => handleMappingChange(mapping.source_attribute, val === 'skip' ? null : val)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select field..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="skip" className="italic">Do not import</SelectItem>
+                                                    {targetAttributes.map(attr => (
+                                                        <SelectItem key={attr} value={attr}>{attr}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1 md:col-span-3">
+                                          <p className="text-xs text-muted-foreground p-2 bg-background/50 rounded-md border border-dashed">
+                                            <span className="font-semibold">AI Suggestion (Confidence: {(mapping.confidence * 100).toFixed(0)}%):</span> {mapping.notes}
+                                          </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {importStep === 'importing' && (
+                <div className="flex flex-1 flex-col items-center justify-center gap-4">
+                    <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                    <p className="text-muted-foreground">Importing {parsedData.length} products...</p>
+                    <Progress value={importProgress} className="w-full" />
+                </div>
+            )}
+
+            {importStep === 'complete' && (
+                <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+                    <FileCheck2 className="h-16 w-16 text-green-500" />
+                    <h3 className="text-2xl font-bold">Import Successful</h3>
+                    <p className="text-muted-foreground">{parsedData.length} new products have been added to your inventory.</p>
+                </div>
+            )}
+
+            <DialogFooter>
+                {importStep === 'mapping' && (
+                    <>
+                        <Button variant="outline" onClick={resetImportState}>Cancel</Button>
+                        <Button onClick={handleStartImport} disabled={isMappingAttributes}>
+                            <ListChecks className="mr-2 h-4 w-4" />
+                            Confirm and Import
+                        </Button>
+                    </>
+                )}
+                 {(importStep === 'upload' || importStep === 'complete') && (
+                     <DialogClose asChild>
+                        <Button>{importStep === 'complete' ? 'Done' : 'Close'}</Button>
+                    </DialogClose>
+                 )}
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
 
     {/* Add Category Dialog */}
     <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
