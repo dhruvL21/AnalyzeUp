@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -358,16 +359,6 @@ export default function InventoryPage() {
         if (!isOpen) resetFormState();
     }}>
       <DialogContent className="sm:max-w-xl bg-card/10 backdrop-blur-xl">
-        <DialogHeader className='hidden'>
-          <DialogTitle>
-            {editingProduct ? 'Edit Product' : 'Add Product'}
-          </DialogTitle>
-          <DialogDescription>
-            {editingProduct
-              ? 'Update the details of your product.'
-              : 'Add a new product to your inventory.'}
-          </DialogDescription>
-        </DialogHeader>
         <form
           ref={productFormRef}
           id="product-form"
@@ -375,15 +366,17 @@ export default function InventoryPage() {
           className="grid gap-4 py-4"
         >
           <div className="grid grid-cols-4 items-center gap-4 -mb-2">
-             <div className="col-start-2 col-span-3">
-                 <h2 className="text-lg font-semibold leading-none tracking-tight">
-                    {editingProduct ? 'Edit Product' : 'Add Product'}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1.5">
-                    {editingProduct
-                      ? 'Update the details of your product.'
-                      : 'Add a new product to your inventory.'}
-                </p>
+             <div className="col-span-3 col-start-2">
+                <DialogHeader>
+                    <DialogTitle>
+                        {editingProduct ? 'Edit Product' : 'Add Product'}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {editingProduct
+                        ? 'Update the details of your product.'
+                        : 'Add a new product to your inventory.'}
+                    </DialogDescription>
+                </DialogHeader>
              </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
