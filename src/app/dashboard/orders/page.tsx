@@ -211,7 +211,7 @@ export default function OrdersPage() {
 
       {/* Create Order Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card/10 backdrop-blur-xl">
+        <DialogContent className="sm:max-w-[425px] ios-glass">
           <DialogHeader>
             <DialogTitle>Create New Order</DialogTitle>
           </DialogHeader>
@@ -277,7 +277,7 @@ export default function OrdersPage() {
 
       {/* View Order Details Dialog */}
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
-        <DialogContent className="bg-card/10 backdrop-blur-xl">
+        <DialogContent className="ios-glass">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
             <DialogDescription>Order ID: {viewingOrder?.id}</DialogDescription>
