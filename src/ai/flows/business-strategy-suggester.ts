@@ -14,10 +14,6 @@ type BusinessStrategyInput = z.infer<typeof BusinessStrategyInputSchema>;
 export async function suggestBusinessStrategy(
   input: BusinessStrategyInput
 ): Promise<string> {
-  // If there's not enough data, return the specific message.
-  if (input.products.length < 2 || input.transactions.length < 2) {
-    return 'Not enough data to generate a reliable insight yet.';
-  }
   return suggestStrategiesFlow(input);
 }
 
@@ -47,7 +43,7 @@ const suggestStrategiesPrompt = ai.definePrompt({
     - **📦 Inventory Insights & Forecast:** Guidance on stock management, including items to reorder, discontinue, or promote, and a future forecast if trends are clear.
     - **🔍 Category-wise or Supplier-wise Notes:** Specific observations about product categories or supplier performance.
 
-    Base all your insights directly on the data provided.
+    Base all your insights directly on the data provided. If there is not enough data to provide a meaningful insight for a section, state that and explain what data you would need.
   `,
 });
 
