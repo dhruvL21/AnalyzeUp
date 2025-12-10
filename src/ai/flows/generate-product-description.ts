@@ -44,7 +44,7 @@ const generateDescriptionPrompt = ai.definePrompt(
       
       Focus on the key benefits and unique selling points. Use an engaging and persuasive tone.
       Do not use markdown or special formatting. Just return the description text.`,
-    model: googleAI.model('gemini-1.5-flash-latest'),
+    model: googleAI.model('gemini-1.5-flash'),
   },
 );
 
