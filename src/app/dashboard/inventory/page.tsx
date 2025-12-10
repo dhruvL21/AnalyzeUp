@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -358,7 +357,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-xl bg-card/30 backdrop-blur-md">
+      <DialogContent className="sm:max-w-xl bg-card/20 backdrop-blur-lg">
         <DialogHeader>
           <DialogTitle>
             {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -575,7 +574,7 @@ export default function InventoryPage() {
 
     {/* Add Supplier Dialog */}
     <Dialog open={isSupplierDialogOpen} onOpenChange={setIsSupplierDialogOpen}>
-      <DialogContent className="sm:max-w-[425px] bg-card/30 backdrop-blur-md">
+      <DialogContent className="sm:max-w-[425px] bg-card/20 backdrop-blur-lg">
         <DialogHeader>
           <DialogTitle>Add New Supplier</DialogTitle>
         </DialogHeader>
