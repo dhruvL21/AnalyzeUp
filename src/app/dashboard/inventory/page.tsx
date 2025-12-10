@@ -58,7 +58,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export default function InventoryPage() {
   const { toast } = useToast();
-  const { products, addProduct, updateProduct, deleteProduct, isLoading, categories, suppliers, addCategory } = useData();
+  const { products, addProduct, updateProduct, deleteProduct, isLoading, categories, suppliers, addCategory, addSupplier } = useData();
 
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -67,9 +67,11 @@ export default function InventoryPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
+  
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string | undefined>(undefined);
 
-  // Ref to store the product form data temporarily
   const productFormRef = useRef<HTMLFormElement>(null);
 
   const resetFormState = () => {
@@ -77,6 +79,7 @@ export default function InventoryPage() {
     setDescription('');
     setImagePreview(null);
     setSelectedCategoryId(undefined);
+    setSelectedSupplierId(undefined);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +107,7 @@ export default function InventoryPage() {
       stock: Number(formData.get('stock')),
       price: Number(formData.get('price')),
       categoryId: selectedCategoryId || formData.get('categoryId') as string,
-      supplierId: formData.get('supplierId') as string,
+      supplierId: selectedSupplierId || formData.get('supplierId') as string,
       imageUrl: imageUrl,
       description: description,
       sku: 'SKU-' + Date.now().toString(36),
@@ -134,8 +137,7 @@ export default function InventoryPage() {
     };
     await addCategory(newCategory);
     
-    // Find the newly created category to set it as selected
-    // Note: This relies on the name being unique and the data context updating.
+    // This logic relies on the data context updating quickly.
     const createdCategory = categories.find(c => c.name === newCategory.name);
     if(createdCategory) {
       setSelectedCategoryId(createdCategory.id);
@@ -144,12 +146,35 @@ export default function InventoryPage() {
     setIsCategoryDialogOpen(false);
   };
 
+  const handleSupplierSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newSupplier = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      contactName: (formData.get('name') as string).split(' ')[0] || 'Contact',
+      phone: 'N/A',
+      address: 'N/A',
+    };
+    await addSupplier(newSupplier);
+
+    // This logic relies on the data context updating quickly.
+    const createdSupplier = suppliers.find(s => s.name === newSupplier.name);
+    if (createdSupplier) {
+      setSelectedSupplierId(createdSupplier.id);
+    }
+
+    setIsSupplierDialogOpen(false);
+  };
+
+
   const openEditDialog = (product: Product) => {
     resetFormState();
     setEditingProduct(product);
     setDescription(product.description || '');
     setImagePreview(product.imageUrl || null);
     setSelectedCategoryId(product.categoryId);
+    setSelectedSupplierId(product.supplierId);
     setIsFormDialogOpen(true);
   };
 
@@ -415,7 +440,18 @@ export default function InventoryPage() {
               <Label htmlFor="supplierId" className="text-right">
                 Supplier
               </Label>
-              <Select name="supplierId" defaultValue={editingProduct?.supplierId}>
+              <Select 
+                name="supplierId" 
+                value={selectedSupplierId}
+                onValueChange={(value) => {
+                  if (value === 'create-new-supplier') {
+                    setIsSupplierDialogOpen(true);
+                  } else {
+                    setSelectedSupplierId(value);
+                  }
+                }}
+                defaultValue={editingProduct?.supplierId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
@@ -425,6 +461,9 @@ export default function InventoryPage() {
                       {supplier.name}
                     </SelectItem>
                   ))}
+                  <SelectItem value="create-new-supplier" className='font-semibold text-accent-foreground/80'>
+                    Create new supplier...
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -494,6 +533,43 @@ export default function InventoryPage() {
                 </DialogFooter>
             </form>
         </DialogContent>
+    </Dialog>
+
+    {/* Add Supplier Dialog */}
+    <Dialog open={isSupplierDialogOpen} onOpenChange={setIsSupplierDialogOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add New Supplier</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSupplierSubmit} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="supplier-name" className="text-right">
+              Name
+            </Label>
+            <Input id="name" name="name" className="col-span-3" required />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="supplier-email" className="text-right">
+              Contact Email
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              className="col-span-3"
+              required
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit">Add Supplier</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
     </>
   );
