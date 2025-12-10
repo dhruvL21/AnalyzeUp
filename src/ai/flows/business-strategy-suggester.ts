@@ -18,7 +18,7 @@ export async function suggestBusinessStrategy(
 
 const suggestStrategiesPrompt = ai.definePrompt({
   name: 'suggestStrategiesPrompt',
-  model: 'googleai/gemini-pro',
+  model: 'googleai/gemini-1.5-flash',
   output: { format: 'text' },
   input: { schema: BusinessStrategyInputSchema },
   prompt: `
