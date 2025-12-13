@@ -24,7 +24,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Shirt,
-  PackageCheck,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
@@ -35,11 +34,11 @@ import { AIStockAdvisor } from '@/components/ai-stock-advisor';
 
 function DashboardLoading() {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+    <div className="flex flex-col gap-8">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Inventory Value
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -48,18 +47,18 @@ function DashboardLoading() {
             <Skeleton className="h-8 w-1/2" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sales</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <Skeleton className="h-8 w-1/2" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Low Stock Items
             </CardTitle>
             <PackageX className="h-4 w-4 text-muted-foreground" />
@@ -68,9 +67,9 @@ function DashboardLoading() {
             <Skeleton className="h-8 w-1/4" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Top Selling Product
             </CardTitle>
             <Shirt className="h-4 w-4 text-muted-foreground" />
@@ -81,8 +80,8 @@ function DashboardLoading() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 gap-6">
-         <Card>
+      <div className="grid grid-cols-1 gap-8">
+         <Card className='shadow-none'>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
             <CardDescription>
@@ -95,7 +94,7 @@ function DashboardLoading() {
         </Card>
       </div>
 
-      <Card>
+      <Card className='shadow-none'>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
           <CardDescription>
@@ -177,11 +176,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+    <div className="flex flex-col gap-8">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Inventory Value
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -199,9 +198,9 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sales</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -217,9 +216,9 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Low Stock Items
             </CardTitle>
             <PackageX className="h-4 w-4 text-muted-foreground" />
@@ -231,9 +230,9 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='shadow-none'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Top Selling Product
             </CardTitle>
             <Shirt className="h-4 w-4 text-muted-foreground" />
@@ -247,12 +246,12 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       <div className="grid grid-cols-1 gap-6">
+       <div className="grid grid-cols-1 gap-8">
          <AIStockAdvisor />
       </div>
 
-       <div className="grid grid-cols-1 gap-6">
-         <Card>
+       <div className="grid grid-cols-1 gap-8">
+         <Card className='shadow-none'>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
             <CardDescription>
@@ -265,7 +264,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
+      <Card className='shadow-none'>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
           <CardDescription>

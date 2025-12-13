@@ -47,8 +47,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background dark:animated-grid-background">
-      <Card className="w-full max-w-sm ios-glass">
+    <div className="flex items-center justify-center min-h-screen bg-secondary/30">
+      <Card className="w-full max-w-sm apple-glass rounded-2xl">
         <CardHeader className="text-center">
             <div className='flex justify-center items-center mb-4'>
                  <AnalyzeUpIcon className="h-8 w-8 text-primary" />
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button className="w-full" type="submit" disabled={loading}>
+              <Button className="w-full" type="submit" disabled={loading} size="lg">
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Send Reset Link
               </Button>
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
         <p className="mt-4 px-6 pb-6 text-center text-sm">
           Remember your password?&nbsp;
           <Link href="/login" passHref>
-            <span className="underline cursor-pointer">Sign in</span>
+             <Button variant="link">Sign in</Button>
           </Link>
         </p>
       </Card>

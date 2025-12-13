@@ -32,11 +32,11 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between gap-4 border-b bg-muted/40 px-4 backdrop-blur-sm lg:px-6">
+    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between gap-4 border-b bg-background/70 px-4 backdrop-blur-xl lg:px-6">
       <div className="flex flex-shrink-0 items-center gap-2 font-semibold">
         <Link href="/dashboard" className="flex items-center gap-2">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-          <span className="text-2xl font-bold">AnalyzeUp</span>
+          <span className="text-lg font-semibold">AnalyzeUp</span>
         </Link>
       </div>
 
@@ -44,13 +44,14 @@ export function Header() {
         <Nav />
       </div>
 
-      <div className="flex flex-shrink-0 items-center justify-end gap-2">
+      <div className="flex flex-shrink-0 items-center justify-end gap-1">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
+                className='rounded-full'
                 onClick={() => router.push('/dashboard/settings')}
               >
                 <Settings className="h-5 w-5" />
@@ -63,7 +64,7 @@ export function Header() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <Button variant="ghost" size="icon" className='rounded-full' onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
                 <span className="sr-only">Log out</span>
               </Button>
@@ -85,15 +86,15 @@ export function Header() {
         <Sheet>
           <SheetTrigger asChild>
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              className="shrink-0 md:hidden"
+              className="shrink-0 md:hidden rounded-full"
             >
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left">
+          <SheetContent side="left" className="apple-glass">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <Nav isMobile={true} />
           </SheetContent>

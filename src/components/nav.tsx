@@ -55,7 +55,7 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
         <nav className="grid gap-2 text-lg font-medium">
             <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-lg font-semibold mb-4"
+                className="flex items-center gap-2 text-xl font-semibold mb-4"
             >
                 <AnalyzeUpIcon className="h-6 w-6 text-primary" />
                 <span>AnalyzeUp</span>
@@ -64,8 +64,8 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
                 <Link
                     key={item.href}
                     href={item.href}
-                    className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                        pathname === item.href && "text-primary bg-muted"
+                    className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-foreground/70 transition-all hover:text-primary",
+                        pathname === item.href && "text-primary bg-primary/10"
                     )}
                 >
                     <item.icon className="h-4 w-4" />
@@ -82,8 +82,8 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
         <Link 
             key={item.href}
             href={item.href}
-            className={cn("transition-colors hover:text-foreground px-3 py-1.5 rounded-full cursor-pointer",
-                pathname === item.href ? "text-foreground border-2 border-primary/50 bg-primary/10" : "text-muted-foreground"
+            className={cn("transition-colors hover:text-primary px-4 py-1.5 rounded-full cursor-pointer",
+                pathname === item.href ? "text-primary bg-primary/10" : "text-muted-foreground"
             )}
         >
           {item.label}

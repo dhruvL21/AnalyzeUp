@@ -46,7 +46,6 @@ export default function LoginPage() {
         description = 'Invalid email or password. Please try again.';
       } else if (error.message) {
         description = error.message;
-        // For other errors, we might still want to log them
         console.error(error);
       }
       
@@ -61,8 +60,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background dark:animated-grid-background">
-      <Card className="w-full max-w-sm ios-glass">
+    <div className="flex items-center justify-center min-h-screen bg-secondary/30">
+      <Card className="w-full max-w-sm apple-glass rounded-2xl">
         <CardHeader className="text-center">
             <div className='flex justify-center items-center mb-4'>
                 <AnalyzeUpIcon className="h-8 w-8 text-primary" />
@@ -95,13 +94,13 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full" type="submit" disabled={loading}>
+            <Button className="w-full" type="submit" disabled={loading} size="lg">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
              <div className="text-center text-sm">
                 <Link href="/forgot-password" passHref>
-                    <span className="underline cursor-pointer">Forgot your password?</span>
+                    <Button variant="link" className="text-muted-foreground">Forgot your password?</Button>
                 </Link>
             </div>
           </CardFooter>
@@ -109,7 +108,7 @@ export default function LoginPage() {
          <p className="mt-4 px-6 pb-6 text-center text-sm">
             Don&apos;t have an account?&nbsp;
             <Link href="/register" passHref>
-                <span className="underline cursor-pointer">Sign up</span>
+                <Button variant="link">Sign up</Button>
             </Link>
         </p>
       </Card>

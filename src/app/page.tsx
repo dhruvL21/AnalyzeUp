@@ -7,15 +7,15 @@ import { AnalyzeUpIcon } from '@/components/analyze-up-icon';
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background text-foreground">
-      <header className="px-4 lg:px-6 h-14 flex items-center sticky top-0 z-50 backdrop-blur-sm bg-background/60 border-b">
+      <header className="px-4 lg:px-6 h-16 flex items-center sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b">
         <Link href="/" className="flex items-center justify-center">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-          <span className="ml-2 font-semibold text-foreground">AnalyzeUp</span>
+          <span className="ml-2 font-semibold text-foreground text-lg">AnalyzeUp</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+        <nav className="ml-auto flex gap-2 sm:gap-4 items-center">
           <Link
             href="#features"
-            className="text-sm font-medium hover:underline underline-offset-4 text-muted-foreground"
+            className="text-sm font-medium hover:text-primary transition-colors text-muted-foreground"
           >
             Features
           </Link>
@@ -25,7 +25,7 @@ export default function LandingPage() {
             <Button variant="ghost">Sign In</Button>
           </Link>
           <Link href="/register">
-            <Button>Sign Up</Button>
+            <Button>Get Started</Button>
           </Link>
         </nav>
       </header>
@@ -33,7 +33,7 @@ export default function LandingPage() {
         <section className="w-full py-20 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <div className="flex flex-col justify-center space-y-4">
+              <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-foreground">
                     The Smartest Way to Manage Your Inventory
@@ -47,15 +47,13 @@ export default function LandingPage() {
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Link
                     href="/register"
-                    className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   >
-                    Get Started Free
+                    <Button size="lg">Get Started Free</Button>
                   </Link>
                   <Link
                     href="#features"
-                    className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-transparent px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   >
-                    Learn More
+                    <Button size="lg" variant="secondary">Learn More</Button>
                   </Link>
                 </div>
               </div>
@@ -65,7 +63,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-muted/30 dark:animated-grid-background">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-3">
@@ -119,7 +117,7 @@ export default function LandingPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm font-medium">
+                <div className="inline-block rounded-full bg-secondary px-3 py-1 text-sm font-medium">
                   Key Features
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-foreground">

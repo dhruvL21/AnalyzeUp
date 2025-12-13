@@ -182,19 +182,17 @@ export default function InventoryPage() {
 
   return (
     <>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         <div className="flex items-center">
-          <h1 className="text-lg font-semibold md:text-2xl">Inventory</h1>
+          <h1 className="text-2xl font-semibold md:text-3xl">Inventory</h1>
           <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" className="h-8 gap-1" onClick={openAddDialog}>
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Add Product
-              </span>
+            <Button size="sm" onClick={openAddDialog}>
+              <PlusCircle className="h-4 w-4" />
+              <span>Add Product</span>
             </Button>
           </div>
         </div>
-        <Card>
+        <Card className='shadow-none'>
           <CardHeader>
             <CardTitle>Products</CardTitle>
             <CardDescription>
@@ -222,13 +220,13 @@ export default function InventoryPage() {
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell className="hidden sm:table-cell">
-                        <div className="aspect-square rounded-md bg-muted w-16 h-16 animate-pulse" />
+                        <div className="aspect-square rounded-lg bg-secondary w-16 h-16 animate-pulse" />
                       </TableCell>
-                      <TableCell><div className='h-5 w-32 bg-muted rounded animate-pulse'/></TableCell>
-                      <TableCell><div className='h-6 w-20 bg-muted rounded-full animate-pulse'/></TableCell>
-                      <TableCell><div className='h-5 w-16 bg-muted rounded animate-pulse'/></TableCell>
-                      <TableCell className="hidden md:table-cell"><div className='h-5 w-10 bg-muted rounded animate-pulse'/></TableCell>
-                      <TableCell><div className='h-8 w-8 bg-muted rounded-md animate-pulse'/></TableCell>
+                      <TableCell><div className='h-5 w-32 bg-secondary rounded-md animate-pulse'/></TableCell>
+                      <TableCell><div className='h-6 w-20 bg-secondary rounded-full animate-pulse'/></TableCell>
+                      <TableCell><div className='h-5 w-16 bg-secondary rounded-md animate-pulse'/></TableCell>
+                      <TableCell className="hidden md:table-cell"><div className='h-5 w-10 bg-secondary rounded-md animate-pulse'/></TableCell>
+                      <TableCell><div className='h-8 w-8 bg-secondary rounded-full animate-pulse'/></TableCell>
                     </TableRow>
                   ))
                 ) : (
@@ -237,7 +235,7 @@ export default function InventoryPage() {
                     <TableCell className="hidden sm:table-cell">
                       <Image
                         alt={product.name}
-                        className="aspect-square rounded-md object-cover"
+                        className="aspect-square rounded-lg object-cover"
                         height="64"
                         src={product.imageUrl || 'https://placehold.co/64x64'}
                         width="64"
@@ -275,6 +273,7 @@ export default function InventoryPage() {
                             aria-haspopup="true"
                             size="icon"
                             variant="ghost"
+                            className='rounded-full'
                           >
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Toggle menu</span>
@@ -291,6 +290,7 @@ export default function InventoryPage() {
                             <AlertDialogTrigger asChild>
                               <DropdownMenuItem
                                 onSelect={(e) => e.preventDefault()}
+                                className="text-destructive"
                               >
                                 Delete
                               </DropdownMenuItem>
@@ -331,15 +331,15 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-lg ios-glass">
+      <DialogContent>
         <form
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
             <div className="md:col-span-2 space-y-2">
-                <DialogTitle className="text-2xl">
+                <DialogTitle>
                     {editingProduct ? 'Edit Product' : 'Add Product'}
                 </DialogTitle>
                 <DialogDescription>
@@ -379,7 +379,7 @@ export default function InventoryPage() {
                         alt="Product preview"
                         width={64}
                         height={64}
-                        className="aspect-square rounded-md object-cover"
+                        className="aspect-square rounded-lg object-cover"
                     />
                     )}
                     <Input
@@ -475,9 +475,9 @@ export default function InventoryPage() {
                 </Select>
             </div>
 
-            <DialogFooter className="md:col-span-2">
+            <DialogFooter className="md:col-span-2 pt-4">
                 <DialogClose asChild>
-                <Button type="button" variant="outline">
+                <Button type="button" variant="secondary">
                     Cancel
                 </Button>
                 </DialogClose>
@@ -489,7 +489,7 @@ export default function InventoryPage() {
 
     {/* Add Category Dialog */}
     <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent className="ios-glass">
+        <DialogContent>
             <DialogHeader>
                 <DialogTitle>Add New Category</DialogTitle>
                 <DialogDescription>Create a new category for your products.</DialogDescription>
@@ -505,7 +505,7 @@ export default function InventoryPage() {
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                      <Button type="button" variant="outline">Cancel</Button>
+                      <Button type="button" variant="secondary">Cancel</Button>
                     </DialogClose>
                     <Button type="submit">Save Category</Button>
                 </DialogFooter>
@@ -515,7 +515,7 @@ export default function InventoryPage() {
 
     {/* Add Supplier Dialog */}
     <Dialog open={isSupplierDialogOpen} onOpenChange={setIsSupplierDialogOpen}>
-      <DialogContent className="sm:max-w-[425px] ios-glass">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Supplier</DialogTitle>
         </DialogHeader>
@@ -540,7 +540,7 @@ export default function InventoryPage() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="secondary">
                 Cancel
               </Button>
             </DialogClose>
