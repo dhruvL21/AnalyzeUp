@@ -4,7 +4,35 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, .dark {
+    --background: 225 10% 10%; /* Near-black */
+    --foreground: 215 15% 90%; /* Light gray/white text */
+    --card: 225 8% 15%; /* Dark gray cards */
+    --card-foreground: 215 15% 90%;
+    --popover: 225 10% 12%;
+    --popover-foreground: 215 15% 88%;
+    --primary: 212 100% 50%; /* Apple Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 225 10% 25%;
+    --secondary-foreground: 215 15% 90%;
+    --muted: 225 10% 25%;
+    --muted-foreground: 215 10% 60%;
+    --accent: 225 10% 25%;
+    --accent-foreground: 215 15% 90%;
+    --destructive: 0 84% 60%; /* Apple Red */
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 10% 30%; /* Subtle borders */
+    --input: 225 10% 25%;
+    --ring: 212 100% 50%; /* Blue focus ring */
+    --radius: 0.75rem;
+    --chart-1: 212 100% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 340 95% 65%;
+    --chart-4: 25 95% 55%;
+    --chart-5: 280 85% 60%;
+  }
+
+  .light {
     --background: 220 16% 97%;
     --foreground: 240 10% 4%;
     --card: 0 0% 100%;
@@ -24,35 +52,6 @@
     --border: 240 4% 89%;
     --input: 240 4% 89%;
     --ring: 212 100% 50%;
-    --radius: 0.75rem;
-    --chart-1: 212 100% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 340 95% 65%;
-    --chart-4: 25 95% 55%;
-    --chart-5: 280 85% 60%;
-  }
-
-  .dark {
-    --background: 225 10% 12%;
-    --foreground: 215 15% 88%;
-    --card: 225 8% 15%;
-    --card-foreground: 215 15% 88%;
-    --popover: 225 10% 12%;
-    --popover-foreground: 215 15% 88%;
-    --primary: 212 100% 60%;
-    --primary-foreground: 240 10% 4%;
-    --secondary: 225 10% 25%;
-    --secondary-foreground: 215 15% 90%;
-    --muted: 225 10% 25%;
-    --muted-foreground: 215 10% 60%;
-    --accent: 225 10% 25%;
-    --accent-foreground: 215 15% 90%;
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 225 10% 25%;
-    --input: 225 10% 25%;
-    --ring: 212 100% 60%;
-    --radius: 0.75rem;
   }
 }
 
@@ -72,21 +71,21 @@
 /* Custom Apple Glass Effect */
 @layer utilities {
   .apple-glass {
-    background-color: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    background-color: rgba(28, 28, 30, 0.6);
+    backdrop-filter: blur(var(--blur, 24px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--blur, 24px)) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
   }
 
-  .dark .apple-glass {
-    background-color: rgba(28, 28, 30, 0.6);
-     border: 1px solid rgba(255, 255, 255, 0.1);
+  .light .apple-glass {
+     background-color: rgba(255, 255, 255, 0.55);
+     border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .apple-glass-overlay {
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(var(--blur, 24px));
+    -webkit-backdrop-filter: blur(var(--blur, 24px));
   }
 }
 
