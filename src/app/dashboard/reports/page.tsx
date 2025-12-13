@@ -137,7 +137,7 @@ export default function ReportsPage() {
     }
 
     const csv = Papa.unparse(dataToExport);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-t8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
@@ -150,11 +150,11 @@ export default function ReportsPage() {
   
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="sm:ml-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
            <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="Select date range" />
             </SelectTrigger>
             <SelectContent>
@@ -165,7 +165,7 @@ export default function ReportsPage() {
             </SelectContent>
           </Select>
           <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Select report type" />
             </SelectTrigger>
             <SelectContent>
@@ -277,3 +277,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    

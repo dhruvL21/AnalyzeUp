@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-secondary/30">
+    <div className="flex items-center justify-center min-h-screen bg-secondary/30 p-4">
       <Card className="w-full max-w-sm apple-glass rounded-2xl">
         <CardHeader className="text-center">
             <div className='flex justify-center items-center mb-4'>

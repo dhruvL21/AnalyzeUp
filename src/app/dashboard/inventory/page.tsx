@@ -188,7 +188,7 @@ export default function InventoryPage() {
           <div className="ml-auto flex items-center gap-2">
             <Button size="sm" onClick={openAddDialog}>
               <PlusCircle className="h-4 w-4" />
-              <span>Add Product</span>
+              <span className="sr-only sm:not-sr-only">Add Product</span>
             </Button>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function InventoryPage() {
                   </TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Price</TableHead>
+                  <TableHead className="hidden md:table-cell">Price</TableHead>
                   <TableHead className="hidden md:table-cell">Stock</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
@@ -222,9 +222,9 @@ export default function InventoryPage() {
                       <TableCell className="hidden sm:table-cell">
                         <div className="aspect-square rounded-lg bg-secondary w-16 h-16 animate-pulse" />
                       </TableCell>
-                      <TableCell><div className='h-5 w-32 bg-secondary rounded-md animate-pulse'/></TableCell>
+                      <TableCell><div className='h-5 w-24 sm:w-32 bg-secondary rounded-md animate-pulse'/></TableCell>
                       <TableCell><div className='h-6 w-20 bg-secondary rounded-full animate-pulse'/></TableCell>
-                      <TableCell><div className='h-5 w-16 bg-secondary rounded-md animate-pulse'/></TableCell>
+                      <TableCell className="hidden md:table-cell"><div className='h-5 w-16 bg-secondary rounded-md animate-pulse'/></TableCell>
                       <TableCell className="hidden md:table-cell"><div className='h-5 w-10 bg-secondary rounded-md animate-pulse'/></TableCell>
                       <TableCell><div className='h-8 w-8 bg-secondary rounded-full animate-pulse'/></TableCell>
                     </TableRow>
@@ -260,7 +260,7 @@ export default function InventoryPage() {
                           : 'Out of Stock'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       ${typeof product.price === 'number' ? product.price.toFixed(2) : 'N/A'}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
@@ -336,9 +336,9 @@ export default function InventoryPage() {
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
-            <div className="md:col-span-2 space-y-2">
+            <div className="sm:col-span-2 space-y-2">
                 <DialogTitle>
                     {editingProduct ? 'Edit Product' : 'Add Product'}
                 </DialogTitle>
@@ -349,7 +349,7 @@ export default function InventoryPage() {
                 </DialogDescription>
             </div>
             
-            <div className="md:col-span-2 space-y-2">
+            <div className="sm:col-span-2 space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
                 id="name"
@@ -359,7 +359,7 @@ export default function InventoryPage() {
                 />
             </div>
 
-            <div className="md:col-span-2 space-y-2">
+            <div className="sm:col-span-2 space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                 id="description"
@@ -370,9 +370,9 @@ export default function InventoryPage() {
                 />
             </div>
           
-            <div className="md:col-span-2 space-y-2">
+            <div className="sm:col-span-2 space-y-2">
                 <Label htmlFor="image">Image</Label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
                     {imagePreview && (
                     <Image
                         src={imagePreview}
@@ -386,7 +386,7 @@ export default function InventoryPage() {
                     id="image"
                     name="image"
                     type="file"
-                    className="file:text-foreground"
+                    className="file:text-foreground flex-1"
                     onChange={handleFileChange}
                     accept="image/*"
                     />
@@ -475,7 +475,7 @@ export default function InventoryPage() {
                 </Select>
             </div>
 
-            <DialogFooter className="md:col-span-2 pt-4">
+            <DialogFooter className="sm:col-span-2 pt-4">
                 <DialogClose asChild>
                 <Button type="button" variant="secondary">
                     Cancel

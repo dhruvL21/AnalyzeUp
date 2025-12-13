@@ -17,7 +17,7 @@ function DashboardLoading() {
                 <div className="h-9 w-9 bg-secondary rounded-full"></div>
             </div>
          </div>
-         <main className="flex-1 p-6 md:p-8 bg-background">
+         <main className="flex-1 p-4 sm:p-6 md:p-8 bg-background">
          </main>
        </div>
     )
@@ -40,7 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 p-6 md:p-8 bg-background">{children}</main>
+      <main className="flex-1 p-4 sm:p-6 md:p-8 bg-background">{children}</main>
     </div>
   );
 }
