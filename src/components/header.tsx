@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useRouter } from 'next/navigation';
-import { LogOut, Settings, Menu } from 'lucide-react';
+import { LogOut, Settings, Menu, Sun, Moon } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -16,12 +16,14 @@ import { AnalyzeUpIcon } from './analyze-up-icon';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './ui/sheet';
 import { useUser, useAuth } from '@/firebase';
 import { signOut } from '@/firebase/auth/auth-service';
+import { useTheme } from 'next-themes';
 
 
 export function Header() {
   const router = useRouter();
   const { user } = useUser();
   const auth = useAuth();
+  const { theme, setTheme } = useTheme();
 
 
   const handleLogout = async () => {
@@ -46,6 +48,23 @@ export function Header() {
 
       <div className="flex flex-shrink-0 items-center justify-end gap-1">
         <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className='rounded-full' 
+                    onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                >
+                    <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle Theme</p>
+            </TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

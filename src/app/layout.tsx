@@ -21,12 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full dark" suppressHydrationWarning>
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased h-full bg-background`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
           <ClientOnly>
