@@ -56,7 +56,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary/30 p-4">
-      <Card className="w-full max-w-sm apple-glass rounded-2xl">
+      <Card className="w-full max-w-sm ios-glass rounded-3xl">
         <CardHeader className="text-center">
             <div className='flex justify-center items-center mb-4'>
                  <AnalyzeUpIcon className="h-8 w-8 text-primary" />

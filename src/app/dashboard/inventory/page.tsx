@@ -192,7 +192,7 @@ export default function InventoryPage() {
             </Button>
           </div>
         </div>
-        <Card className='shadow-none'>
+        <Card>
           <CardHeader>
             <CardTitle>Products</CardTitle>
             <CardDescription>
@@ -336,7 +336,7 @@ export default function InventoryPage() {
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-x-2"
         >
             <div className="sm:col-span-2 space-y-2">
                 <DialogTitle>

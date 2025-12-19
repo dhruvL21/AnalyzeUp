@@ -5,31 +5,31 @@
 
 @layer base {
   :root, .dark {
-    --background: 225 10% 10%; /* Near-black */
-    --foreground: 215 15% 90%; /* Light gray/white text */
-    --card: 225 8% 15%; /* Dark gray cards */
-    --card-foreground: 215 15% 90%;
-    --popover: 225 10% 12%;
-    --popover-foreground: 215 15% 88%;
-    --primary: 212 100% 50%; /* Apple Blue */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 225 10% 25%;
-    --secondary-foreground: 215 15% 90%;
-    --muted: 225 10% 25%;
-    --muted-foreground: 215 10% 60%;
-    --accent: 225 10% 25%;
-    --accent-foreground: 215 15% 90%;
-    --destructive: 0 84% 60%; /* Apple Red */
+    --background: 24 10% 4%; /* Dark, warm charcoal */
+    --foreground: 30 5% 95%; /* Off-white with a hint of warmth */
+    --card: 24 8% 10%; /* Slightly lighter dark card background */
+    --card-foreground: 30 5% 95%;
+    --popover: 24 10% 8%;
+    --popover-foreground: 30 5% 88%;
+    --primary: 30 95% 55%; /* Warm, brownish-orange */
+    --primary-foreground: 20 100% 10%;
+    --secondary: 24 10% 15%;
+    --secondary-foreground: 30 5% 90%;
+    --muted: 24 10% 15%;
+    --muted-foreground: 30 5% 60%;
+    --accent: 24 10% 15%;
+    --accent-foreground: 30 5% 90%;
+    --destructive: 0 84% 60%; 
     --destructive-foreground: 0 0% 100%;
-    --border: 225 10% 30%; /* Subtle borders */
-    --input: 225 10% 25%;
-    --ring: 212 100% 50%; /* Blue focus ring */
+    --border: 24 10% 20%; /* Subtle warm borders */
+    --input: 24 10% 15%;
+    --ring: 30 95% 55%; /* Warm focus ring */
     --radius: 0.75rem;
-    --chart-1: 212 100% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 340 95% 65%;
-    --chart-4: 25 95% 55%;
-    --chart-5: 280 85% 60%;
+    --chart-1: 30 95% 55%;
+    --chart-2: 20 80% 50%;
+    --chart-3: 40 90% 60%;
+    --chart-4: 15 85% 50%;
+    --chart-5: 35 80% 55%;
   }
 
   .light {
@@ -39,8 +39,8 @@
     --card-foreground: 240 10% 4%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 4%;
-    --primary: 212 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 30 95% 55%;
+    --primary-foreground: 20 100% 10%;
     --secondary: 220 9% 91%;
     --secondary-foreground: 240 5% 44%;
     --muted: 220 9% 91%;
@@ -51,7 +51,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 240 4% 89%;
     --input: 240 4% 89%;
-    --ring: 212 100% 50%;
+    --ring: 30 95% 55%;
   }
 }
 
@@ -61,16 +61,16 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
   h1, h2, h3, h4, h5, h6 {
       @apply tracking-tight;
   }
 }
 
-/* Custom Apple Glass Effect */
+/* Custom Glass Effect */
 @layer utilities {
-  .apple-glass {
+  .ios-glass {
     background-color: rgba(28, 28, 30, 0.6);
     backdrop-filter: blur(var(--blur, 24px)) saturate(180%);
     -webkit-backdrop-filter: blur(var(--blur, 24px)) saturate(180%);
@@ -78,19 +78,45 @@
     box-shadow: 0 8px 30px rgba(0,0,0,0.12);
   }
 
-  .light .apple-glass {
+  .light .ios-glass {
      background-color: rgba(255, 255, 255, 0.55);
      border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
-  .apple-glass-overlay {
+  .ios-glass-overlay {
     backdrop-filter: blur(var(--blur, 24px));
     -webkit-backdrop-filter: blur(var(--blur, 24px));
   }
 }
 
 
-/* Remove default grid background */
+/* Animated Background for Hero */
+.animated-grid-background {
+    position: relative;
+    overflow: hidden;
+}
+
 .animated-grid-background::before {
-    background-image: none;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background-image:
+        linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+        linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: moveGrid 20s linear infinite;
+    z-index: -1;
+    opacity: 0.2;
+}
+
+@keyframes moveGrid {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(-50%, -50%);
+    }
 }
