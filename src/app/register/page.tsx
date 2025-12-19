@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -88,8 +89,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
+              <Label htmlFor="password">Password</Label>              <Input
                 id="password"
                 type="password"
                 required
