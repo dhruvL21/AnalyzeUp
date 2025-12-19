@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -6,6 +7,8 @@ import { DataProvider } from '@/context/data-context';
 import ClientOnly from '@/components/ClientOnly';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: 'AnalyzeUp',
@@ -19,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full dark" suppressHydrationWarning>
-      <body className="antialiased h-full bg-background">
+      <body className={`${inter.variable} font-sans antialiased h-full bg-background`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

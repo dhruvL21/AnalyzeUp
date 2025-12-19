@@ -36,7 +36,7 @@ export function Header() {
       <div className="flex flex-shrink-0 items-center gap-2 font-semibold">
         <Link href="/dashboard" className="flex items-center gap-2">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-          <span className="hidden sm:inline-block text-lg font-semibold">AnalyzeUp</span>
+          <span className="hidden sm:inline-block text-xl font-semibold">AnalyzeUp</span>
         </Link>
       </div>
 

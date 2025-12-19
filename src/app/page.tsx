@@ -10,7 +10,7 @@ export default function LandingPage() {
       <header className="px-4 lg:px-6 h-16 flex items-center sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b">
         <Link href="/" className="flex items-center justify-center">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
-          <span className="ml-2 font-semibold text-foreground text-lg">AnalyzeUp</span>
+          <span className="ml-2 font-semibold text-xl">AnalyzeUp</span>
         </Link>
         <nav className="ml-auto flex gap-2 sm:gap-4 items-center">
           <Link
@@ -30,7 +30,7 @@ export default function LandingPage() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="w-full py-20 md:py-24 lg:py-32">
+        <section className="w-full py-20 md:py-24 lg:py-32 animated-grid-background">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-6">
