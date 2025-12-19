@@ -94,7 +94,7 @@ export function Header() {
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="apple-glass">
+          <SheetContent side="left" className="ios-glass">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <Nav isMobile={true} />
           </SheetContent>
