@@ -418,63 +418,65 @@ export default function InventoryPage() {
                 />
             </div>
             
-            <div className="space-y-2">
-                <Label htmlFor="categoryId">Category</Label>
-                <Select 
-                    name="categoryId" 
-                    value={selectedCategoryId}
-                    onValueChange={(value) => {
-                    if (value === 'create-new') {
-                        setIsCategoryDialogOpen(true);
-                    } else {
-                        setSelectedCategoryId(value);
-                    }
-                    }}
-                >
-                    <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                        </SelectItem>
-                    ))}
-                    <SelectItem value="create-new" className='italic text-primary'>
-                        Create new category...
-                    </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+            <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                  <Label htmlFor="categoryId">Category</Label>
+                  <Select 
+                      name="categoryId" 
+                      value={selectedCategoryId}
+                      onValueChange={(value) => {
+                      if (value === 'create-new') {
+                          setIsCategoryDialogOpen(true);
+                      } else {
+                          setSelectedCategoryId(value);
+                      }
+                      }}
+                  >
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                          </SelectItem>
+                      ))}
+                      <SelectItem value="create-new" className='italic text-primary'>
+                          Create new category...
+                      </SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="supplierId">Supplier</Label>
-                <Select 
-                    name="supplierId" 
-                    value={selectedSupplierId}
-                    onValueChange={(value) => {
-                    if (value === 'create-new-supplier') {
-                        setIsSupplierDialogOpen(true);
-                    } else {
-                        setSelectedSupplierId(value);
-                    }
-                    }}
-                    defaultValue={editingProduct?.supplierId}
-                >
-                    <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {suppliers.map((supplier) => (
-                        <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                        </SelectItem>
-                    ))}
-                    <SelectItem value="create-new-supplier" className='italic text-primary'>
-                        Create new supplier...
-                    </SelectItem>
-                    </SelectContent>
-                </Select>
+              <div className="space-y-2">
+                  <Label htmlFor="supplierId">Supplier</Label>
+                  <Select 
+                      name="supplierId" 
+                      value={selectedSupplierId}
+                      onValueChange={(value) => {
+                      if (value === 'create-new-supplier') {
+                          setIsSupplierDialogOpen(true);
+                      } else {
+                          setSelectedSupplierId(value);
+                      }
+                      }}
+                      defaultValue={editingProduct?.supplierId}
+                  >
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      {suppliers.map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                          {supplier.name}
+                          </SelectItem>
+                      ))}
+                      <SelectItem value="create-new-supplier" className='italic text-primary'>
+                          Create new supplier...
+                      </SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
             </div>
 
             <DialogFooter className="sm:col-span-2 pt-4">
@@ -554,3 +556,5 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
