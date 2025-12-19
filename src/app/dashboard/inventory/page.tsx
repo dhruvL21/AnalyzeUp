@@ -336,17 +336,19 @@ export default function InventoryPage() {
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-x-2"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 gap-y-6"
         >
             <div className="sm:col-span-2 space-y-2">
-                <DialogTitle>
-                    {editingProduct ? 'Edit Product' : 'Add Product'}
-                </DialogTitle>
-                <DialogDescription>
-                    {editingProduct
-                    ? 'Update the details of your product.'
-                    : 'Add a new product to your inventory.'}
-                </DialogDescription>
+                <DialogHeader>
+                    <DialogTitle>
+                        {editingProduct ? 'Edit Product' : 'Add Product'}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {editingProduct
+                        ? 'Update the details of your product.'
+                        : 'Add a new product to your inventory.'}
+                    </DialogDescription>
+                </DialogHeader>
             </div>
             
             <div className="sm:col-span-2 space-y-2">
