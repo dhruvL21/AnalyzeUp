@@ -11,7 +11,7 @@ const strategyPrompt = ai.definePrompt({
   name: 'businessStrategyPrompt',
   input: { schema: BusinessStrategyInputSchema },
   output: { schema: BusinessStrategySchema },
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-pro',
   prompt: `You are a world-class business strategist for e-commerce brands. Analyze the provided sales and product data to generate a concise, actionable growth strategy.
 
 Data:

@@ -11,7 +11,7 @@ const lowStockPrompt = ai.definePrompt({
     name: 'lowStockPrompt',
     input: { schema: LowStockInputSchema },
     output: { schema: LowStockOutputSchema },
-    model: 'googleai/gemini-1.5-flash',
+    model: 'googleai/gemini-pro',
     prompt: `You are an expert inventory management AI. Analyze the following product data to identify items that are at risk of stocking out soon.
 
 Product Data: {{{json products}}}
