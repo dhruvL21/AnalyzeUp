@@ -331,7 +331,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
             <DialogTitle>
                 {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -347,30 +347,32 @@ export default function InventoryPage() {
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4 gap-y-6 pt-4"
+          className="grid gap-6 pt-4"
         >
-            <div className="sm:col-span-2 space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                id="name"
-                name="name"
-                defaultValue={editingProduct?.name}
-                required
-                />
-            </div>
+            <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                    id="name"
+                    name="name"
+                    defaultValue={editingProduct?.name}
+                    required
+                    />
+                </div>
 
-            <div className="sm:col-span-2 space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                id="description"
-                name="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                />
+                <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                    id="description"
+                    name="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                    />
+                </div>
             </div>
           
-            <div className="sm:col-span-2 space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="image">Image</Label>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                     {imagePreview && (
@@ -392,90 +394,94 @@ export default function InventoryPage() {
                     />
                 </div>
             </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    step="0.01"
+                    defaultValue={editingProduct?.price}
+                    required
+                    />
+                </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="price">Price</Label>
-                <Input
-                id="price"
-                name="price"
-                type="number"
-                step="0.01"
-                defaultValue={editingProduct?.price}
-                required
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="stock">Stock</Label>
-                <Input
-                id="stock"
-                name="stock"
-                type="number"
-                defaultValue={editingProduct?.stock}
-                required
-                />
+                <div className="space-y-2">
+                    <Label htmlFor="stock">Stock</Label>
+                    <Input
+                    id="stock"
+                    name="stock"
+                    type="number"
+                    defaultValue={editingProduct?.stock}
+                    required
+                    />
+                </div>
             </div>
             
-            <div className="space-y-2">
-                <Label htmlFor="categoryId">Category</Label>
-                <Select 
-                    name="categoryId" 
-                    value={selectedCategoryId}
-                    onValueChange={(value) => {
-                    if (value === 'create-new') {
-                        setIsCategoryDialogOpen(true);
-                    } else {
-                        setSelectedCategoryId(value);
-                    }
-                    }}
-                >
-                    <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                        {category.name}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="categoryId">Category</Label>
+                    <Select 
+                        name="categoryId" 
+                        value={selectedCategoryId}
+                        onValueChange={(value) => {
+                        if (value === 'create-new') {
+                            setIsCategoryDialogOpen(true);
+                        } else {
+                            setSelectedCategoryId(value);
+                        }
+                        }}
+                    >
+                        <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                            </SelectItem>
+                        ))}
+                        <SelectItem value="create-new" className='italic text-primary'>
+                            Create new category...
                         </SelectItem>
-                    ))}
-                    <SelectItem value="create-new" className='italic text-primary'>
-                        Create new category...
-                    </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+                        </SelectContent>
+                    </Select>
+                </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="supplierId">Supplier</Label>
-                <Select 
-                    name="supplierId" 
-                    value={selectedSupplierId}
-                    onValueChange={(value) => {
-                    if (value === 'create-new-supplier') {
-                        setIsSupplierDialogOpen(true);
-                    } else {
-                        setSelectedSupplierId(value);
-                    }
-                    }}
-                    defaultValue={editingProduct?.supplierId}
-                >
-                    <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {suppliers.map((supplier) => (
-                        <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
+                <div className="space-y-2">
+                    <Label htmlFor="supplierId">Supplier</Label>
+                    <Select 
+                        name="supplierId" 
+                        value={selectedSupplierId}
+                        onValueChange={(value) => {
+                        if (value === 'create-new-supplier') {
+                            setIsSupplierDialogOpen(true);
+                        } else {
+                            setSelectedSupplierId(value);
+                        }
+                        }}
+                        defaultValue={editingProduct?.supplierId}
+                    >
+                        <SelectTrigger>
+                        <SelectValue placeholder="Select supplier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {suppliers.map((supplier) => (
+                            <SelectItem key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                            </SelectItem>
+                        ))}
+                        <SelectItem value="create-new-supplier" className='italic text-primary'>
+                            Create new supplier...
                         </SelectItem>
-                    ))}
-                    <SelectItem value="create-new-supplier" className='italic text-primary'>
-                        Create new supplier...
-                    </SelectItem>
-                    </SelectContent>
-                </Select>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
         </form>
-        <DialogFooter className="sm:col-span-2 pt-4">
+        <DialogFooter className="pt-4">
             <DialogClose asChild>
             <Button type="button" variant="secondary">
                 Cancel
