@@ -10,7 +10,7 @@ export type BusinessStrategy = z.infer<typeof BusinessStrategySchema>;
 
 const strategyPrompt = ai.definePrompt({
   name: 'businessStrategyPrompt',
-  model: 'gemini-pro',
+  model: googleAI.model('gemini-pro'),
   input: { schema: BusinessStrategyInputSchema },
   output: { schema: BusinessStrategySchema },
   prompt: `You are a world-class business strategist for e-commerce brands. Analyze the provided sales and product data to generate a concise, actionable growth strategy.

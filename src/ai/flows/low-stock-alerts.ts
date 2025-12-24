@@ -10,7 +10,7 @@ export type lowStockProduct = z.infer<typeof import('@/lib/types.zod').LowStockP
 
 const lowStockPrompt = ai.definePrompt({
     name: 'lowStockPrompt',
-    model: 'gemini-pro',
+    model: googleAI.model('gemini-pro'),
     input: { schema: LowStockInputSchema },
     output: { schema: LowStockOutputSchema },
     prompt: `You are an expert inventory management AI. Analyze the following product data to identify items that are at risk of stocking out soon.
