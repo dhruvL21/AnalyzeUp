@@ -4,6 +4,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { LowStockInputSchema, LowStockOutputSchema } from '@/lib/types.zod';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export type lowStockProduct = z.infer<typeof import('@/lib/types.zod').LowStockProductSchema>;
 
@@ -11,7 +12,7 @@ const lowStockPrompt = ai.definePrompt({
     name: 'lowStockPrompt',
     input: { schema: LowStockInputSchema },
     output: { schema: LowStockOutputSchema },
-    model: 'googleai/gemini-pro',
+    model: googleAI.model('gemini-pro'),
     prompt: `You are an expert inventory management AI. Analyze the following product data to identify items that are at risk of stocking out soon.
 
 Product Data: {{{json products}}}
