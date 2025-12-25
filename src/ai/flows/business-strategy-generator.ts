@@ -4,13 +4,11 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { ProductSchema, TransactionSchema, BusinessStrategyInputSchema, BusinessStrategySchema } from '@/lib/types.zod';
-import { googleAI } from '@genkit-ai/google-genai';
 
 export type BusinessStrategy = z.infer<typeof BusinessStrategySchema>;
 
 const strategyPrompt = ai.definePrompt({
   name: 'businessStrategyPrompt',
-  model: googleAI.model('gemini-pro'),
   input: { schema: BusinessStrategyInputSchema },
   output: { schema: BusinessStrategySchema },
   prompt: `You are a world-class business strategist for e-commerce brands. Analyze the provided sales and product data to generate a concise, actionable growth strategy.
@@ -48,5 +46,3 @@ export async function generateBusinessStrategy(
 ): Promise<BusinessStrategy> {
   return await businessStrategyFlow(input);
 }
-
-    
