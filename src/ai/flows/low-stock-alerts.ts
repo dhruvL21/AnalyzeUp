@@ -49,3 +49,5 @@ export async function getLowStockSuggestions(
 ): Promise<z.infer<typeof LowStockOutputSchema>> {
     return await lowStockAlertsFlow(input);
 }
+
+    
