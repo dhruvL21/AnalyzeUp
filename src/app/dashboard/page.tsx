@@ -247,7 +247,7 @@ export default function DashboardPage() {
       </div>
 
        <div className="grid grid-cols-1 gap-8">
-         {/* <AIStockAdvisor /> */}
+         <AIStockAdvisor />
       </div>
 
        <div className="grid grid-cols-1 gap-8">
@@ -321,3 +321,4 @@ export default function DashboardPage() {
 }
 
     
+
