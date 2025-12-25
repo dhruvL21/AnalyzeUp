@@ -3,7 +3,7 @@
 /**
  * @fileOverview This file implements the AI Stock Advisor flow, which analyzes sales data
  * and supplier lead times to identify products at risk of stocking out and recommend
- * a reorder quantity.
+* a reorder quantity.
  *
  * @exports aiStockAdvisor - A function that takes product and sales data to predict stockouts and suggest reorder quantities.
  * @exports AIStockAdvisorInput - The input type for the aiStockAdvisor function.
