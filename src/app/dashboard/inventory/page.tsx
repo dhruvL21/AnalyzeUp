@@ -375,19 +375,18 @@ export default function InventoryPage() {
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid auto-rows-max items-start gap-4 lg:gap-6"
+          className="grid auto-rows-max items-start gap-4 py-4"
         >
-          <div className="grid gap-3">
+          <div className="grid gap-2">
               <Label htmlFor="name">Name</Label>
               <Input
               id="name"
               name="name"
               defaultValue={editingProduct?.name}
               required
-              className="w-full"
               />
           </div>
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
@@ -397,7 +396,7 @@ export default function InventoryPage() {
               required
             />
           </div>
-           <div className="grid gap-3">
+           <div className="grid gap-2">
                 <Label htmlFor="image">Image</Label>
                 <div className="flex items-center gap-4">
                     {imagePreview && (
@@ -420,7 +419,7 @@ export default function InventoryPage() {
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-3">
+              <div className="grid gap-2">
                 <Label htmlFor="price">Price</Label>
                 <Input
                   id="price"
@@ -431,7 +430,7 @@ export default function InventoryPage() {
                   required
                 />
               </div>
-              <div className="grid gap-3">
+              <div className="grid gap-2">
                 <Label htmlFor="stock">Stock</Label>
                 <Input
                   id="stock"
@@ -443,7 +442,7 @@ export default function InventoryPage() {
               </div>
             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="grid gap-3">
+                <div className="grid gap-2">
                     <Label htmlFor="categoryId">Category</Label>
                     <Select 
                         name="categoryId" 
@@ -471,7 +470,7 @@ export default function InventoryPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="grid gap-3">
+                <div className="grid gap-2">
                     <Label htmlFor="supplierId">Supplier</Label>
                     <Select 
                         name="supplierId" 
@@ -578,3 +577,5 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
