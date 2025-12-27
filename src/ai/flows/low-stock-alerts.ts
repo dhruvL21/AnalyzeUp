@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 /* ----------------------------- INPUT SCHEMA ----------------------------- */
 
@@ -57,6 +58,7 @@ const aiStockAdvisorPrompt = ai.definePrompt({
   output: {
     schema: AIStockAdvisorOutputSchema,
   },
+  model: googleAI('gemini-1.5-flash-latest'),
   prompt: `
 You are an AI inventory management assistant.
 
