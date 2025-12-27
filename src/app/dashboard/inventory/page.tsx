@@ -325,11 +325,6 @@ export default function InventoryPage() {
                 </TableBody>
               </Table>
             </CardContent>
-             <GradualBlur
-                position="top"
-                height="8rem"
-                strength={2}
-            />
             <GradualBlur
                 position="bottom"
                 height="8rem"
