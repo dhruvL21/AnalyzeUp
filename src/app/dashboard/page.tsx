@@ -30,6 +30,7 @@ import { useMemo } from 'react';
 import { useData } from '@/context/data-context';
 import { SalesChart } from '@/components/sales-chart';
 import { AIStockAdvisor } from '@/components/ai-stock-advisor';
+import GradualBlur from '@/components/ui/GradualBlur';
 
 
 function DashboardLoading() {
@@ -271,54 +272,54 @@ export default function DashboardPage() {
             An overview of the latest inventory movements.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead className="text-right">Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell className="font-medium">
-                    {products.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        transaction.type === 'Sale'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                      className="capitalize"
-                    >
-                      <div className="flex items-center">
-                        {transaction.type === 'Sale' ? (
-                          <ArrowDownRight className="mr-1 h-3 w-3" />
-                        ) : (
-                          <ArrowUpRight className="mr-1 h-3 w-3" />
-                        )}
-                        {transaction.type}
-                      </div>
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{transaction.quantity}</TableCell>
-                  <TableCell className="text-right">
-                    {new Date(transaction.transactionDate as string).toLocaleDateString()}
-                  </TableCell>
+        <div className="relative">
+          <CardContent className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead className="text-right">Date</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
+              </TableHeader>
+              <TableBody>
+                {recentTransactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell className="font-medium">
+                      {products.find(p => p.id === transaction.productId)?.name || 'Unknown Product'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          transaction.type === 'Sale'
+                            ? 'destructive'
+                            : 'secondary'
+                        }
+                        className="capitalize"
+                      >
+                        <div className="flex items-center">
+                          {transaction.type === 'Sale' ? (
+                            <ArrowDownRight className="mr-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpRight className="mr-1 h-3 w-3" />
+                          )}
+                          {transaction.type}
+                        </div>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{transaction.quantity}</TableCell>
+                    <TableCell className="text-right">
+                      {new Date(transaction.transactionDate as string).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+          <GradualBlur position="bottom" height="8rem" strength={2} />
+        </div>
       </Card>
     </div>
   );
 }
-
-    
-

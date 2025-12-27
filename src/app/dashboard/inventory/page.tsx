@@ -193,15 +193,15 @@ export default function InventoryPage() {
             </Button>
           </div>
         </div>
-        <Card>
+        <Card className="flex flex-col flex-1">
           <CardHeader>
             <CardTitle>Products</CardTitle>
             <CardDescription>
               Manage your products and view their inventory levels.
             </CardDescription>
           </CardHeader>
-          <div className="relative">
-            <CardContent>
+          <div className="relative flex-1 flex flex-col min-h-0">
+             <CardContent className="flex-1 overflow-auto p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
