@@ -317,9 +317,10 @@ export default function DashboardPage() {
               </TableBody>
             </Table>
           </CardContent>
-          <GradualBlur position="bottom" height="8rem" strength={2} />
         </div>
       </Card>
     </div>
   );
 }
+
+    

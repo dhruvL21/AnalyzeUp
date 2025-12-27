@@ -82,6 +82,8 @@ export default function InventoryPage() {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add("revealed");
+          } else {
+            entry.target.classList.remove("revealed");
           }
         });
       },
@@ -349,11 +351,6 @@ export default function InventoryPage() {
                 </TableBody>
               </Table>
             </CardContent>
-            <GradualBlur
-                position="bottom"
-                height="8rem"
-                strength={2}
-            />
           </div>
         </Card>
       </div>
@@ -589,3 +586,5 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    

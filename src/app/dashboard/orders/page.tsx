@@ -209,7 +209,6 @@ export default function OrdersPage() {
                 </TableBody>
               </Table>
             </CardContent>
-            <GradualBlur position="bottom" height="8rem" strength={2} />
           </div>
         </Card>
       </div>
@@ -327,3 +326,5 @@ export default function OrdersPage() {
     </>
   );
 }
+
+    
