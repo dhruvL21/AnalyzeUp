@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 
 const SalesStrategyInputSchema = z.object({
   salesData: z
@@ -41,7 +40,6 @@ const prompt = ai.definePrompt({
   name: 'aiSalesStrategyPrompt',
   input: {schema: SalesStrategyInputSchema},
   output: {schema: SalesStrategyOutputSchema},
-  model: googleAI.model('gemini-1.5-flash-001'),
   prompt: `You are a business strategy consultant. Analyze the provided sales, product, and market data to generate a business growth strategy.
 
 Sales Data: {{{salesData}}}
