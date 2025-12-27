@@ -183,7 +183,7 @@ export default function InventoryPage() {
 
   return (
     <>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 h-full">
         <div className="flex items-center">
           <h1 className="text-2xl font-semibold md:text-3xl">Inventory</h1>
           <div className="ml-auto flex items-center gap-2">
@@ -193,15 +193,15 @@ export default function InventoryPage() {
             </Button>
           </div>
         </div>
-        <Card>
+        <Card className="flex-1 flex flex-col">
           <CardHeader>
             <CardTitle>Products</CardTitle>
             <CardDescription>
               Manage your products and view their inventory levels.
             </CardDescription>
           </CardHeader>
-          <div className="relative">
-            <CardContent className="h-[600px] overflow-y-auto">
+          <div className="relative flex-1 overflow-hidden">
+            <CardContent className="h-full overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -219,7 +219,7 @@ export default function InventoryPage() {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
+                    Array.from({ length: 8 }).map((_, i) => (
                       <TableRow key={i}>
                         <TableCell className="hidden sm:table-cell">
                           <div className="aspect-square rounded-lg bg-secondary w-16 h-16 animate-pulse" />
@@ -565,7 +565,5 @@ export default function InventoryPage() {
     </>
   );
 }
-
-    
 
     
