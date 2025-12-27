@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,7 +44,7 @@ import GradualBlur from '@/components/ui/GradualBlur';
 
 
 export default function SuppliersPage() {
-  const { suppliers, products, addSupplier, deleteSupplier } = useData();
+  const { suppliers, products, addSupplier, deleteSupplier, isLoading } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const supplierProductCount = useMemo(() => {
@@ -54,6 +54,32 @@ export default function SuppliersPage() {
     });
     return count;
   }, [suppliers, products]);
+
+  useEffect(() => {
+    if (isLoading || suppliers.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+          } else {
+            entry.target.classList.remove("revealed");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.1,
+        rootMargin: "0px 0px -10% 0px"
+      }
+    );
+
+    const items = document.querySelectorAll(".scroll-reveal-item");
+    items.forEach(el => observer.observe(el));
+
+    return () => items.forEach(el => observer.unobserve(el));
+  }, [suppliers, isLoading]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,7 +119,7 @@ export default function SuppliersPage() {
         <div className="relative">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {suppliers.map((supplier) => (
-                <Card key={supplier.id}>
+                <Card key={supplier.id} className="scroll-reveal-item">
                 <CardHeader className="flex flex-row items-start justify-between">
                     <div>
                     <CardTitle>{supplier.name}</CardTitle>
@@ -198,5 +224,3 @@ export default function SuppliersPage() {
     </>
   );
 }
-
-    
