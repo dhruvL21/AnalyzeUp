@@ -13,7 +13,7 @@ export const ai = genkit({
       // The API key is defined in the .env file.
       // You can get a key at https://aistudio.google.com/app/apikey
       apiKey: process.env.GOOGLE_API_KEY,
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-1.5-flash',
     }),
   ],
 });

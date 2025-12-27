@@ -41,7 +41,7 @@ const prompt = ai.definePrompt({
   name: 'aiSalesStrategyPrompt',
   input: {schema: SalesStrategyInputSchema},
   output: {schema: SalesStrategyOutputSchema},
-  model: googleAI.model('gemini-1.5-flash-latest'),
+  model: googleAI.model('gemini-1.5-flash'),
   prompt: `You are a business strategy consultant. Analyze the provided sales, product, and market data to generate a business growth strategy.
 
 Sales Data: {{{salesData}}}
