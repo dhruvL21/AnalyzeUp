@@ -73,4 +73,32 @@ export const mockOrders: PurchaseOrder[] = [
         createdAt: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString(),
         updatedAt: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString(),
     },
+    ...Array.from({ length: 74 }, (_, i) => {
+        const id = 7 + i;
+        const suppliers = ['SUP001', 'SUP002', 'SUP003'];
+        const statuses: ('Pending' | 'Fulfilled' | 'Cancelled')[] = ['Pending', 'Fulfilled', 'Cancelled'];
+        const orderDate = new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 30)));
+        const status = statuses[i % statuses.length];
+        let expectedDeliveryDate;
+        if (status === 'Fulfilled') {
+            expectedDeliveryDate = new Date(orderDate.getTime());
+            expectedDeliveryDate.setDate(orderDate.getDate() + Math.floor(Math.random() * 5) + 2);
+        } else {
+            expectedDeliveryDate = new Date(orderDate.getTime());
+            expectedDeliveryDate.setDate(orderDate.getDate() + Math.floor(Math.random() * 10) + 5);
+        }
+
+        return {
+            id: `PO-${String(id).padStart(3, '0')}`,
+            tenantId: 'tenant-1',
+            supplierId: suppliers[i % suppliers.length],
+            orderDate: orderDate.toISOString(),
+            expectedDeliveryDate: expectedDeliveryDate.toISOString(),
+            status: status,
+            productId: `PROD${String(i + 1).padStart(3, '0')}`,
+            quantity: Math.floor(Math.random() * 91) + 10,
+            createdAt: orderDate.toISOString(),
+            updatedAt: orderDate.toISOString(),
+        };
+    })
 ];
