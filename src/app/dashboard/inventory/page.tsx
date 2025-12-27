@@ -54,6 +54,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/context/data-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GradualBlur from '@/components/ui/GradualBlur';
 
 
 export default function InventoryPage() {
@@ -199,130 +200,142 @@ export default function InventoryPage() {
               Manage your products and view their inventory levels.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="hidden w-[100px] sm:table-cell">
-                    <span className="sr-only">Image</span>
-                  </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">Price</TableHead>
-                  <TableHead className="hidden md:table-cell">Stock</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
+          <div className="relative h-[600px] overflow-hidden">
+            <CardContent className="h-full overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="hidden w-[100px] sm:table-cell">
+                      <span className="sr-only">Image</span>
+                    </TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Price</TableHead>
+                    <TableHead className="hidden md:table-cell">Stock</TableHead>
+                    <TableHead>
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="hidden sm:table-cell">
+                          <div className="aspect-square rounded-lg bg-secondary w-16 h-16 animate-pulse" />
+                        </TableCell>
+                        <TableCell><div className='h-5 w-24 sm:w-32 bg-secondary rounded-md animate-pulse'/></TableCell>
+                        <TableCell><div className='h-6 w-20 bg-secondary rounded-full animate-pulse'/></TableCell>
+                        <TableCell className="hidden md:table-cell"><div className='h-5 w-16 bg-secondary rounded-md animate-pulse'/></TableCell>
+                        <TableCell className="hidden md:table-cell"><div className='h-5 w-10 bg-secondary rounded-md animate-pulse'/></TableCell>
+                        <TableCell><div className='h-8 w-8 bg-secondary rounded-full animate-pulse'/></TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                  products.map((product) => (
+                    <TableRow key={product.id}>
                       <TableCell className="hidden sm:table-cell">
-                        <div className="aspect-square rounded-lg bg-secondary w-16 h-16 animate-pulse" />
+                        <Image
+                          alt={product.name}
+                          className="aspect-square rounded-lg object-cover"
+                          height="64"
+                          src={product.imageUrl || 'https://placehold.co/64x64'}
+                          width="64"
+                          unoptimized
+                        />
                       </TableCell>
-                      <TableCell><div className='h-5 w-24 sm:w-32 bg-secondary rounded-md animate-pulse'/></TableCell>
-                      <TableCell><div className='h-6 w-20 bg-secondary rounded-full animate-pulse'/></TableCell>
-                      <TableCell className="hidden md:table-cell"><div className='h-5 w-16 bg-secondary rounded-md animate-pulse'/></TableCell>
-                      <TableCell className="hidden md:table-cell"><div className='h-5 w-10 bg-secondary rounded-md animate-pulse'/></TableCell>
-                      <TableCell><div className='h-8 w-8 bg-secondary rounded-full animate-pulse'/></TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="hidden sm:table-cell">
-                      <Image
-                        alt={product.name}
-                        className="aspect-square rounded-lg object-cover"
-                        height="64"
-                        src={product.imageUrl || 'https://placehold.co/64x64'}
-                        width="64"
-                        unoptimized
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          product.stock > 20
-                            ? 'outline'
+                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            product.stock > 20
+                              ? 'outline'
+                              : product.stock > 0
+                              ? 'secondary'
+                              : 'destructive'
+                          }
+                        >
+                          {product.stock > 20
+                            ? 'In Stock'
                             : product.stock > 0
-                            ? 'secondary'
-                            : 'destructive'
-                        }
-                      >
-                        {product.stock > 20
-                          ? 'In Stock'
-                          : product.stock > 0
-                          ? 'Low Stock'
-                          : 'Out of Stock'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      ${typeof product.price === 'number' ? product.price.toFixed(2) : 'N/A'}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {product.stock}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                            className='rounded-full'
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem
-                            onClick={() => openEditDialog(product)}
-                          >
-                            Edit
-                          </DropdownMenuItem>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem
-                                onSelect={(e) => e.preventDefault()}
-                                className="text-destructive"
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Are you sure?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. This will
-                                  permanently delete the product.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => deleteProduct(product.id)}
+                            ? 'Low Stock'
+                            : 'Out of Stock'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        ${typeof product.price === 'number' ? product.price.toFixed(2) : 'N/A'}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {product.stock}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              aria-haspopup="true"
+                              size="icon"
+                              variant="ghost"
+                              className='rounded-full'
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => openEditDialog(product)}
+                            >
+                              Edit
+                            </DropdownMenuItem>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                  className="text-destructive"
                                 >
                                   Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )))}
-              </TableBody>
-            </Table>
-          </CardContent>
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Are you sure?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will
+                                    permanently delete the product.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteProduct(product.id)}
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )))}
+                </TableBody>
+              </Table>
+            </CardContent>
+             <GradualBlur
+                position="top"
+                height="8rem"
+                strength={2}
+            />
+            <GradualBlur
+                position="bottom"
+                height="8rem"
+                strength={2}
+            />
+          </div>
         </Card>
       </div>
 
