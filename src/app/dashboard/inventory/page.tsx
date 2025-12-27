@@ -359,7 +359,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl ios-glass">
         <DialogHeader>
             <DialogTitle>
                 {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -515,7 +515,7 @@ export default function InventoryPage() {
 
     {/* Add Category Dialog */}
     <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent>
+        <DialogContent className="ios-glass">
             <DialogHeader>
                 <DialogTitle>Add New Category</DialogTitle>
                 <DialogDescription>Create a new category for your products.</DialogDescription>
@@ -541,7 +541,7 @@ export default function InventoryPage() {
 
     {/* Add Supplier Dialog */}
     <Dialog open={isSupplierDialogOpen} onOpenChange={setIsSupplierDialogOpen}>
-      <DialogContent>
+      <DialogContent className="ios-glass">
         <DialogHeader>
           <DialogTitle>Add New Supplier</DialogTitle>
         </DialogHeader>

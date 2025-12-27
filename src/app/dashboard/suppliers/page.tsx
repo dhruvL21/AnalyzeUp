@@ -185,7 +185,7 @@ export default function SuppliersPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md ios-glass">
           <DialogHeader>
             <DialogTitle>Add New Supplier</DialogTitle>
           </DialogHeader>
