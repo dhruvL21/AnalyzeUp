@@ -91,7 +91,7 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
           {pathname === item.href && (
             <motion.span
               layoutId="active-nav-link"
-              className="absolute inset-0 bg-accent rounded-full -z-10"
+              className="absolute inset-0 bg-accent rounded-full -z-10 border border-white/10 shadow-md"
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             />
           )}
