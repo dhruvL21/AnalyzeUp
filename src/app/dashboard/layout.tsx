@@ -17,7 +17,7 @@ function DashboardLoading() {
                 <div className="h-9 w-9 bg-secondary rounded-full"></div>
             </div>
          </div>
-         <main className="flex-1 p-4 sm:p-6 md:p-8 bg-background overflow-hidden">
+         <main className="flex-1 p-4 sm:p-6 md:p-8 bg-background overflow-auto">
          </main>
        </div>
     )
@@ -40,7 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col h-screen">
       <Header />
-      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-hidden">{children}</main>
+      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">{children}</main>
     </div>
   );
 }

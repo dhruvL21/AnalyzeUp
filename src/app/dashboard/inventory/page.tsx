@@ -201,7 +201,7 @@ export default function InventoryPage() {
             </CardDescription>
           </CardHeader>
           <div className="relative">
-            <CardContent className="h-[60vh] overflow-y-auto">
+            <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
