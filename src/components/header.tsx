@@ -34,7 +34,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between gap-2 px-4 lg:px-6 ios-glass">
+    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between gap-2 px-4 lg:px-6 navbar">
       <div className="flex flex-shrink-0 items-center gap-2 font-semibold">
         <Link href="/dashboard" className="flex items-center gap-2">
           <AnalyzeUpIcon className="h-6 w-6 text-primary" />
