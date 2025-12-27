@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -73,6 +73,30 @@ export default function InventoryPage() {
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | undefined>(undefined);
 
   const productFormRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (isLoading || products.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.1,
+        rootMargin: "0px 0px -10% 0px"
+      }
+    );
+
+    const items = document.querySelectorAll(".inventory-item");
+    items.forEach(el => observer.observe(el));
+
+    return () => items.forEach(el => observer.unobserve(el));
+  }, [products, isLoading]);
 
 
   const resetFormState = () => {
@@ -233,7 +257,7 @@ export default function InventoryPage() {
                     ))
                   ) : (
                   products.map((product) => (
-                    <TableRow key={product.id}>
+                    <TableRow key={product.id} className="inventory-item">
                       <TableCell className="hidden sm:table-cell">
                         <Image
                           alt={product.name}
