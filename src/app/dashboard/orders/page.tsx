@@ -57,7 +57,7 @@ import GradualBlur from '@/components/ui/GradualBlur';
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
 export default function OrdersPage() {
-  const { orders, suppliers, products, addOrder, deleteOrder, updateOrderStatus } from useData();
+  const { orders, suppliers, products, addOrder, deleteOrder, updateOrderStatus } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
 
