@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AnalyzeUpIcon } from "./analyze-up-icon";
+import { motion } from "framer-motion";
 
 const navItems = [
   {
@@ -82,11 +83,18 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
         <Link 
             key={item.href}
             href={item.href}
-            className={cn("transition-colors hover:text-foreground/80 px-4 py-1.5 rounded-full cursor-pointer",
-                pathname === item.href ? "text-accent-foreground bg-accent" : "text-muted-foreground"
+            className={cn("transition-colors hover:text-foreground/80 px-4 py-1.5 rounded-full cursor-pointer relative",
+                pathname === item.href ? "text-accent-foreground" : "text-muted-foreground"
             )}
         >
           {item.label}
+          {pathname === item.href && (
+            <motion.span
+              layoutId="active-nav-link"
+              className="absolute inset-0 bg-accent rounded-full -z-10"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            />
+          )}
         </Link>
       ))}
     </nav>
