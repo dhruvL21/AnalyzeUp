@@ -33,6 +33,7 @@ export interface Product {
   averageDailySales: number;
   leadTimeDays: number;
   userId?: string;
+  tenantId?: string;
 }
 
 export interface Category {
@@ -62,6 +63,7 @@ export interface Transaction {
   createdAt: string | FieldValue;
   updatedAt: string | FieldValue;
   userId?: string;
+  tenantId?: string;
 }
 
 export interface Supplier {
@@ -74,6 +76,7 @@ export interface Supplier {
   createdAt: string | FieldValue;
   updatedAt: string | FieldValue;
   userId?: string;
+  tenantId?: string;
 }
 
 export interface PurchaseOrder {
@@ -87,4 +90,5 @@ export interface PurchaseOrder {
   createdAt: string | FieldValue;
   updatedAt: string | FieldValue;
   userId?: string;
+  tenantId?: string;
 }

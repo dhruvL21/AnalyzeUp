@@ -359,7 +359,7 @@ export default function InventoryPage() {
         setIsFormDialogOpen(isOpen);
         if (!isOpen) resetFormState();
     }}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
             <DialogTitle>
                 {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -375,7 +375,7 @@ export default function InventoryPage() {
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8"
+          className="grid auto-rows-max items-start gap-4 lg:gap-6"
         >
           <div className="grid gap-3">
               <Label htmlFor="name">Name</Label>
@@ -419,7 +419,7 @@ export default function InventoryPage() {
                     />
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-3">
                 <Label htmlFor="price">Price</Label>
                 <Input
@@ -442,7 +442,7 @@ export default function InventoryPage() {
                 />
               </div>
             </div>
-             <div className="grid grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-3">
                     <Label htmlFor="categoryId">Category</Label>
                     <Select 
@@ -578,9 +578,3 @@ export default function InventoryPage() {
     </>
   );
 }
-
-    
-
-    
-
-    

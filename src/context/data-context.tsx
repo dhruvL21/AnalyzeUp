@@ -209,9 +209,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         if (product) {
             batch.update(productRef, { stock: product.stock + orderToUpdate.quantity });
         }
-        toast({ title: 'Order Fulfilled', description: `Order ${orderId} marked as fulfilled and stock updated.` });
+        toast({ title: 'Order Fulfilled', description: `Order ${orderId.substring(0,8)}... marked as fulfilled and stock updated.` });
     } else {
-        toast({ title: 'Order Status Updated', description: `Order ${orderId} has been marked as ${status}.` });
+        toast({ title: 'Order Status Updated', description: `Order ${orderId.substring(0,8)}... has been marked as ${status}.` });
     }
     
     batch.commit().catch((serverError) => {
@@ -266,7 +266,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    let isSeeding = false;
     const checkForDataAndSeed = async () => {
+        if (isSeeding) return;
         const collectionsToCheck = [productsRef, suppliersRef, ordersRef, transactionsRef, categoriesRef];
         let isDbEmpty = true;
 
@@ -281,6 +283,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (isDbEmpty) {
+            isSeeding = true;
             console.log('Seeding initial data for new user...');
             const batch = writeBatch(firestore);
 
@@ -312,6 +315,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
             batch.commit().then(() => {
                 console.log('Initial data seeded successfully.');
+                isSeeding = false;
             }).catch(error => {
                 console.error("Error seeding data: ", error);
                 errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -319,6 +323,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
                     operation: 'create',
                     requestResourceData: 'Initial Seed Data Batch'
                 }));
+                isSeeding = false;
             });
         }
     };
@@ -375,7 +380,3 @@ export const useData = () => {
   }
   return context;
 };
-
-    
-
-    
