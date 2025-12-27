@@ -12,6 +12,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {googleAI} from '@genkit-ai/google-genai';
 
 const AIStockAdvisorInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
@@ -44,6 +45,7 @@ const aiStockAdvisorPrompt = ai.definePrompt({
   name: 'aiStockAdvisorPrompt',
   input: {schema: AIStockAdvisorInputSchema},
   output: {schema: AIStockAdvisorOutputSchema},
+  model: googleAI.model('gemini-1.5-flash-001'),
   prompt: `You are an AI assistant that analyzes sales data and supplier lead times to determine if a product is at risk of stocking out and recommends a reorder quantity.
 
   Analyze the following data to determine the stockout risk and suggest a reorder quantity:
