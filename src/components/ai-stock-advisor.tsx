@@ -11,12 +11,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Bot, Lightbulb, Loader2 } from 'lucide-react';
+import { AlertCircle, Bot, Lightbulb, Loader2, CheckCircle } from 'lucide-react';
 import { useData } from '@/context/data-context';
 import type { AIStockAdvisorOutput } from '@/ai/flows/low-stock-alerts';
 import { aiStockAdvisor } from '@/ai/flows/low-stock-alerts';
 import { generateSalesStrategy } from '@/ai/flows/business-strategy-generator';
 import type { SalesStrategyOutput } from '@/ai/flows/business-strategy-generator';
+import { Badge } from './ui/badge';
 
 export function AIStockAdvisor() {
   const { products, transactions } = useData();
@@ -56,19 +57,20 @@ export function AIStockAdvisor() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-            <CardHeader>
+            <CardHeader className="relative bg-gradient-to-br from-secondary/50 to-background rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
-                <Bot />
+                <CheckCircle className="text-primary"/>
                 AI Stock Advisor
                 </CardTitle>
                 <CardDescription>
                 Get intelligent recommendations for products that are running low on
                 stock based on sales velocity and lead times.
                 </CardDescription>
+                 {recommendations.length > 0 && <Badge variant="secondary" className="absolute top-4 right-4">Verified</Badge>}
             </CardHeader>
             <CardContent>
                 {recommendations.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-6">
                     {recommendations.map((item, index) => (
                     <div
                         key={index}
@@ -89,7 +91,7 @@ export function AIStockAdvisor() {
                     ))}
                 </div>
                 ) : (
-                <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-muted rounded-lg h-full">
+                <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-muted rounded-lg h-full mt-6">
                     <AlertCircle className="h-10 w-10 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">
                     No recommendations available yet. Click the button to analyze your
@@ -107,18 +109,19 @@ export function AIStockAdvisor() {
         </Card>
 
         <Card>
-            <CardHeader>
+            <CardHeader className="relative bg-gradient-to-br from-secondary/50 to-background rounded-t-lg">
                 <CardTitle className='flex items-center gap-2'>
-                    <Lightbulb />
+                    <CheckCircle className='text-primary' />
                     AI Strategy Generator
                 </CardTitle>
                 <CardDescription>
                     Receive an AI-powered growth strategy based on your sales and product data.
                 </CardDescription>
+                 {strategy && <Badge variant="secondary" className="absolute top-4 right-4">Verified</Badge>}
             </CardHeader>
             <CardContent>
                  {strategy ? (
-                    <div className="space-y-4">
+                    <div className="space-y-4 pt-6">
                         <h4 className="font-semibold">{strategy.strategySummary}</h4>
                         <div>
                             <p className='font-medium text-sm'>Key Recommendations:</p>
@@ -134,7 +137,7 @@ export function AIStockAdvisor() {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-muted rounded-lg h-full">
+                    <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-muted rounded-lg h-full mt-6">
                         <Lightbulb className="h-10 w-10 text-muted-foreground mb-4" />
                         <p className="text-muted-foreground">
                         Generate a business strategy based on your current performance data.
