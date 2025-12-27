@@ -15,8 +15,8 @@ import { AlertCircle, Bot, Lightbulb, Loader2, CheckCircle } from 'lucide-react'
 import { useData } from '@/context/data-context';
 import type { AIStockAdvisorOutput } from '@/ai/flows/low-stock-alerts';
 import { aiStockAdvisor } from '@/ai/flows/low-stock-alerts';
-import { generateSalesStrategy } from '@/ai/flows/business-strategy-generator';
-import type { SalesStrategyOutput } from '@/ai/flows/business-strategy-generator';
+import { generateBusinessStrategy } from '@/ai/flows/business-strategy-generator';
+import type { BusinessStrategyOutput } from '@/ai/flows/business-strategy-generator';
 import { Badge } from './ui/badge';
 
 export function AIStockAdvisor() {
@@ -25,7 +25,7 @@ export function AIStockAdvisor() {
   const [isStrategyPending, startStrategyTransition] = useTransition();
 
   const [recommendations, setRecommendations] = useState<AIStockAdvisorOutput[]>([]);
-  const [strategy, setStrategy] = useState<SalesStrategyOutput | null>(null);
+  const [strategy, setStrategy] = useState<BusinessStrategyOutput | null>(null);
 
   const handleGetSuggestions = () => {
     startTransition(async () => {
@@ -49,7 +49,7 @@ export function AIStockAdvisor() {
         const salesData = JSON.stringify(transactions.filter(t => t.type === 'Sale'));
         const productData = JSON.stringify(products);
         
-        const result = await generateSalesStrategy({ salesData, productData });
+        const result = await generateBusinessStrategy({ salesData, productData });
         setStrategy(result);
     });
   }
@@ -74,18 +74,20 @@ export function AIStockAdvisor() {
                     {recommendations.map((item, index) => (
                     <div
                         key={index}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                        className="flex items-start justify-between p-4 rounded-lg bg-muted/50 gap-4"
                     >
-                        <div>
-                        <p className="font-semibold">{products.find(p => recommendations.some(r => r.reasoning.includes(p.name)))?.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <div className="flex-1">
+                        <p className="font-semibold">{products.find(p => item.reasoning.includes(p.name))?.name}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
                            {item.reasoning}
                         </p>
                         </div>
-                        <div className="text-right">
-                        <p className="font-bold text-destructive">
-                            Reorder {item.recommendedReorderQuantity} units
-                        </p>
+                        <div className="text-right shrink-0 ml-4">
+                            <p className="text-sm font-medium text-destructive">Reorder</p>
+                            <p className="text-2xl font-bold text-destructive">
+                                {item.recommendedReorderQuantity}
+                            </p>
+                            <p className="text-sm text-destructive/80">units</p>
                         </div>
                     </div>
                     ))}
