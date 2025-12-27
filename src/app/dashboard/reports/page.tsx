@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -42,9 +42,35 @@ type ReportType = 'inventory_summary' | 'sales_report' | 'transaction_log';
 type DateRange = '7' | '30' | '90' | 'all';
 
 export default function ReportsPage() {
-  const { products, transactions } = useData();
+  const { products, transactions, isLoading } = useData();
   const [reportType, setReportType] = useState<ReportType>('inventory_summary');
   const [dateRange, setDateRange] = useState<DateRange>('30');
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+          } else {
+            entry.target.classList.remove("revealed");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.1,
+        rootMargin: "0px 0px -10% 0px"
+      }
+    );
+
+    const items = document.querySelectorAll(".scroll-reveal-item");
+    items.forEach(el => observer.observe(el));
+
+    return () => items.forEach(el => observer.unobserve(el));
+  }, [isLoading]);
 
   const getFilteredTransactions = () => {
     if (dateRange === 'all') return transactions;
@@ -182,7 +208,7 @@ export default function ReportsPage() {
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -200,7 +226,7 @@ export default function ReportsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
@@ -212,7 +238,7 @@ export default function ReportsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Products in Stock
@@ -229,7 +255,7 @@ export default function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader>
             <CardTitle>Sales Overview</CardTitle>
             <CardDescription>
@@ -240,7 +266,7 @@ export default function ReportsPage() {
             <SalesChart />
           </CardContent>
         </Card>
-        <Card className='relative'>
+        <Card className='relative scroll-reveal-item'>
           <CardHeader>
             <CardTitle>Top Selling Products</CardTitle>
             <CardDescription>

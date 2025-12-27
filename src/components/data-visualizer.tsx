@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Bar,
   BarChart,
@@ -76,6 +76,30 @@ export function DataVisualizer() {
   const [chartType, setChartType] = useState<ChartType>('bar');
   const chartRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+          } else {
+            entry.target.classList.remove("revealed");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.1,
+        rootMargin: "0px 0px -10% 0px"
+      }
+    );
+
+    const items = document.querySelectorAll(".scroll-reveal-item");
+    items.forEach(el => observer.observe(el));
+
+    return () => items.forEach(el => observer.unobserve(el));
+  }, []);
 
   const handleDownload = useCallback(async () => {
     if (!chartRef.current) return;
@@ -254,7 +278,7 @@ export function DataVisualizer() {
           </Button>
         </div>
       </div>
-      <Card>
+      <Card className="scroll-reveal-item">
         <CardHeader>
           <CardTitle>Sales Data Visualization</CardTitle>
           <CardDescription>
