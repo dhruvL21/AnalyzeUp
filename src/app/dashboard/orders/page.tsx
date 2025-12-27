@@ -52,7 +52,6 @@ import { Label } from '@/components/ui/label';
 import type { PurchaseOrder } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useData } from '@/context/data-context';
-import GradualBlur from '@/components/ui/GradualBlur';
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
@@ -116,7 +115,7 @@ export default function OrdersPage() {
             </CardDescription>
           </CardHeader>
           <div className="relative">
-            <CardContent className="overflow-auto">
+            <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>

@@ -54,7 +54,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/context/data-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import GradualBlur from '@/components/ui/GradualBlur';
 
 
 export default function InventoryPage() {
@@ -351,7 +350,6 @@ export default function InventoryPage() {
                 </TableBody>
               </Table>
             </CardContent>
-            <GradualBlur />
           </div>
         </Card>
       </div>
@@ -587,6 +585,8 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
 
     
 
