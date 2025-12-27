@@ -83,7 +83,7 @@ export default function Nav({ isMobile = false }: { isMobile?: boolean }) {
         <Link 
             key={item.href}
             href={item.href}
-            className={cn("transition-all duration-200 hover:text-foreground/80 px-4 py-1.5 rounded-full cursor-pointer relative hover:scale-105",
+            className={cn("transition-all duration-200 hover:text-foreground/80 px-4 py-2 rounded-full cursor-pointer relative hover:scale-105",
                 pathname === item.href ? "text-accent-foreground" : "text-muted-foreground"
             )}
         >
