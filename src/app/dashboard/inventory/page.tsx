@@ -93,7 +93,7 @@ export default function InventoryPage() {
       }
     );
 
-    const items = document.querySelectorAll(".inventory-item");
+    const items = document.querySelectorAll(".scroll-reveal-item");
     items.forEach(el => observer.observe(el));
 
     return () => items.forEach(el => observer.unobserve(el));
@@ -258,7 +258,7 @@ export default function InventoryPage() {
                     ))
                   ) : (
                   products.map((product) => (
-                    <TableRow key={product.id} className="inventory-item">
+                    <TableRow key={product.id} className="scroll-reveal-item">
                       <TableCell className="hidden sm:table-cell">
                         <Image
                           alt={product.name}

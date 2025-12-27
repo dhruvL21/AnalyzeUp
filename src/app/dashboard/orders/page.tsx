@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,9 +57,36 @@ import GradualBlur from '@/components/ui/GradualBlur';
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
 export default function OrdersPage() {
-  const { orders, suppliers, products, addOrder, deleteOrder, updateOrderStatus } = useData();
+  const { orders, suppliers, products, addOrder, deleteOrder, updateOrderStatus, isLoading } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
+
+  useEffect(() => {
+    if (isLoading || orders.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+          } else {
+            entry.target.classList.remove("revealed");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.1,
+        rootMargin: "0px 0px -10% 0px"
+      }
+    );
+
+    const items = document.querySelectorAll(".scroll-reveal-item");
+    items.forEach(el => observer.observe(el));
+
+    return () => items.forEach(el => observer.unobserve(el));
+  }, [orders, isLoading]);
+
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -132,7 +159,7 @@ export default function OrdersPage() {
                 </TableHeader>
                 <TableBody>
                   {orders.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.id} className="scroll-reveal-item">
                       <TableCell className="font-medium">{order.id.substring(0,8)}...</TableCell>
                       <TableCell>{suppliers.find(s => s.id === order.supplierId)?.name || order.supplierId}</TableCell>
                       <TableCell>
