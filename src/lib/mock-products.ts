@@ -1,3 +1,4 @@
+
 import { Product } from './types';
 
 export const mockProducts: Product[] = [
@@ -321,7 +322,7 @@ export const mockProducts: Product[] = [
     averageDailySales: 15,
     leadTimeDays: 6,
   },
-  ...Array.from({ length: 60 }, (_, i) => {
+  ...Array.from({ length: 110 }, (_, i) => {
     const id = 21 + i;
     const categories = ['tops', 'bottoms', 'accessories', 'essentials'];
     const suppliers = ['SUP001', 'SUP002', 'SUP003'];
@@ -343,3 +344,5 @@ export const mockProducts: Product[] = [
     };
   })
 ];
+
+    
