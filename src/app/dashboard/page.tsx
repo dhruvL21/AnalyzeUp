@@ -26,7 +26,7 @@ import {
   Shirt,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useData } from '@/context/data-context';
 import { SalesChart } from '@/components/sales-chart';
 import { AIStockAdvisor } from '@/components/ai-stock-advisor';
@@ -139,6 +139,32 @@ function DashboardLoading() {
 export default function DashboardPage() {
   const { products, transactions, isLoading } = useData();
 
+  useEffect(() => {
+    if (isLoading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+          } else {
+            entry.target.classList.remove("revealed");
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.1,
+        rootMargin: "0px 0px -10% 0px"
+      }
+    );
+
+    const items = document.querySelectorAll(".scroll-reveal-item");
+    items.forEach(el => observer.observe(el));
+
+    return () => items.forEach(el => observer.unobserve(el));
+  }, [isLoading]);
+
   const lowStockProducts = products.filter((p) => p.stock < 20);
 
   const totalInventoryValue =
@@ -178,7 +204,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Inventory Value
@@ -198,7 +224,7 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Sales</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -216,7 +242,7 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Low Stock Items
@@ -230,7 +256,7 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="scroll-reveal-item">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Top Selling Product
@@ -246,11 +272,11 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       <div className="grid grid-cols-1 gap-8">
+       <div className="grid grid-cols-1 gap-8 scroll-reveal-item">
          <AIStockAdvisor />
       </div>
 
-       <div className="grid grid-cols-1 gap-8">
+       <div className="grid grid-cols-1 gap-8 scroll-reveal-item">
          <Card>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
@@ -264,7 +290,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
+      <Card className="scroll-reveal-item">
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
           <CardDescription>
@@ -322,5 +348,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
