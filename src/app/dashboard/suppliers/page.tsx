@@ -40,6 +40,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useData } from '@/context/data-context';
+import GradualBlur from '@/components/ui/GradualBlur';
 
 
 export default function SuppliersPage() {
@@ -89,70 +90,73 @@ export default function SuppliersPage() {
             </Button>
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {suppliers.map((supplier) => (
-            <Card key={supplier.id}>
-              <CardHeader className="flex flex-row items-start justify-between">
-                <div>
-                  <CardTitle>{supplier.name}</CardTitle>
-                  <CardDescription>{supplier.email}</CardDescription>
-                </div>
-                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      aria-haspopup="true"
-                      size="icon"
-                      variant="ghost"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem
-                          onSelect={(e) => e.preventDefault()}
-                          className="text-destructive"
+        <div className="relative">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {suppliers.map((supplier) => (
+                <Card key={supplier.id}>
+                <CardHeader className="flex flex-row items-start justify-between">
+                    <div>
+                    <CardTitle>{supplier.name}</CardTitle>
+                    <CardDescription>{supplier.email}</CardDescription>
+                    </div>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                        aria-haspopup="true"
+                        size="icon"
+                        variant="ghost"
                         >
-                          Delete
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Are you sure?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will
-                            permanently delete the supplier and may affect related products.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteSupplier(supplier.id)}
-                          >
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="text-destructive"
+                            >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Supplies{' '}
-                  <span className="font-semibold">
-                    {supplierProductCount[supplier.id] || 0}
-                  </span>{' '}
-                  product(s).
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                            </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                Are you sure?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete the supplier and may affect related products.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => deleteSupplier(supplier.id)}
+                            >
+                                Delete
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
+                    </DropdownMenuContent>
+                    </DropdownMenu>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                    Supplies{' '}
+                    <span className="font-semibold">
+                        {supplierProductCount[supplier.id] || 0}
+                    </span>{' '}
+                    product(s).
+                    </p>
+                </CardContent>
+                </Card>
+            ))}
+            </div>
+             <GradualBlur />
         </div>
       </div>
 

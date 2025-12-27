@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 import { subDays } from 'date-fns';
 import { useData } from '@/context/data-context';
+import GradualBlur from '@/components/ui/GradualBlur';
 
 type ReportType = 'inventory_summary' | 'sales_report' | 'transaction_log';
 type DateRange = '7' | '30' | '90' | 'all';
@@ -239,7 +240,7 @@ export default function ReportsPage() {
             <SalesChart />
           </CardContent>
         </Card>
-        <Card>
+        <Card className='relative'>
           <CardHeader>
             <CardTitle>Top Selling Products</CardTitle>
             <CardDescription>
@@ -272,10 +273,9 @@ export default function ReportsPage() {
               </TableBody>
             </Table>
           </CardContent>
+          <GradualBlur />
         </Card>
       </div>
     </div>
   );
 }
-
-    
