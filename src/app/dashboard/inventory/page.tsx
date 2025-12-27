@@ -219,15 +219,15 @@ export default function InventoryPage() {
             </Button>
           </div>
         </div>
-        <Card className="flex flex-col flex-1">
+        <Card>
           <CardHeader>
             <CardTitle>Products</CardTitle>
             <CardDescription>
               Manage your products and view their inventory levels.
             </CardDescription>
           </CardHeader>
-          <div className="relative flex-1 flex flex-col min-h-0">
-             <CardContent className="flex-1 overflow-auto p-0">
+          <div className="relative">
+             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -351,6 +351,7 @@ export default function InventoryPage() {
                 </TableBody>
               </Table>
             </CardContent>
+            <GradualBlur />
           </div>
         </Card>
       </div>
@@ -586,5 +587,7 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
 
     
