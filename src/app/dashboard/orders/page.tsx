@@ -52,7 +52,6 @@ import { Label } from '@/components/ui/label';
 import type { PurchaseOrder } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useData } from '@/context/data-context';
-import GradualBlur from '@/components/ui/GradualBlur';
 
 type OrderStatus = "Pending" | "Fulfilled" | "Cancelled";
 
@@ -236,7 +235,6 @@ export default function OrdersPage() {
                 </TableBody>
               </Table>
             </CardContent>
-            <GradualBlur />
           </div>
         </Card>
       </div>
@@ -354,5 +352,3 @@ export default function OrdersPage() {
     </>
   );
 }
-
-    

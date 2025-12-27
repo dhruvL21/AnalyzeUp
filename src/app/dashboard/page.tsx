@@ -30,7 +30,6 @@ import { useMemo, useEffect } from 'react';
 import { useData } from '@/context/data-context';
 import { SalesChart } from '@/components/sales-chart';
 import { AIStockAdvisor } from '@/components/ai-stock-advisor';
-import GradualBlur from '@/components/ui/GradualBlur';
 
 function DashboardLoading() {
   return (
@@ -342,13 +341,8 @@ export default function DashboardPage() {
               </TableBody>
             </Table>
           </CardContent>
-           <GradualBlur />
         </div>
       </Card>
     </div>
   );
 }
-
-    
-
-    

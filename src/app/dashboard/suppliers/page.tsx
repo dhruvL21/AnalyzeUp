@@ -40,7 +40,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useData } from '@/context/data-context';
-import GradualBlur from '@/components/ui/GradualBlur';
 
 
 export default function SuppliersPage() {
@@ -182,7 +181,6 @@ export default function SuppliersPage() {
                 </Card>
             ))}
             </div>
-             <GradualBlur />
         </div>
       </div>
 
