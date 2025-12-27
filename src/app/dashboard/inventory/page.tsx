@@ -183,7 +183,7 @@ export default function InventoryPage() {
 
   return (
     <>
-      <div className="flex flex-col gap-8 h-full">
+      <div className="flex flex-col gap-8">
         <div className="flex items-center">
           <h1 className="text-2xl font-semibold md:text-3xl">Inventory</h1>
           <div className="ml-auto flex items-center gap-2">
@@ -193,15 +193,15 @@ export default function InventoryPage() {
             </Button>
           </div>
         </div>
-        <Card className="flex-1 flex flex-col">
+        <Card>
           <CardHeader>
             <CardTitle>Products</CardTitle>
             <CardDescription>
               Manage your products and view their inventory levels.
             </CardDescription>
           </CardHeader>
-          <div className="relative flex-1 overflow-hidden">
-            <CardContent className="h-full overflow-y-auto">
+          <div className="relative">
+            <CardContent className="h-[60vh] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
