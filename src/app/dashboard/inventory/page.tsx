@@ -200,8 +200,8 @@ export default function InventoryPage() {
               Manage your products and view their inventory levels.
             </CardDescription>
           </CardHeader>
-          <div className="relative h-[600px] overflow-hidden">
-            <CardContent className="h-full overflow-y-auto">
+          <div className="relative">
+            <CardContent className="h-[600px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -565,5 +565,7 @@ export default function InventoryPage() {
     </>
   );
 }
+
+    
 
     
