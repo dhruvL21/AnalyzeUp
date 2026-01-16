@@ -44,10 +44,17 @@ export default function RegisterPage() {
       router.push('/dashboard');
     } catch (error: any) {
       console.error(error);
+      let description = 'An unexpected error occurred.';
+      if (error.code === 'auth/email-already-in-use') {
+        description =
+          'This email is already registered. Please sign in or use a different email.';
+      } else if (error.message) {
+        description = error.message;
+      }
       toast({
         variant: 'destructive',
         title: 'Registration Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description: description,
       });
     } finally {
       setLoading(false);
