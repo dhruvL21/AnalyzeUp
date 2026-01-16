@@ -1,3 +1,4 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
@@ -30,7 +31,7 @@ export type AIStockAdvisorOutput = z.infer<
 
 const aiStockAdvisorPrompt = ai.definePrompt({
   name: 'aiStockAdvisorPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash',
   prompt: `
 You are an AI inventory assistant.
 

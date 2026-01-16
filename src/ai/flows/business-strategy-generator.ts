@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -35,7 +36,7 @@ const businessStrategyPrompt = ai.definePrompt({
   name: 'businessStrategyPrompt',
   input: { schema: BusinessStrategyInputSchema },
   output: { schema: BusinessStrategyOutputSchema },
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash',
   prompt: `
 You are a seasoned business consultant tasked with creating a comprehensive business growth strategy.
 
