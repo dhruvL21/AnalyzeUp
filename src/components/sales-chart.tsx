@@ -17,7 +17,7 @@ export function SalesChart() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-lg border bg-background/80 apple-glass p-2 shadow-sm">
+        <div className="rounded-lg border bg-popover/70 p-2 shadow-sm backdrop-blur-sm">
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col space-y-1">
               <span className="text-[0.70rem] uppercase text-muted-foreground">
