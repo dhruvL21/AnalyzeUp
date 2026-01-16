@@ -375,30 +375,32 @@ export default function InventoryPage() {
           ref={productFormRef}
           id="product-form"
           onSubmit={handleFormSubmit}
-          className="grid auto-rows-max items-start gap-4 py-4"
+          className="grid gap-4 py-4"
         >
-          <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">Name</Label>
               <Input
-              id="name"
-              name="name"
-              defaultValue={editingProduct?.name}
-              required
+                id="name"
+                name="name"
+                defaultValue={editingProduct?.name}
+                required
+                className="col-span-3"
               />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="description" className="text-right pt-2">Description</Label>
             <Textarea
               id="description"
               name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
+              className="col-span-3"
             />
           </div>
-           <div className="grid gap-2">
-                <Label htmlFor="image">Image</Label>
-                <div className="flex items-center gap-4">
+           <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="image" className="text-right">Image</Label>
+                <div className="col-span-3 flex items-center gap-4">
                     {imagePreview && (
                     <Image
                         src={imagePreview}
@@ -418,9 +420,8 @@ export default function InventoryPage() {
                     />
                 </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="price">Price</Label>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="price" className="text-right">Price</Label>
                 <Input
                   id="price"
                   name="price"
@@ -428,77 +429,76 @@ export default function InventoryPage() {
                   step="0.01"
                   defaultValue={editingProduct?.price}
                   required
+                  className="col-span-3"
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="stock">Stock</Label>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="stock" className="text-right">Stock</Label>
                 <Input
                   id="stock"
                   name="stock"
                   type="number"
                   defaultValue={editingProduct?.stock}
                   required
+                  className="col-span-3"
                 />
-              </div>
             </div>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="categoryId">Category</Label>
-                    <Select 
-                        name="categoryId" 
-                        value={selectedCategoryId}
-                        onValueChange={(value) => {
-                        if (value === 'create-new') {
-                            setIsCategoryDialogOpen(true);
-                        } else {
-                            setSelectedCategoryId(value);
-                        }
-                        }}
-                    >
-                        <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                        {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                            </SelectItem>
-                        ))}
-                        <SelectItem value="create-new" className='italic text-primary'>
-                            Create new category...
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="categoryId" className="text-right">Category</Label>
+                <Select 
+                    name="categoryId" 
+                    value={selectedCategoryId}
+                    onValueChange={(value) => {
+                    if (value === 'create-new') {
+                        setIsCategoryDialogOpen(true);
+                    } else {
+                        setSelectedCategoryId(value);
+                    }
+                    }}
+                >
+                    <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                        {category.name}
                         </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="supplierId">Supplier</Label>
-                    <Select 
-                        name="supplierId" 
-                        value={selectedSupplierId}
-                        onValueChange={(value) => {
-                        if (value === 'create-new-supplier') {
-                            setIsSupplierDialogOpen(true);
-                        } else {
-                            setSelectedSupplierId(value);
-                        }
-                        }}
-                        defaultValue={editingProduct?.supplierId}
-                    >
-                        <SelectTrigger>
-                        <SelectValue placeholder="Select supplier" />
-                        </SelectTrigger>
-                        <SelectContent>
-                        {suppliers.map((supplier) => (
-                            <SelectItem key={supplier.id} value={supplier.id}>
-                            {supplier.name}
-                            </SelectItem>
-                        ))}
-                        <SelectItem value="create-new-supplier" className='italic text-primary'>
-                            Create new supplier...
+                    ))}
+                    <SelectItem value="create-new" className='italic text-primary'>
+                        Create new category...
+                    </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="supplierId" className="text-right">Supplier</Label>
+                <Select 
+                    name="supplierId" 
+                    value={selectedSupplierId}
+                    onValueChange={(value) => {
+                    if (value === 'create-new-supplier') {
+                        setIsSupplierDialogOpen(true);
+                    } else {
+                        setSelectedSupplierId(value);
+                    }
+                    }}
+                    defaultValue={editingProduct?.supplierId}
+                >
+                    <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select supplier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {suppliers.map((supplier) => (
+                        <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
                         </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+                    ))}
+                    <SelectItem value="create-new-supplier" className='italic text-primary'>
+                        Create new supplier...
+                    </SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
         </form>
         <DialogFooter className="pt-4">
@@ -577,5 +577,3 @@ export default function InventoryPage() {
     </>
   );
 }
-
-    
